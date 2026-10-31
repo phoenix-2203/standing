@@ -57,6 +57,13 @@
       "when": 1793483449338,
       "tag": "0007_packs",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793484222947,
+      "tag": "0008_pack_plan",
+      "breakpoints": true
     }
   ]
 }

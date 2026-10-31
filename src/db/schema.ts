@@ -268,9 +268,14 @@ export const packs = pgTable("packs", {
   status: packStatus("status").notNull().default("draft"),
   salesCurve: jsonb("sales_curve").$type<{ day: string; cents: number; orders: number }[]>().notNull(),
   summaryEvidenceId: text("summary_evidence_id").notNull(),
-  letter: jsonb("letter").$type<{ paragraphs: { sentences: { text: string; citations: string[] }[] }[] }>(),
+  // The model's plan (fact IDs + connecting sentences), as returned on the final attempt.
+  plan: jsonb("plan"),
+  // The letter as rendered by code from the plan; null while blocked.
+  letter: jsonb("letter").$type<{ paragraphs: { sentences: { kind: "fact" | "bridge"; text: string; citations: string[] }[] }[] }>(),
   evidence: jsonb("evidence").$type<{ id: string; kind: string; summary: string; simulated: boolean }[]>().notNull(),
-  validation: jsonb("validation").$type<{ ok: boolean; problems: { paragraph: number; sentence: number; text: string; problem: string }[] }>(),
+  facts: jsonb("facts").$type<{ id: string; evidenceIds: string[]; text: string; simulated: boolean }[]>(),
+  validation: jsonb("validation").$type<{ ok: boolean; problems: { paragraph: number; item: number; text: string; problem: string }[] }>(),
+  attempts: integer("attempts").notNull().default(0),
   provider: text("provider"),
   model: text("model"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
