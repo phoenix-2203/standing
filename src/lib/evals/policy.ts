@@ -15,7 +15,8 @@ export interface EvalProduct {
   name: string;
   description: string;
   expectedVerdict: Verdict;
-  expectedClauseId: string | null;
+  // Any of these clauses is a correct citation (most products have one; a few have two).
+  expectedClauseIds: string[];
   note: string;
 }
 
@@ -32,7 +33,7 @@ export function loadEvalProducts(file = path.join(process.cwd(), "data/eval_prod
     name: r.name,
     description: r.description,
     expectedVerdict: r.expected_verdict as Verdict,
-    expectedClauseId: r.expected_clause_id || null,
+    expectedClauseIds: r.expected_clause_id ? r.expected_clause_id.split("|").map((c) => c.trim()) : [],
     note: r.note,
   }));
 }
@@ -58,6 +59,7 @@ export interface Score {
   misses: { id: string; name: string; expected: string; got: string; reason: string }[];
 }
 
+const clauseOk = (r: EvalResult) => r.product.expectedClauseIds.length > 0 && r.got?.clauseId != null && r.product.expectedClauseIds.includes(r.got.clauseId);
 const flaggedVerdict = (v: Verdict | undefined) => v !== undefined && v !== "allowed";
 
 export function score(results: EvalResult[]): Score {
@@ -65,8 +67,8 @@ export function score(results: EvalResult[]): Score {
     label,
     n: rs.length,
     verdictCorrect: rs.filter((r) => r.got?.verdict === r.product.expectedVerdict).length,
-    clauseExpected: rs.filter((r) => r.product.expectedClauseId).length,
-    clauseCorrect: rs.filter((r) => r.product.expectedClauseId && r.got?.clauseId === r.product.expectedClauseId).length,
+    clauseExpected: rs.filter((r) => r.product.expectedClauseIds.length).length,
+    clauseCorrect: rs.filter((r) => clauseOk(r)).length,
     flagged: rs.filter((r) => flaggedVerdict(r.got?.verdict)).length,
   });
   const mustCatch = results.filter((r) => r.product.expectedVerdict === "prohibited" || r.product.expectedVerdict === "preapproval");
@@ -84,11 +86,11 @@ export function score(results: EvalResult[]): Score {
     failed: results.filter((r) => !r.got).length,
     confusion,
     misses: results
-      .filter((r) => r.got?.verdict !== r.product.expectedVerdict || (r.product.expectedClauseId && r.got?.clauseId !== r.product.expectedClauseId))
+      .filter((r) => r.got?.verdict !== r.product.expectedVerdict || (r.product.expectedClauseIds.length > 0 && !clauseOk(r)))
       .map((r) => ({
         id: r.product.id,
         name: r.product.name,
-        expected: `${r.product.expectedVerdict}${r.product.expectedClauseId ? ` ${r.product.expectedClauseId}` : ""}`,
+        expected: `${r.product.expectedVerdict}${r.product.expectedClauseIds.length ? ` ${r.product.expectedClauseIds.join(" or ")}` : ""}`,
         got: r.got ? `${r.got.verdict}${r.got.clauseId ? ` ${r.got.clauseId}` : ""}` : "error",
         reason: r.got?.rejected ? `failed validation: ${r.got.rejected.problem}` : (r.got?.reason ?? r.error ?? ""),
       })),

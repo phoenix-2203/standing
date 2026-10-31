@@ -180,3 +180,17 @@ describe("providersFromEnv", () => {
     expect(providersFromEnv({ GEMINI_API_KEY: "g" }).map((p) => p.name)).toEqual(["gemini"]);
   });
 });
+
+describe("the classifier sees the full clause text", () => {
+  it("lists every candidate clause with its complete lead-in and text, word for word", () => {
+    for (const c of CLASSIFIABLE) {
+      const line = `${c.id} | ${c.kind} | ${c.name} | ${c.lead_in ? `${c.lead_in} … ` : ""}${c.text}`;
+      expect(SYSTEM_PROMPT.split("\n"), c.id).toContain(line);
+    }
+  });
+
+  it("includes the clauses behind the real misses (cigars, in-game currency) in full", () => {
+    expect(SYSTEM_PROMPT).toContain("PRE-15 | preapproval | Tobacco | Non-cigarette tobacco products, e-cigarettes, cigars");
+    expect(SYSTEM_PROMPT).toContain("virtual in-game currencies");
+  });
+});
