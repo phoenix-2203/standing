@@ -1,0 +1,397 @@
+{
+  "_about": "PayPal Acceptable Use Policy (US), clause text verbatim from the source URL. 'text' is the exact clause wording (whitespace normalised); for lettered items, 'lead_in' is the sentence it completes. Regenerate when the policy changes.",
+  "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+  "policy_last_updated": "2022-10-29",
+  "retrieved": "2026-10-31",
+  "clauses": [
+    {
+      "id": "PROH-1",
+      "kind": "prohibited",
+      "name": "Illegal activity",
+      "text": "violate any law, statute, ordinance or regulation.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2a",
+      "kind": "prohibited",
+      "name": "Narcotics, steroids, controlled substances, unsafe products",
+      "text": "(a) narcotics, steroids, certain controlled substances or other products that present a risk to consumer safety",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2b",
+      "kind": "prohibited",
+      "name": "Drug paraphernalia",
+      "text": "(b) drug paraphernalia",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2c",
+      "kind": "prohibited",
+      "name": "Cigarettes",
+      "text": "(c) cigarettes",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2d",
+      "kind": "prohibited",
+      "name": "Items that promote or instruct illegal activity",
+      "text": "(d) items that encourage, promote, facilitate or instruct others to engage in illegal activity",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2e",
+      "kind": "prohibited",
+      "name": "Stolen goods",
+      "text": "(e) stolen goods including digital and virtual goods",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2f",
+      "kind": "prohibited",
+      "name": "Hate, violence, intolerance; exploiting a crime",
+      "text": "(f) the promotion of hate, violence, racial or other forms of intolerance that is discriminatory or the financial exploitation of a crime",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2g",
+      "kind": "prohibited",
+      "name": "Obscene items",
+      "text": "(g) items that are considered obscene",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2h",
+      "kind": "prohibited",
+      "name": "Intellectual property infringement",
+      "text": "(h) items that infringe or violate any copyright, trademark, right of publicity or privacy or any other proprietary right under the laws of any jurisdiction",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2i",
+      "kind": "prohibited",
+      "name": "Certain sexually oriented materials or services",
+      "text": "(i) certain sexually oriented materials or services",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2j",
+      "kind": "prohibited",
+      "name": "Ammunition, firearms, firearm parts",
+      "text": "(j) ammunition, firearms, or certain firearm parts or accessories",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-2k",
+      "kind": "prohibited",
+      "name": "Regulated weapons or knives",
+      "text": "(k) certain weapons or knives regulated under applicable law",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions involving",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-3a",
+      "kind": "prohibited",
+      "name": "Third parties' personal information",
+      "text": "(a) show the personal information of third parties in violation of applicable law",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions that",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-3b",
+      "kind": "prohibited",
+      "name": "Pyramid, Ponzi, get-rich-quick, certain MLM",
+      "text": "(b) support pyramid or ponzi schemes, matrix programs, other \"get rich quick\" schemes or certain multi-level marketing programs",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions that",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-3c",
+      "kind": "prohibited",
+      "name": "Annuities, lottery contracts, lay-away, off-shore banking, credit-card-funded debt",
+      "text": "(c) are associated with purchases of annuities or lottery contracts, lay-away systems, off-shore banking or transactions to finance or refinance debts funded by a credit card",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions that",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-3d",
+      "kind": "prohibited",
+      "name": "Selling items not yet in the seller's control or possession",
+      "text": "(d) are for the sale of certain items before the seller has control or possession of the item",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions that",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-3e",
+      "kind": "prohibited",
+      "name": "Payment processors collecting for merchants",
+      "text": "(e) are by payment processors to collect payments on behalf of merchants",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions that",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-3f",
+      "kind": "prohibited",
+      "name": "Traveler's checks or money orders",
+      "text": "(f) are associated with the sale of traveler's checks or money orders",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions that",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-3g",
+      "kind": "prohibited",
+      "name": "Currency exchange or check cashing",
+      "text": "(g) involve currency exchanges or check cashing businesses",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions that",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-3h",
+      "kind": "prohibited",
+      "name": "Credit repair, debt settlement, credit or insurance",
+      "text": "(h) involve certain credit repair, debt settlement services, credit transactions or insurance activities",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions that",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-3i",
+      "kind": "prohibited",
+      "name": "Bribery or corruption",
+      "text": "(i) involve offering or receiving payments for the purpose of bribery or corruption",
+      "lead_in": "You may not use the PayPal service for activities that relate to transactions that",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-4",
+      "kind": "prohibited",
+      "name": "Government-identified fraud-prone products",
+      "text": "involve the sales of products or services identified by government agencies to have a high likelihood of being fraudulent.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PROH-5",
+      "kind": "prohibited",
+      "name": "Pre-approval activity without approval",
+      "text": "relate to transactions involving any activity that requires pre-approval without having obtained said approval.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-01",
+      "kind": "preapproval",
+      "name": "Transportation",
+      "text": "Airlines and scheduled or non-scheduled charters/jets/air taxi operators.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-02",
+      "kind": "preapproval",
+      "name": "Charities / Non-Profit",
+      "text": "Collecting donations as a charity or non-profit organization.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-03",
+      "kind": "preapproval",
+      "name": "High Value Items",
+      "text": "Operating as a dealer in jewels, precious metals and stones.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-04",
+      "kind": "preapproval",
+      "name": "Payment Facilitator",
+      "text": "Providing payment services which would fall under the definition of a money service business or an electronic money institution. Services would also include the sale of stored value cards and escrow services.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-05",
+      "kind": "preapproval",
+      "name": "Investments",
+      "text": "Buying, selling, or brokering stocks, bonds, securities, options, figures, commodities, contracts for difference/forex, mutual funds or an investment interest in any entity or property.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-06",
+      "kind": "preapproval",
+      "name": "Gambling, Gaming, Prize Draws and Contests",
+      "text": "Activities involving gambling, gaming and/or any other activity with an entry fee and a prize, including, but not limited to property/real estate prizes, casino games, sports betting, horse or greyhound racing, fantasy sports, lottery tickets, other ventures that facilitate gambling, games of skill (whether or not legally defined as gambling) and sweepstakes, if the operator and customers are located exclusively in jurisdictions where such activities are permitted by law.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-07",
+      "kind": "preapproval",
+      "name": "Cryptocurrency",
+      "text": "Any digital representation of value that can be digitally traded, transferred, or used for payment, including, but not limited to, crypto currencies, virtual in-game currencies, or non-fungible tokens.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-08",
+      "kind": "preapproval",
+      "name": "Prescription Items",
+      "text": "The sale of any product(s) requiring a prescription or prescription dispensing services.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-09",
+      "kind": "preapproval",
+      "name": "Telemedicine Services",
+      "text": "Providing medical services and consultations in a remote fashion.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-10",
+      "kind": "preapproval",
+      "name": "Mature Audience Content",
+      "text": "Any adult content delivered digitally including video on demand (VOD) and web-cam activities. PayPal may be restricted from processing payments in certain jurisdictions for adult DVD's, magazines and other adult themed products or services.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-11",
+      "kind": "preapproval",
+      "name": "Online Dating",
+      "text": "Any dating services that enable individuals to find and introduce themselves to new people with the goal of developing a personal or romantic relationship.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-12",
+      "kind": "preapproval",
+      "name": "Live Streaming/Broadcasting",
+      "text": "Any activities in which people transmit video, voice or text content in a live environment with the potential of user interaction.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-13",
+      "kind": "preapproval",
+      "name": "File-Sharing",
+      "text": "Providing file sharing services including cyberlockers and similar remote digital file sharing services where uploaded content is accessible to the public or the service pays uploaders for content.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-14",
+      "kind": "preapproval",
+      "name": "Alcohol",
+      "text": "Selling alcoholic beverages.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-15",
+      "kind": "preapproval",
+      "name": "Tobacco",
+      "text": "Non-cigarette tobacco products, e-cigarettes, cigars",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-16",
+      "kind": "preapproval",
+      "name": "Medical Items or Services",
+      "text": "All items classified as medical devices, and all services or treatment provided by a person or organization holding itself out as a provider of health-care services, including, but not limited to, all health-care services for which government licensure is required in the provider's jurisdiction or in the jurisdiction where services are being provided. This category includes \"Medical Tourism\" involving medical services to be provided to a patient outside of that patient's home country.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-17",
+      "kind": "preapproval",
+      "name": "Multilevel Marketing and Direct Selling Organizations",
+      "text": "Direct Sales Organizations (\"DSOs\") and the Multi-Level Marketing (\"MLMs\") are distribution and marketing models in which products or services are sold via a network of independent distributors or representatives. DSO and MLM models rely on personal sales and frequently require the independent distributors to recruit new distributors in order to advance within the organization or gain incentive compensation.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    },
+    {
+      "id": "PRE-18",
+      "kind": "preapproval",
+      "name": "Marketplaces",
+      "text": "A marketplace is an e-commerce solution where third-party sellers can sell their products or services to customers.",
+      "source_url": "https://www.paypal.com/us/legalhub/paypal/acceptableuse-full",
+      "policy_last_updated": "2022-10-29",
+      "retrieved": "2026-10-31"
+    }
+  ]
+}
