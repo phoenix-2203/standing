@@ -50,6 +50,13 @@
       "when": 1793483377669,
       "tag": "0006_evidence_ledger",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793483449338,
+      "tag": "0007_packs",
+      "breakpoints": true
     }
   ]
 }

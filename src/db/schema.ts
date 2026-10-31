@@ -255,3 +255,23 @@ export const evidenceItems = pgTable(
   },
   (t) => [primaryKey({ columns: [t.sellerId, t.id] }), index("evidence_seller_kind").on(t.sellerId, t.kind)],
 );
+
+export const packStatus = pgEnum("pack_status", ["draft", "blocked", "ready"]);
+
+// An explanation pack: the seller's case, built before PayPal asks. Holds its own copy of every evidence
+// item it cites, so the pack stays true even if the ledger changes later.
+export const packs = pgTable("packs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sellerId: text("seller_id").notNull(),
+  periodFrom: timestamp("period_from", { withTimezone: true }).notNull(),
+  periodTo: timestamp("period_to", { withTimezone: true }).notNull(),
+  status: packStatus("status").notNull().default("draft"),
+  salesCurve: jsonb("sales_curve").$type<{ day: string; cents: number; orders: number }[]>().notNull(),
+  summaryEvidenceId: text("summary_evidence_id").notNull(),
+  letter: jsonb("letter").$type<{ paragraphs: { sentences: { text: string; citations: string[] }[] }[] }>(),
+  evidence: jsonb("evidence").$type<{ id: string; kind: string; summary: string; simulated: boolean }[]>().notNull(),
+  validation: jsonb("validation").$type<{ ok: boolean; problems: { paragraph: number; sentence: number; text: string; problem: string }[] }>(),
+  provider: text("provider"),
+  model: text("model"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
