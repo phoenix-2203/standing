@@ -1,13 +1,23 @@
-import { type Metrics, THRESHOLDS } from "@/lib/metrics/compute";
+import { type Metrics, MIN_HISTORY_DAYS, THRESHOLDS } from "@/lib/metrics/compute";
 
 // Alert rules over computed metrics. Deterministic: the numbers and wording come from code, never from
 // the AI (CLAUDE.md rule 3). Messages state facts and PayPal's *published* reasons; they never predict
 // what PayPal will do.
 
-export type AlertKind = "spike" | "avg_ticket" | "large_order" | "new_product_type" | "tracking_coverage" | "digital_gap";
+export type AlertKind =
+  | "new_seller"
+  | "spike"
+  | "avg_ticket"
+  | "large_order"
+  | "new_product_type"
+  | "tracking_coverage"
+  | "digital_gap";
 
 export interface AlertCondition {
   kind: AlertKind;
+  // "info" = a calm status note (e.g. new seller); "warning" = a signal to act on.
+  severity: "info" | "warning";
+  link?: string;
   title: string;
   message: string;
   facts: Record<string, unknown>;
@@ -22,13 +32,30 @@ const times = (r: number) => `${(Math.floor(r * 10) / 10).toFixed(1)}×`; // rou
 export function evaluate(m: Metrics): AlertCondition[] {
   const out: AlertCondition[] = [];
 
+  if (m.history.newSeller) {
+    const days = Math.floor(m.history.days);
+    const ago = days === 0 ? "today" : days === 1 ? "1 day ago" : `${days} days ago`;
+    const when = m.history.firstSaleAt === null ? "You haven't had a sale yet." : `Your first sale was ${ago}.`;
+    out.push({
+      kind: "new_seller",
+      severity: "info",
+      link: "/checklist",
+      title: "New seller",
+      message:
+        `${when} PayPal lists being a first-time seller as the first reason it may hold funds. Nothing is wrong; ` +
+        `the checklist shows what to have ready. Some signals need ${MIN_HISTORY_DAYS} days of sales history first.`,
+      facts: { ...m.history },
+    });
+  }
+
   if (m.spike.ratio !== null && m.spike.ratio >= THRESHOLDS.spikeRatio) {
     out.push({
       kind: "spike",
+      severity: "warning",
       title: "Sales spike",
       message:
         `Sales in the last 24 hours (${usd(m.spike.last24hCents)}) are ${times(m.spike.ratio)} your average day ` +
-        `over the previous 28 days (${usd(m.spike.baselineDailyMeanCents)}). PayPal lists a spike in sales among ` +
+        `over the previous ${Math.floor(m.spike.baselineDays)} days (${usd(m.spike.baselineDailyMeanCents)}). PayPal lists a spike in sales among ` +
         `the reasons it may hold funds.`,
       facts: { ...m.spike, threshold: THRESHOLDS.spikeRatio },
     });
@@ -38,6 +65,7 @@ export function evaluate(m: Metrics): AlertCondition[] {
   if (t.ratio !== null && t.ratio >= THRESHOLDS.avgTicketRatio) {
     out.push({
       kind: "avg_ticket",
+      severity: "warning",
       title: "Average order value jumped",
       message:
         `Your average order over the last 7 days (${usd(t.avg7dCents!)}) is ${times(t.ratio)} your 28-day average ` +
@@ -48,6 +76,7 @@ export function evaluate(m: Metrics): AlertCondition[] {
   if (t.largestRecent && t.largestRecent.multiple >= THRESHOLDS.singleOrderMultiple) {
     out.push({
       kind: "large_order",
+      severity: "warning",
       title: "Unusually large order",
       message:
         `Order ${t.largestRecent.id} (${usd(t.largestRecent.cents)}) is ${times(t.largestRecent.multiple)} your ` +
@@ -60,6 +89,7 @@ export function evaluate(m: Metrics): AlertCondition[] {
   if (p.newCategories.length) {
     out.push({
       kind: "new_product_type",
+      severity: "warning",
       title: "New type of product",
       message:
         `You sold ${list(p.newCategories)} in the last 7 days but not in the 60 days before. PayPal lists a change ` +
@@ -72,6 +102,7 @@ export function evaluate(m: Metrics): AlertCondition[] {
   if (c.coverage !== null && c.coverage < THRESHOLDS.trackingCoverage) {
     out.push({
       kind: "tracking_coverage",
+      severity: "warning",
       title: "Orders missing tracking",
       message:
         `${c.eligible - c.withTracking} of ${c.eligible} physical orders older than 48 hours have no tracking in PayPal ` +
@@ -84,6 +115,7 @@ export function evaluate(m: Metrics): AlertCondition[] {
   if (g.count >= THRESHOLDS.digitalGap) {
     out.push({
       kind: "digital_gap",
+      severity: "warning",
       title: "Digital orders not marked Completed",
       message: `${g.count} digital or service ${g.count === 1 ? "order is" : "orders are"} more than 24 hours old and not marked Completed in PayPal.`,
       facts: { count: g.count, orders: g.orders },

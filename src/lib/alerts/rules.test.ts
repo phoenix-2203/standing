@@ -3,8 +3,9 @@ import { computeMetrics, type Sale } from "@/lib/metrics/compute";
 import { AS_OF, daysAgo, sale, steady } from "@/test/seed";
 import { evaluate } from "./rules";
 
-const kinds = (sales: Sale[], disputes: Date[] = []) =>
-  evaluate(computeMetrics({ asOf: AS_OF, sales, disputeCreatedAt: disputes })).map((c) => c.kind);
+// An established seller (first sale 120 days ago) unless a test says otherwise.
+const kinds = (sales: Sale[], disputes: Date[] = [], firstSaleAt: Date | null = daysAgo(120)) =>
+  evaluate(computeMetrics({ asOf: AS_OF, sales, disputeCreatedAt: disputes, firstSaleAt })).map((c) => c.kind);
 
 // A quiet, healthy seller: 2 × $20 a day for 60 days, all tracked, one category.
 const quiet = () => steady(60, 1, 2, 20);
@@ -21,7 +22,7 @@ describe("alert rules on seeded data", () => {
 
   it("spike message states the numbers and PayPal's published reason, and never rounds up", () => {
     const [c] = evaluate(
-      computeMetrics({ asOf: AS_OF, sales: [...quiet(), ...steady(0, 0, 6, 20), sale(2, 19.99)], disputeCreatedAt: [] }),
+      computeMetrics({ asOf: AS_OF, sales: [...quiet(), ...steady(0, 0, 6, 20), sale(2, 19.99)], disputeCreatedAt: [], firstSaleAt: daysAgo(120) }),
     ).filter((c) => c.kind === "spike");
     expect(c.message).toBe(
       "Sales in the last 24 hours ($139.99) are 3.4× your average day over the previous 28 days ($40.00). " +
@@ -59,8 +60,24 @@ describe("alert rules on seeded data", () => {
     expect(kinds(quiet(), disputes)).toEqual([]);
   });
 
-  it("raises nothing for a brand-new seller with no history", () => {
-    // No baseline → spike ratio is null; but first-day sales still form a "new" category.
-    expect(kinds([sale(2, 500)])).toEqual(["new_product_type"]);
+  it("shows a calm 'New seller' status for a seller with under 7 days of history, and nothing noisy", () => {
+    // First sale 2 days ago: no spike ratio yet, new product type suppressed, a big first order isn't "large".
+    expect(kinds([sale(48, 20), sale(2, 500)], [], daysAgo(2))).toEqual(["new_seller"]);
+    expect(kinds([], [], null)).toEqual(["new_seller"]); // no sales yet
+    expect(kinds(quiet(), [], daysAgo(7))).not.toContain("new_seller");
+  });
+
+  it("names the real baseline length when there are fewer than 28 days of history", () => {
+    const [c] = evaluate(
+      computeMetrics({ asOf: AS_OF, sales: [...steady(10, 1, 2, 20), ...steady(0, 0, 6, 20)], disputeCreatedAt: [], firstSaleAt: daysAgo(11) }),
+    ).filter((c) => c.kind === "spike");
+    expect(c.message).toContain("are 3.0× your average day over the previous 10 days ($40.00)");
+  });
+
+  it("'New seller' is an info note with a checklist link, citing PayPal's published reason without predicting", () => {
+    const [c] = evaluate(computeMetrics({ asOf: AS_OF, sales: [sale(48, 20)], disputeCreatedAt: [], firstSaleAt: daysAgo(2) }));
+    expect(c).toMatchObject({ kind: "new_seller", severity: "info", link: "/checklist" });
+    expect(c.message).toContain("first-time seller");
+    expect(c.message).not.toMatch(/will|going to/i);
   });
 });

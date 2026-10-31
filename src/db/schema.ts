@@ -99,6 +99,8 @@ export const transactions = pgTable(
     paypalReferenceId: text("paypal_reference_id"),
     raw: jsonb("raw").notNull(),
     syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
+    // Last time PayPal's trackers for this transaction were read (tracking read-back).
+    trackersCheckedAt: timestamp("trackers_checked_at", { withTimezone: true }),
   },
   (t) => [index("transactions_seller_time").on(t.sellerId, t.initiatedAt)],
 );
@@ -146,6 +148,8 @@ export const shipments = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     sellerId: text("seller_id").notNull(),
     transactionId: text("transaction_id").notNull(),
+    // PayPal's tracker ID: `<transaction>-<tracking number>`, or `<transaction>-NOTRACKER`.
+    trackerId: text("tracker_id").unique(),
     trackingNumber: text("tracking_number"),
     carrier: text("carrier"),
     status: text("status").notNull(),
@@ -194,6 +198,8 @@ export const alerts = pgTable(
     sellerId: text("seller_id").notNull(),
     kind: text("kind").notNull(),
     status: alertStatus("status").notNull().default("open"),
+    severity: text("severity").notNull().default("warning"), // "warning" | "info"
+    link: text("link"),
     title: text("title").notNull(),
     message: text("message").notNull(),
     facts: jsonb("facts").notNull(),
@@ -203,3 +209,13 @@ export const alerts = pgTable(
   },
   (t) => [uniqueIndex("alerts_one_open").on(t.sellerId, t.kind).where(sql`${t.status} = 'open'`)],
 );
+
+// Orders created through Standing's own demo shop. Orders v2 item categories (PHYSICAL_GOODS /
+// DIGITAL_GOODS) are stored at creation time, so physical/digital is known before the catalogue is filled.
+export const shopOrders = pgTable("shop_orders", {
+  captureId: text("capture_id").primaryKey(), // = the PayPal transaction ID Transaction Search reports
+  sellerId: text("seller_id").notNull(),
+  orderId: text("order_id").notNull(),
+  itemCategories: jsonb("item_categories").$type<string[]>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

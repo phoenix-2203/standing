@@ -5,7 +5,7 @@ import { computeMetrics } from "@/lib/metrics/compute";
 import { runMetrics } from "@/lib/metrics/load";
 import { upsertTransaction } from "@/lib/sync/transactions";
 import { testDb } from "@/test/helpers";
-import { AS_OF, sale, steady } from "@/test/seed";
+import { AS_OF, daysAgo, sale, steady } from "@/test/seed";
 import { applyAlerts } from "./engine";
 
 const SELLER = "seller-1";
@@ -19,7 +19,8 @@ beforeEach(async () => {
   for (const t of [alerts, metricsDaily, transactionItems, transactions, products]) await db.delete(t);
 });
 
-const metricsFor = (sales: ReturnType<typeof steady>, asOf = AS_OF) => computeMetrics({ asOf, sales, disputeCreatedAt: [] });
+const metricsFor = (sales: ReturnType<typeof steady>, asOf = AS_OF) =>
+  computeMetrics({ asOf, sales, disputeCreatedAt: [], firstSaleAt: daysAgo(120) });
 const spiking = () => metricsFor([...steady(28, 1, 2, 20), ...steady(0, 0, 6, 20)]);
 const quiet = () => metricsFor(steady(28, 1, 2, 20));
 
@@ -65,8 +66,9 @@ describe("applyAlerts", () => {
 });
 
 it("end to end: seeded transactions → metrics → spike alert fires (BLUEPRINT Tue 3 Nov 'done when')", async () => {
-  // 28 days of 2 × $20 a day, then 8 × $20 in the last 24 h (4×), stored as PayPal Transaction Search rows.
-  const seeded = [...steady(28, 1, 2, 20), ...steady(0, 0, 8, 20)];
+  // 29 days of 2 × $20 a day (a full 28-day baseline), then 8 × $20 in the last 24 h (4×), stored as
+  // PayPal Transaction Search rows.
+  const seeded = [...steady(29, 1, 2, 20), ...steady(0, 0, 8, 20)];
   for (const s of seeded) {
     await upsertTransaction(db, SELLER, {
       transaction_info: {
@@ -91,7 +93,7 @@ it("end to end: seeded transactions → metrics → spike alert fires (BLUEPRINT
   });
 
   const metrics = await runMetrics(db, SELLER, AS_OF);
-  expect(metrics.spike).toEqual({ last24hCents: 16000, baselineDailyMeanCents: 4000, ratio: 4 });
+  expect(metrics.spike).toEqual({ status: "ok", last24hCents: 16000, baselineDays: 28, baselineDailyMeanCents: 4000, ratio: 4 });
 
   const run = await applyAlerts(db, SELLER, metrics, AS_OF);
   expect(run.fired.map((a) => a.kind)).toContain("spike");

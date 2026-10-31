@@ -37,6 +37,7 @@ it("runs sync → metrics → alerts, and still computes metrics when a sync fai
   ]);
   expect(report.sync[1].debugId).toBe("dbg-disputes-down");
   expect(report.metrics.spike.last24hCents).toBe(2500);
-  expect(report.alerts.fired).toEqual([]); // one sale, no baseline, no catalogue: nothing to alert on
+  // One sale, no history: only the calm "New seller" status, nothing noisy.
+  expect(report.alerts.fired.map((a) => a.kind)).toEqual(["new_seller"]);
   expect(await db.select().from(syncState)).toHaveLength(2);
 });

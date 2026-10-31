@@ -2,13 +2,15 @@ import { describe, expect, it } from "vitest";
 import { AS_OF, daysAgo, sale, steady } from "@/test/seed";
 import { computeMetrics, toCents } from "./compute";
 
-const run = (sales: ReturnType<typeof steady>, disputeCreatedAt: Date[] = []) => computeMetrics({ asOf: AS_OF, sales, disputeCreatedAt });
+// An established seller (first sale 120 days ago) unless a test says otherwise.
+const run = (sales: ReturnType<typeof steady>, disputeCreatedAt: Date[] = [], firstSaleAt: Date | null = daysAgo(120)) =>
+  computeMetrics({ asOf: AS_OF, sales, disputeCreatedAt, firstSaleAt });
 
 describe("spike ratio", () => {
   it("= last-24h gross ÷ mean daily gross of the previous 28 days", () => {
     // Baseline: 2 × $20 a day for 28 days = $40/day. Last 24 h: 6 × $20 = $120 → 3×.
     const m = run([...steady(28, 1, 2, 20), ...steady(0, 0, 6, 20)]);
-    expect(m.spike).toEqual({ last24hCents: 12000, baselineDailyMeanCents: 4000, ratio: 3 });
+    expect(m.spike).toEqual({ status: "ok", last24hCents: 12000, baselineDays: 28, baselineDailyMeanCents: 4000, ratio: 3 });
   });
 
   it("excludes the last 24 h from the baseline and ignores sales older than 29 days", () => {
@@ -17,8 +19,20 @@ describe("spike ratio", () => {
     expect(m.spike.ratio).toBe(1);
   });
 
-  it("is null with no baseline (a brand-new seller is not a 'spike')", () => {
-    expect(run([sale(1, 500)]).spike.ratio).toBeNull();
+  it("says 'not enough history' with under 7 days of baseline, instead of a ratio", () => {
+    const m = run([sale(5 * 24, 20), sale(1, 500)], [], daysAgo(5));
+    expect(m.spike).toMatchObject({ status: "not_enough_history", ratio: null, last24hCents: 50000 });
+    expect(run([sale(1, 500)], [], null).spike.status).toBe("not_enough_history");
+  });
+
+  it("averages over the days of history that exist when there are 7–28 of them", () => {
+    // First sale 11 days ago → 10 baseline days; $40 a day over them; $120 in the last 24 h → 3×.
+    const m = run([...steady(10, 1, 2, 20), ...steady(0, 0, 6, 20)], [], daysAgo(11));
+    expect(m.spike).toMatchObject({ status: "ok", baselineDays: 10, baselineDailyMeanCents: 4000, ratio: 3 });
+  });
+
+  it("is null for an established seller with no sales in the baseline window", () => {
+    expect(run([sale(1, 500)]).spike).toMatchObject({ status: "ok", ratio: null });
   });
 
   it("puts a sale exactly 24 h old in the baseline, not the last 24 h", () => {
@@ -63,7 +77,13 @@ describe("new product type", () => {
       newCategories: ["e-cigarettes", "soap"],
       recentCategories: ["candles", "e-cigarettes", "soap"],
       uncategorizedRecentOrders: 1,
+      status: "ok",
     });
+  });
+
+  it("is suppressed with under 7 days of history (every category would look new)", () => {
+    const m = run([sale(10, 20, { categories: ["candles"] })], [], daysAgo(3));
+    expect(m.newProductTypes).toMatchObject({ status: "not_enough_history", newCategories: [], recentCategories: ["candles"] });
   });
 
   it("treats a category last sold 66 days ago as already known", () => {

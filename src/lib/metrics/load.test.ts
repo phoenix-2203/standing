@@ -1,8 +1,9 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Db } from "@/db";
-import { disputes, metricsDaily, products, shipments, transactionItems, transactions } from "@/db/schema";
+import { disputes, metricsDaily, products, shipments, shopOrders, transactionItems, transactions } from "@/db/schema";
 import { upsertTransaction } from "@/lib/sync/transactions";
 import { testDb } from "@/test/helpers";
+import { recordShopOrder } from "@/lib/shop/orders";
 import { isSale, loadMetricsInput, runMetrics } from "./load";
 
 const SELLER = "seller-1";
@@ -24,7 +25,7 @@ beforeAll(async () => {
   db = await testDb();
 });
 beforeEach(async () => {
-  for (const t of [shipments, transactionItems, transactions, products, disputes, metricsDaily]) await db.delete(t);
+  for (const t of [shipments, shopOrders, transactionItems, transactions, products, disputes, metricsDaily]) await db.delete(t);
 });
 
 describe("isSale", () => {
@@ -94,5 +95,49 @@ describe("runMetrics", () => {
     expect(rows[0]).toMatchObject({ day: "2026-11-03", asOf: later, currency: "USD" });
     expect(rows[0].values.spike.last24hCents).toBe(5000);
     expect(m.spike.last24hCents).toBe(5000);
+  });
+});
+
+describe("sales history and demo-shop classification", () => {
+  it("takes the first sale from all stored sales, not just the loaded 90 days, and ignores non-sales", async () => {
+    await upsertTransaction(db, SELLER, detail("REFUND-OLD", "2026-01-01T00:00:00Z", "-5.00", { code: "T1107" }));
+    await upsertTransaction(db, SELLER, detail("FIRST", "2026-03-01T00:00:00Z", "10.00"));
+    await upsertTransaction(db, SELLER, detail("RECENT", "2026-11-01T00:00:00Z", "10.00"));
+    await upsertTransaction(db, SELLER, detail("AFTER", "2026-11-04T00:00:00Z", "10.00"));
+    const input = await loadMetricsInput(db, SELLER, AS_OF);
+    expect(input.firstSaleAt).toEqual(new Date("2026-03-01T00:00:00Z"));
+    expect(input.sales.map((s) => s.id)).toEqual(["RECENT"]);
+  });
+
+  it("has no first sale for a seller with no sales", async () => {
+    expect((await loadMetricsInput(db, SELLER, AS_OF)).firstSaleAt).toBeNull();
+  });
+
+  it("classifies demo-shop orders from their Orders v2 categories when the catalogue doesn't match", async () => {
+    await db.insert(products).values({ sellerId: SELLER, sku: "CANDLE-LAV", name: "Lavender candle", category: "candles", kind: "digital" });
+    // Shapes as returned by Orders v2 with Prefer: return=representation (day-1 test 2).
+    await recordShopOrder(db, SELLER, {
+      id: "ORDER-PHY",
+      purchase_units: [{ items: [{ category: "PHYSICAL_GOODS" }], payments: { captures: [{ id: "CAP-PHY" }] } }],
+    });
+    await recordShopOrder(db, SELLER, {
+      id: "90P27033V2253363W",
+      purchase_units: [{ items: [{ category: "DIGITAL_GOODS" }], payments: { captures: [{ id: "3WJ00519L0856334T" }] } }],
+    });
+    await recordShopOrder(db, SELLER, {
+      id: "ORDER-CAT",
+      purchase_units: [{ items: [{ category: "PHYSICAL_GOODS" }], payments: { captures: [{ id: "CAP-CAT" }] } }],
+    });
+    await recordShopOrder(db, SELLER, { id: "ORDER-NOITEMS", purchase_units: [{ payments: { captures: [{ id: "CAP-NOITEMS" }] } }] });
+    for (const id of ["CAP-PHY", "3WJ00519L0856334T", "CAP-NOITEMS"]) await upsertTransaction(db, SELLER, detail(id, "2026-11-01T10:00:00Z", "19.00"));
+    await upsertTransaction(db, SELLER, detail("CAP-CAT", "2026-11-01T10:00:00Z", "19.00", { items: [{ item_code: "CANDLE-LAV" }] }));
+
+    const byId = Object.fromEntries((await loadMetricsInput(db, SELLER, AS_OF)).sales.map((s) => [s.id, s.kind]));
+    expect(byId).toEqual({
+      "CAP-PHY": "physical",
+      "3WJ00519L0856334T": "digital",
+      "CAP-CAT": "digital", // the catalogue wins over the shop's category
+      "CAP-NOITEMS": null,
+    });
   });
 });

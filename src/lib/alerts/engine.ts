@@ -26,7 +26,7 @@ export async function applyAlerts(db: Db, sellerId: string, metrics: Metrics, no
     if (existing) {
       const [row] = await db
         .update(alerts)
-        .set({ title: c.title, message: c.message, facts: c.facts, lastSeenAt: now })
+        .set({ severity: c.severity, link: c.link ?? null, title: c.title, message: c.message, facts: c.facts, lastSeenAt: now })
         .where(eq(alerts.id, existing.id))
         .returning();
       run.ongoing.push(row);
@@ -35,7 +35,17 @@ export async function applyAlerts(db: Db, sellerId: string, metrics: Metrics, no
     // The partial unique index makes a concurrent run's duplicate a no-op.
     const [row] = await db
       .insert(alerts)
-      .values({ sellerId, kind: c.kind, title: c.title, message: c.message, facts: c.facts, firstFiredAt: now, lastSeenAt: now })
+      .values({
+        sellerId,
+        kind: c.kind,
+        severity: c.severity,
+        link: c.link ?? null,
+        title: c.title,
+        message: c.message,
+        facts: c.facts,
+        firstFiredAt: now,
+        lastSeenAt: now,
+      })
       .onConflictDoNothing()
       .returning();
     if (row) run.fired.push(row);

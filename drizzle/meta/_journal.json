@@ -29,6 +29,13 @@
       "when": 1793456331551,
       "tag": "0003_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793457073350,
+      "tag": "0004_history_shop_trackers",
+      "breakpoints": true
     }
   ]
 }
