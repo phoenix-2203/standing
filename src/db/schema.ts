@@ -1,4 +1,5 @@
 import {
+  date,
   index,
   integer,
   jsonb,
@@ -11,6 +12,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import type { Metrics } from "@/lib/metrics/compute";
 
 // Lifecycle of a PayPal write (CLAUDE.md rule 5). `unknown` = we sent it but never got an answer
 // (timeout/network): never treat that as failed, retry with the same request_id.
@@ -164,4 +166,18 @@ export const syncState = pgTable(
     lastDebugId: text("last_debug_id"),
   },
   (t) => [primaryKey({ columns: [t.sellerId, t.job] })],
+);
+
+// ---- Metrics and alerts (Tue 3 Nov) -----------------------------------------------------------
+
+export const metricsDaily = pgTable(
+  "metrics_daily",
+  {
+    sellerId: text("seller_id").notNull(),
+    day: date("day").notNull(), // UTC day of as_of
+    asOf: timestamp("as_of", { withTimezone: true }).notNull(),
+    currency: text("currency").notNull(),
+    values: jsonb("values").$type<Metrics>().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.sellerId, t.day] })],
 );
