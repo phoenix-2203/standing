@@ -215,3 +215,23 @@ Live cycle (`npm run test:live`, real sandbox, throwaway PGlite DB), 31 Oct 15:2
 **Day-1 test 1: PASSED** (decided by the user, 31 Oct). Transaction Search returns 200 with transactions (the $500 payment above, debug `ca53343077e98`).
 The 31 day-1 orders are **not yet visible** about 2 h later, because `last_refreshed_datetime` is still
 12:29:59Z. They will appear after PayPal's next refresh.
+
+## Metric decisions, New seller status, tracking read-back (31 Oct 2026)
+
+Code tests (`npm test`): **108/108 pass**.
+
+Tracking read-back probe (`GET /v1/shipping/trackers?transaction_id=…`, sandbox):
+
+| Transaction | Result | Debug ID |
+|---|---|---|
+| `1GB72668J97404239` (Orders v2 `/track` push) | 200, tracker `STANDINGD1PHY01`, SHIPPED, USPS | `f884385462718` |
+| `7X271304DH7155231` (no tracking) | 200, `trackers: []` | `f539345a5a445` |
+| `3WJ00519L0856334T` (digital) | 200, COMPLETED, ID `3WJ00519L0856334T-NOTRACKER` | `f53934520fdc3` |
+
+Live cycle (`npm run test:live`), 31 Oct 15:34 Lagos: **passed**.
+- PayPal data refreshed through 12:59:59Z: **16 transactions** synced (the $500 payment plus the first
+  day-1 orders).
+- Trackers: 16 checked, 1 found (day-1 order 1's USPS tracker).
+- Alerts fired:
+  - **New seller** (info; first sale today).
+  - **Large order**: `0WW5775245286422M` ($500.00) is 9.8× the 28-day average order ($50.81).

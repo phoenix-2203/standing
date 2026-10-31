@@ -107,6 +107,23 @@ Deterministic metrics (defaults are Standing's own, not PayPal rules — UI must
 - Digital completion gap = digital orders > 24 h old not marked Completed.
 - Dispute rate (90 d) = disputes ÷ transactions (show note: PayPal publishes no exact threshold).
 
+Decisions (31 Oct):
+- Order = PayPal payment received (`T00xx`), completed or pending, positive, USD. Refunds, reversals and
+  denials are excluded. Multi-currency comes later.
+- Windows are rolling 24 h blocks back from now. The single-order check covers the last 7 days.
+- Tracking coverage and the digital gap look at the last 90 days.
+- Physical/digital and category come from the seller's catalogue (`products`). For demo-shop orders,
+  Orders v2 item categories are stored at creation as the fallback. Unmatched orders are counted as
+  "unclassified".
+- Digital gap alerts at ≥1 order older than 24 h. Dispute rate is shown with the note, never alerts.
+- Under 7 days of sales history:
+  - Show a calm **New seller** status ("first-time seller" is the first reason PayPal lists for holds),
+    with a link to the checklist.
+  - Spike ratio shows "not enough history yet".
+  - New product type is suppressed.
+  - With 7–28 days of history, the spike baseline averages over the days that exist.
+- Tracking is read back from PayPal (`GET /v1/shipping/trackers`) every cycle for sales still missing it.
+
 ## 5. Day-by-day plan
 
 | Date | Build | Done when |
