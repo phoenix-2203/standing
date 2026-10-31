@@ -235,3 +235,24 @@ Live cycle (`npm run test:live`), 31 Oct 15:34 Lagos: **passed**.
 - Alerts fired:
   - **New seller** (info; first sale today).
   - **Large order**: `0WW5775245286422M` ($500.00) is 9.8× the 28-day average order ($50.81).
+
+## Thu 5 Nov task — safe-fix queue (built 31 Oct 2026)
+
+Code tests (`npm test`): **156/156 pass**. The queue tests include:
+- cancel inside the window → never sent;
+- cancel after the window → refused, and the fix still goes;
+- double click → one PayPal call (two concurrent sends: one `sent`, one `in_flight`);
+- timeout → `unknown`, and the retry reuses the request ID and the stored payload;
+- 5xx → `unknown`, not locked in;
+- a send stuck for 5 minutes can be reclaimed.
+
+Live sandbox run (`npm run test:live -- src/lib/fixes/fixes.live.ts`), 31 Oct 2026 21:37 UTC, throwaway PGlite DB,
+3-second cancel window for the run (app default: 2 minutes): **both passed**.
+
+| Fix | Request ID | Result | Debug ID |
+|---|---|---|---|
+| Tracking push, Orders v2 `POST /v2/checkout/orders/82T98686KK690340N/track`, capture `7X271304DH7155231`, USPS, test number `STANDINGD5PHY02` | `track-7X271304DH7155231-STANDINGD5PHY02` | Two concurrent sends → outcomes `sent` + `in_flight`, **one** PayPal call (attempts 1), HTTP 201 | `f876765ad9690` |
+| ↳ read-back `GET /v1/shipping/trackers?transaction_id=7X271304DH7155231` | — | 200, `STANDINGD5PHY02` SHIPPED | `f7279967ebfd5` |
+| New digital demo order (card test payment, $12.00, `DIGITAL_GOODS`), recorded as a shop order | `standing-d5-dig-01-create` | 201, order `58902685MU6144703` COMPLETED, capture `5VE587515T743130S` | `f7182789b8ae9` |
+| "Marks the order Completed", `POST /v1/shipping/trackers` status COMPLETED, no tracking number | `complete-5VE587515T743130S` | `sent`, HTTP 201 | `f7343424df81b` |
+| ↳ read-back `GET /v1/shipping/trackers?transaction_id=5VE587515T743130S` | — | 200, COMPLETED | `f9071570af9c6` |
