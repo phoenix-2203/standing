@@ -11,8 +11,10 @@ const RETRIES = 3;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
-  const providers = providersFromEnv();
-  if (!providers.length) throw new Error("Set GEMINI_API_KEY (and optionally GROQ_API_KEY) in .env");
+  // EVAL_PROVIDER=gemini|groq runs one provider alone (no fallback), to compare models.
+  const pick = process.env.EVAL_PROVIDER?.trim();
+  const providers = providersFromEnv().filter((p) => !pick || p.name === pick);
+  if (!providers.length) throw new Error(pick ? `Provider ${pick} isn't configured in .env` : "Set GEMINI_API_KEY (and optionally GROQ_API_KEY) in .env");
   const products = loadEvalProducts();
   const only = process.env.EVAL_ONLY?.split(",");
   const results: EvalResult[] = [];
