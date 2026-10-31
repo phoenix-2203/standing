@@ -24,6 +24,7 @@ export const actionStatus = pgEnum("action_status", [
   "cancelled",
   "failed",
   "unknown",
+  "sending", // claimed by one sender; makes a double click one PayPal call
 ]);
 
 export const actions = pgTable("actions", {
@@ -34,6 +35,8 @@ export const actions = pgTable("actions", {
   payload: jsonb("payload"),
   // Stable PayPal-Request-Id for this logical action, reused on every retry.
   requestId: text("request_id").notNull().unique(),
+  // The preview the seller approved: exactly what will be sent, in plain words.
+  summary: text("summary"),
   status: actionStatus("status").notNull().default("preview"),
   undoUntil: timestamp("undo_until", { withTimezone: true }),
   attempts: integer("attempts").notNull().default(0),
