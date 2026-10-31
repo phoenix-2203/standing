@@ -16,6 +16,7 @@
     "eval:rescore": "node --import tsx src/evals/rescore-policy-eval.ts"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.9.0",
     "drizzle-orm": "^0.45.4",
     "next": "16.4.3",
     "pg": "^8.23.1",
