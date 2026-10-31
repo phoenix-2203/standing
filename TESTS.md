@@ -385,3 +385,78 @@ references, the sales curve, and an evidence appendix.
   opened in the period: 0. … Payments marked Completed in PayPal: 1 of 32. Payments with tracking in
   PayPal: 2 of 32." The simulated traffic source is printed with its "Simulated:" prefix.
 - **PDF:** `packs/out/live-pack-2026-10-31.pdf` (5.5 KB, not committed); first page checked visually.
+
+## Policy eval — Groq `openai/gpt-oss-120b` vs `openai/gpt-oss-20b` (31 Oct 2026, 53 products, current labels)
+
+**Prompt check, before the run:** all 40 candidate clauses are in the classifier prompt with their full
+lead-in and text, word for word (PROH-5 is excluded by design). This is enforced by a test in
+`src/lib/policy/classify.test.ts`. The prompt contains, for example:
+- `PRE-15 | preapproval | Tobacco | Non-cigarette tobacco products, e-cigarettes, cigars`
+- `PRE-07 | preapproval | Cryptocurrency | … crypto currencies, virtual in-game currencies, or non-fungible tokens.`
+
+**About the runs:**
+- **120b:** `EVAL_PROVIDER=groq GROQ_MODEL=openai/gpt-oss-120b npm run eval:policy`, finished 22:39 UTC, as run.
+- **20b:** the stored 21:36 UTC answers, re-scored with the current labels and validator
+  (`npm run eval:rescore`, no new model calls).
+- **Label changes since the first 20b table:** T09 → allowed; T13 → preapproval PRE-16; X02 accepts
+  PROH-2a or PROH-2b; X06 accepts PROH-2j or PROH-2k.
+
+| | gpt-oss-20b | gpt-oss-120b |
+|---|---|---|
+| Recall, prohibited + pre-approval flagged | 31/33 (94%) | **32/33 (97%)** |
+| Verdict correct, all | 50/53 (94%) | 47/53 (89%) |
+| Clause correct (where one is expected) | 32/34 (94%) | 30/34 (88%) |
+| False flags on allowed products | 0/19 | 1/19 (T09) |
+| Answers downgraded by the quote check | 0 | 2 (P06, T04: see below) |
+| **T10 injection** | passed: prohibited PROH-2c | **passed**: prohibited PROH-2c, quote "cigarettes", confidence 1 |
+| **P14 cigars** | missed: allowed | **passed**: preapproval PRE-15, quote "Non-cigarette tobacco products, e-cigarettes, cigars", 0.97 |
+| **T07 in-game gold** | missed: allowed | **still missed**: allowed, 0.8 |
+
+### gpt-oss-120b, per group
+| Group | n | Verdict correct | Clause correct | Flagged |
+|---|---|---|---|---|
+| allowed | 15 | 15/15 (100%) | — | 0/15 |
+| preapproval | 15 | 14/15 (93%) | 14/15 (93%) | 15/15 |
+| prohibited | 10 | 10/10 (100%) | 10/10 (100%) | 10/10 |
+| tricky | 13 | 8/13 (62%) | 6/9 (67%) | 9/13 |
+| all | 53 | 47/53 (89%) | 30/34 (88%) | 34/53 |
+
+Caught (prohibited + pre-approval flagged for review): 32/33 (97%), target ≥90%: MET
+False flags on allowed products: 1/19
+Answers that failed validation (downgraded to unclear): 2; no answer: 0
+
+### gpt-oss-120b, every miss (with the model's reason)
+- P06 Fantasy football league entry: expected preapproval PRE-06, got unclear. failed validation: quote isn't in PRE-06
+- T04 School raffle ticket: expected preapproval PRE-06, got unclear. failed validation: quote isn't in PRE-06
+- T06 Pre-order sneakers (not in stock yet): expected unclear PROH-3d, got prohibited PROH-3d. The seller is offering to sell sneakers that they do not yet have, which is a pre‑order and falls under the prohibition on selling items before the seller has control or possession.
+- T07 10000 in-game gold coins: expected preapproval PRE-07, got allowed. The product is a virtual in-game currency, which is not covered by any prohibited or pre‑approval clauses in PayPal's Acceptable Use Policy.
+- T09 Handmade sterling silver ring: expected allowed, got preapproval PRE-03. A handmade sterling silver ring is jewelry made of a precious metal, which falls under the high‑value items pre‑approval category.
+- T13 Herbal bitters that cure diabetes: expected preapproval PRE-16, got prohibited PROH-1. The product claims to cure diabetes, which is an unapproved medical claim and likely violates health regulations.
+
+Notes on the 120b misses:
+- **P06 and T04** were *flagged* (they count toward recall) but downgraded to `unclear`. The model quoted
+  PRE-06 word for word, but elided the middle of the clause with "...". The quote check requires one
+  unbroken passage, so these are validator false negatives, not model errors. Not changed in this run.
+- **T07:** the model read "virtual in-game currency" and still answered `allowed`, although PRE-07 names
+  "virtual in-game currencies". A real miss, as labelled.
+- **T09:** a new false flag; the model treats a handmade silver ring as a dealer in precious metals (PRE-03).
+- **T13:** the model cited PROH-1 ("violate any law") instead of PRE-16, so it's flagged, with the
+  wrong verdict.
+
+### gpt-oss-20b on the current labels, per group and every miss
+| Group | n | Verdict correct | Clause correct | Flagged |
+|---|---|---|---|---|
+| allowed | 15 | 15/15 (100%) | — | 0/15 |
+| preapproval | 15 | 14/15 (93%) | 14/15 (93%) | 14/15 |
+| prohibited | 10 | 10/10 (100%) | 10/10 (100%) | 10/10 |
+| tricky | 13 | 11/13 (85%) | 8/9 (89%) | 8/13 |
+| all | 53 | 50/53 (94%) | 32/34 (94%) | 32/53 |
+
+Caught (prohibited + pre-approval flagged for review): 31/33 (94%), target ≥90%: MET
+False flags on allowed products: 0/19
+Answers that failed validation (downgraded to unclear): 0; no answer: 0
+
+Misses:
+- P14 Premium cigars box: expected preapproval PRE-15, got allowed. The product is a cigar, which is not listed under any prohibited or pre‑approval clause in PayPal’s policy.
+- T06 Pre-order sneakers (not in stock yet): expected unclear PROH-3d, got prohibited PROH-3d. Selling pre-order sneakers before possession violates PayPal's policy on selling items not yet in possession.
+- T07 10000 in-game gold coins: expected preapproval PRE-07, got allowed. The product is a digital in-game currency, which is not covered by any PayPal prohibited or pre‑approval clause.
