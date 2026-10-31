@@ -12,6 +12,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import type { Metrics } from "@/lib/metrics/compute";
 
 // Lifecycle of a PayPal write (CLAUDE.md rule 5). `unknown` = we sent it but never got an answer
@@ -180,4 +181,25 @@ export const metricsDaily = pgTable(
     values: jsonb("values").$type<Metrics>().notNull(),
   },
   (t) => [primaryKey({ columns: [t.sellerId, t.day] })],
+);
+
+export const alertStatus = pgEnum("alert_status", ["open", "resolved"]);
+
+// At most one open alert per seller and kind: a condition that persists updates its alert instead of
+// firing again; when it clears, the alert is resolved.
+export const alerts = pgTable(
+  "alerts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sellerId: text("seller_id").notNull(),
+    kind: text("kind").notNull(),
+    status: alertStatus("status").notNull().default("open"),
+    title: text("title").notNull(),
+    message: text("message").notNull(),
+    facts: jsonb("facts").notNull(),
+    firstFiredAt: timestamp("first_fired_at", { withTimezone: true }).notNull(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull(),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  },
+  (t) => [uniqueIndex("alerts_one_open").on(t.sellerId, t.kind).where(sql`${t.status} = 'open'`)],
 );
