@@ -280,3 +280,18 @@ export const packs = pgTable("packs", {
   model: text("model"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Policy-check verdicts, cached per product text: a product is re-checked only when its name, description
+// or category changes (whitespace aside). Failed checks are never cached.
+export const policyVerdicts = pgTable(
+  "policy_verdicts",
+  {
+    sellerId: text("seller_id").notNull(),
+    productKey: text("product_key").notNull(), // sha256 of the normalised product text
+    product: jsonb("product").$type<{ name: string; description: string; category: string }>().notNull(),
+    verdict: jsonb("verdict").notNull(),
+    policyLastUpdated: text("policy_last_updated").notNull(), // the clause file it was checked against
+    checkedAt: timestamp("checked_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.sellerId, t.productKey] })],
+);
