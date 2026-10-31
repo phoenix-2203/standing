@@ -112,7 +112,7 @@ Deterministic metrics (defaults are Standing's own, not PayPal rules — UI must
 | Date | Build | Done when |
 |---|---|---|
 | Sat 31 Oct | Sandbox setup ✅, Transaction Search ✅, repo + MIT licence, policy clause file, message 10 sellers | Messages sent |
-| Sun 1 Nov | Day-1 tests 1–5 (2–5 ✅ done 31 Oct; test 1 waits for data lag) | Results in TESTS.md; go/switch decision |
+| Sun 1 Nov | Day-1 tests 1–5 (✅ all done 31 Oct) | Results in TESTS.md; go/switch decision |
 | Mon 2 Nov | App skeleton, DB, PayPal client (token cache, stable request IDs, sandbox guard), webhook endpoint + verification | Sandbox webhook stored once; duplicate ignored |
 | Tue 3 Nov | Sync jobs + metrics engine + alert engine | Spike alert fires on seeded data (unit test) |
 | Wed 4 Nov | Policy check: clause file, AI classifier (schema), 50-product labelled set | Accuracy table |
@@ -129,7 +129,7 @@ Deterministic metrics (defaults are Standing's own, not PayPal rules — UI must
 
 | # | Test | Pass | If it fails | Result (details in TESTS.md) |
 |---|---|---|---|---|
-| 1 | Transaction Search returns sandbox sales | 200 OK with transactions (connection ✅ 31 Oct; waiting for data lag) | Retry after 3 h; if still failing Mon → switch to PayeeSeal | Pending (0 transactions before the 31 Oct orders) |
+| 1 | Transaction Search returns sandbox sales | 200 OK with transactions (connection ✅ 31 Oct; waiting for data lag) | Retry after 3 h; if still failing Mon → switch to PayeeSeal | ✅ Done 31 Oct: 200 with the $500 payment `0WW5775245286422M`; day-1 orders appear after PayPal's next refresh |
 | 2 | Script ~30 server-side sandbox card orders, captured | 30 capture IDs logged | Fewer buyer-approved orders, label spike simulated | ✅ Done 31 Oct: 30/30 captured + 1 digital order |
 | 3 | Push one tracking number via Shipment Tracking API | Success; visible on the transaction | Reconsider build | ✅ Done 31 Oct: 201, tracker on the order; tracker `STANDINGD1PHY01` visible on transaction `1GB72668J97404239` in the sandbox web UI (confirmed by user) |
 | 4 | Log in with PayPal returns account-verification status | Field present | Drop verified-seller check | ✅ Done 31 Oct: `verified_account` = `"true"` (unverified value not yet seen) |

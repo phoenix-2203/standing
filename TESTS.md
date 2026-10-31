@@ -5,10 +5,11 @@ Sandbox only (`https://api-m.sandbox.paypal.com`), app `APP-5NJ771683H459693V`. 
 before the rule was added, and neither moved money. Raw results: `scripts/out/d1-first.json` (first run)
 and `scripts/out/d1.json` (replay).
 
-## Day-1 tests 2–5 — run 31 Oct 2026
+## Day-1 tests 1–5 — run 31 Oct 2026
 
 | # | Test | Result |
 |---|---|---|
+| 1 | Transaction Search returns sandbox sales | **PASSED**: 200 with the $500 payment `0WW5775245286422M`. The day-1 orders appear after PayPal's next refresh. Details: "Tue 3 Nov task" below. |
 | 2 | ~30 server-side sandbox card orders, captured | **PASSED**: 30/30 captured, plus 1 digital order |
 | 3 | Push one tracking number via Shipment Tracking API | **PASSED**: 201, the tracker shows on the order, and the web UI was confirmed by the user. |
 | 4 | Log in with PayPal returns account-verification status | **PASSED**: `verified_account` is returned on the 4th attempt, with a fresh sandbox personal account. |
@@ -211,6 +212,6 @@ Live cycle (`npm run test:live`, real sandbox, throwaway PGlite DB), 31 Oct 15:2
   note "for test"; not created by Standing's scripts). PayPal data was last refreshed at 12:29:59Z.
 - Disputes: 0. Metrics computed; spike ratio null (no baseline); no alerts.
 
-**Day-1 test 1 recheck:** Transaction Search returns 200 with transactions (the $500 payment above).
+**Day-1 test 1: PASSED** (decided by the user, 31 Oct). Transaction Search returns 200 with transactions (the $500 payment above, debug `ca53343077e98`).
 The 31 day-1 orders are **not yet visible** about 2 h later, because `last_refreshed_datetime` is still
-12:29:59Z. Recheck before the go/switch decision.
+12:29:59Z. They will appear after PayPal's next refresh.
