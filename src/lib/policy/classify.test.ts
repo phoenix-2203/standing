@@ -123,7 +123,7 @@ describe("provider requests", () => {
   it("Gemini: key in header (not URL), temperature 0, JSON schema output", async () => {
     const { f, calls } = capture({ candidates: [{ content: { parts: [{ text: '{"ok":1}' }] } }] });
     expect(await gemini({ apiKey: "k-123", fetch: f }).generateJson(req)).toEqual({ ok: 1 });
-    expect(calls[0].url).toBe("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent");
+    expect(calls[0].url).toBe("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent");
     expect(calls[0].url).not.toContain("k-123");
     expect((calls[0].init.headers as Record<string, string>)["x-goog-api-key"]).toBe("k-123");
     expect(JSON.parse(calls[0].init.body as string)).toMatchObject({
