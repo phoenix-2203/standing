@@ -127,3 +127,23 @@ describe("buildPack", () => {
     await expect(buildPack(db, SELLER, [planner([new LlmError("gemini", "down")])], { now: NOW })).rejects.toThrow(/Couldn't plan the cover letter: gemini: down/);
   });
 });
+
+describe("buildPack provider retries", () => {
+  it("retries the same provider once after a strict-JSON fluke, but not after other errors", async () => {
+    const fluke = planner([new LlmError("groq", "HTTP 400: Failed to validate JSON. Please adjust your prompt."), goodPlan], "groq");
+    expect((await buildPack(db, SELLER, [fluke], { now: NOW })).status).toBe("ready");
+    expect(fluke.seen).toHaveLength(2);
+
+    const quota = planner([new LlmError("gemini", "HTTP 429: quota"), goodPlan]);
+    await expect(buildPack(db, SELLER, [quota], { now: NOW })).rejects.toThrow(/429/);
+    expect(quota.seen).toHaveLength(1);
+  });
+
+  it("offers at most 25 facts' worth of evidence", async () => {
+    for (let i = 0; i < 40; i++) await sale(`BULK${String(i).padStart(2, "0")}`, "2026-11-05T10:00:00Z", "5.00");
+    await syncLedger(db, SELLER);
+    const w = planner([goodPlan]);
+    const pack = await buildPack(db, SELLER, [w], { now: NOW });
+    expect(pack.evidence).toHaveLength(25);
+  });
+});

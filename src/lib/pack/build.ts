@@ -18,7 +18,9 @@ export type Pack = typeof packs.$inferSelect;
 export type Letter = NonNullable<Pack["letter"]>;
 
 export const PACK_DAYS = 60;
-const MAX_EVIDENCE_IN_PROMPT = 120;
+// A letter is short: the summary, the seller's items and the most recent proof are enough. A long fact
+// list also made Groq's strict-JSON output fail (31 Oct live run).
+const MAX_EVIDENCE_IN_PROMPT = 25;
 // One rewrite if the first plan is blocked; the validator decides the final status either way.
 const MAX_ATTEMPTS = 2;
 
@@ -165,14 +167,18 @@ export async function buildPack(db: Db, sellerId: string, providers: LlmProvider
     const errors: string[] = [];
     used = null;
     for (const p of providers) {
-      try {
-        plan = await p.generateJson({ system: PLAN_SYSTEM_PROMPT, user: planUserPrompt(facts, result?.problems), schemaName: "letter_plan", schema: PLAN_SCHEMA });
-        used = p;
-        break;
-      } catch (err) {
-        if (!(err instanceof LlmError)) throw err;
-        errors.push(err.message);
+      for (let attempt = 1; attempt <= 2 && !used; attempt++) {
+        try {
+          plan = await p.generateJson({ system: PLAN_SYSTEM_PROMPT, user: planUserPrompt(facts, result?.problems), schemaName: "letter_plan", schema: PLAN_SCHEMA });
+          used = p;
+        } catch (err) {
+          if (!(err instanceof LlmError)) throw err;
+          errors.push(err.message);
+          // Only a schema fluke in the provider's own output is worth a second try with the same provider.
+          if (!/Failed to validate JSON/i.test(err.message)) break;
+        }
       }
+      if (used) break;
     }
     if (!used) throw new Error(`Couldn't plan the cover letter: ${errors.join("; ") || "no LLM provider configured"}`);
     result = validatePlan(plan, facts);
