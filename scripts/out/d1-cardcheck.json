@@ -1,0 +1,38 @@
+{
+ "run": "d1-cardcheck",
+ "source": "card",
+ "orders": [
+  {
+   "ref": "d1-cardcheck-phy-01",
+   "order_id": null,
+   "capture_id": null
+  }
+ ],
+ "log": [
+  {
+   "step": "create d1-cardcheck-phy-01",
+   "request_id": "standing-d1-cardcheck-phy-01-create",
+   "http": 422,
+   "debug_id": "ca532c8ced92f",
+   "status": null,
+   "issues": [
+    "PAYEE_NOT_ENABLED_FOR_CARD_PROCESSING"
+   ]
+  },
+  {
+   "step": "create d1-cardcheck-dig-01",
+   "request_id": "standing-d1-cardcheck-dig-01-create",
+   "http": 422,
+   "debug_id": "ca532c8d66ad9",
+   "status": null,
+   "issues": [
+    "PAYEE_NOT_ENABLED_FOR_CARD_PROCESSING"
+   ]
+  }
+ ],
+ "digital": {
+  "ref": "d1-cardcheck-dig-01",
+  "order_id": null,
+  "capture_id": null
+ }
+}

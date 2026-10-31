@@ -1,0 +1,161 @@
+# Standing — test log
+
+Sandbox only (`https://api-m.sandbox.paypal.com`), app `APP-5NJ771683H459693V`. Every write sent a stable
+`PayPal-Request-Id` (listed below), except one early card probe and the vault setup token. Both were sent
+before the rule was added, and neither moved money. Raw results: `scripts/out/d1-first.json` (first run)
+and `scripts/out/d1.json` (replay).
+
+## Day-1 tests 2–5 — run 31 Oct 2026
+
+| # | Test | Result |
+|---|---|---|
+| 2 | ~30 server-side sandbox card orders, captured | **PASSED**: 30/30 captured, plus 1 digital order |
+| 3 | Push one tracking number via Shipment Tracking API | **PASSED (API)**: 201, and the tracker shows on the order. Web-UI check not done. |
+| 4 | Log in with PayPal returns account-verification status | **PASSED**: `verified_account` is returned on the 4th attempt, with a fresh sandbox personal account. |
+| 5 | Documented API sets a digital order to Completed without tracking | **PASSED (API accepts it)**. Effect on hold release is unproven. |
+
+### Test 2 — create and capture ~30 sandbox card orders: PASSED
+
+Command: `python3 day1.py --source card --run d1` (`scripts/day1.py`). Each order is
+`POST /v2/checkout/orders`, `intent: CAPTURE`, paid with sandbox test card 4111…1111, with
+`Prefer: return=representation`. PayPal returned `COMPLETED` on create, so no separate capture call was needed.
+Amounts run $18–$24, totalling $627.00 USD for the 30 physical orders, plus one $19.00 digital order.
+
+Earlier the same day, card orders failed with `422 PAYEE_NOT_ENABLED_FOR_CARD_PROCESSING` (debug IDs
+`f5865462810be`, `ca532c50a0a75`, `ca532c8ced92f`, `ca532c8d66ad9`). They succeeded after card processing
+was enabled on the sandbox app.
+
+Request ID per order: `standing-<ref>-create`.
+
+| Ref | Order ID | Capture ID | Debug ID |
+|---|---|---|---|
+| d1-phy-01 | `2V743103EU320351C` | `1GB72668J97404239` | `f3037323d193d` |
+| d1-phy-02 | `82T98686KK690340N` | `7X271304DH7155231` | `f5030355cb07e` |
+| d1-phy-03 | `9S251950VG6905411` | `1WP49974J7411162H` | `f4438542af81c` |
+| d1-phy-04 | `9YV52141L67139506` | `63N19388146916942` | `f143267ab5124` |
+| d1-phy-05 | `1KD7521990533834V` | `61K02903E1922624N` | `f7200089bf1ac` |
+| d1-phy-06 | `8U0393527U655781D` | `6WJ42922AV448360P` | `f579824b2f560` |
+| d1-phy-07 | `0P242758SF8729331` | `22Y18402F7568304G` | `f584577eb3080` |
+| d1-phy-08 | `8D909534CX254013V` | `8UX3336026576805S` | `f443489abeede` |
+| d1-phy-09 | `4EA763759D353902D` | `1PM458967T448544K` | `f1161928539e5` |
+| d1-phy-10 | `1H230091PR373834L` | `6U360996XA929023T` | `f3863268d3e41` |
+| d1-phy-11 | `5K1767013F445501U` | `70352876LS914672C` | `f7709311594d4` |
+| d1-phy-12 | `77757086YP971234W` | `6PV12129N0298514F` | `f926793506e07` |
+| d1-phy-13 | `5PL6726972153771V` | `8RT573680N6365114` | `f363517240496` |
+| d1-phy-14 | `3TJ019168N6737433` | `6WA64087SK030950G` | `f47857106962f` |
+| d1-phy-15 | `0D4045297H416045Y` | `7JY830365R899894T` | `f5325356dbc52` |
+| d1-phy-16 | `0LR0727200115623J` | `0V070374TB2731508` | `f230268ad29f1` |
+| d1-phy-17 | `8J015630RH5813703` | `8XY15233276326713` | `f3866198ed605` |
+| d1-phy-18 | `9S997068LG7792401` | `60N45057PG8679137` | `f9025517424f2` |
+| d1-phy-19 | `6SJ662019S379350G` | `9M587202XS852211Y` | `f435326519286` |
+| d1-phy-20 | `3VH7011259664752J` | `8GG24845AY1241822` | `f9305680dea6d` |
+| d1-phy-21 | `22C77788LM2256209` | `0KA603561R998142L` | `f493205003bdb` |
+| d1-phy-22 | `1F108919V9722901E` | `74H9195240896944D` | `f76357744b7cc` |
+| d1-phy-23 | `3V063541GL470212D` | `2WH176855B3766142` | `f45735882fb14` |
+| d1-phy-24 | `10E45316RL244643B` | `5T1329911L2141341` | `f185388b06c4c` |
+| d1-phy-25 | `1VH87647PC185721M` | `23T58054YX880732J` | `f611165415fb1` |
+| d1-phy-26 | `9V989461EL5482120` | `0MR493725R555252N` | `f564337f2223a` |
+| d1-phy-27 | `51T010417N853580F` | `2UG08258VD095710X` | `f90799822fd0f` |
+| d1-phy-28 | `17N848438B9097735` | `8XR48150VV283551C` | `f173990264e9e` |
+| d1-phy-29 | `0T4537695C978584G` | `3BG83894JG224822N` | `f159183a65b71` |
+| d1-phy-30 | `8SR25913SE6550947` | `2B481701WU211391V` | `f122684681566` |
+| d1-dig-01 (DIGITAL_GOODS) | `90P27033V2253363W` | `3WJ00519L0856334T` | `f266709751e57` |
+
+**Idempotency replay.** I reran `--run d1`, which resent every create with the same request ID.
+- All 30 physical creates came back with the **same** order and capture IDs. No double charge.
+- **Not idempotent:** the digital create replay (`standing-d1-dig-01-create`) returned
+  `422 TRANSACTION_REFUSED` (debug `f73973004b6c2`) instead of the original order. No new order was made.
+  The app must store PayPal's first response per action and must not rely on a replay to recover it.
+- Also odd: `GET /v2/checkout/orders/90P27033V2253363W` (debug `f93633316fec5`) shows order status
+  `CREATED`, while its capture shows `COMPLETED`. The create response had said `COMPLETED`. Not investigated.
+
+**Transaction Search:** These captures won't appear in `/v1/reporting/transactions` for up to ~3 h
+(see test 1).
+
+### Test 3 — push one tracking number: PASSED (API)
+
+- `POST /v2/checkout/orders/2V743103EU320351C/track` with `capture_id: 1GB72668J97404239`, carrier USPS,
+  tracking number `STANDINGD1PHY01` (a labelled test number), `notify_payer: false`.
+- Request ID `standing-d1-phy-01-track`. Result: **201**, debug `f293438fc25c1`.
+- Read-back: `GET` on the order (debug `f946519144215`) shows tracker
+  `1GB72668J97404239-STANDINGD1PHY01`, status `SHIPPED`.
+- Replay with the same request ID: 200 (debug `f5524589044fe`), and the order still has **one** tracker.
+- **Still to check (you):** that the tracker shows on transaction `1GB72668J97404239` in the sandbox
+  business account's web UI (sandbox.paypal.com → Activity). The blueprint's pass criterion includes
+  "visible on the transaction".
+- Earlier connectivity probe: `trackers-batch` with a fake transaction ID returned `INVALID_TRANSACTION_ID`
+  (debug `ca532c5bfbcae`). `trackers-batch` is marked deprecated in the spec.
+
+### Test 4 — Log in with PayPal verification status: PASSED
+
+What the docs say (checked 31 Oct):
+- **Field:** Identity v1 OpenAPI spec (`developer.paypal.com/api/identity/v1/schema.json`).
+  `GET /v1/identity/openidconnect/userinfo` returns `verified_account` ("Indicates whether the account is
+  verified") and `email_verified`.
+- **Scope:** Log in with PayPal reference. "Account verification status" needs the scope
+  `https://uri.paypal.com/services/paypalattributes`.
+
+Setup done: Log in with PayPal is on for the app, with return URL `https://example.com/standing/callback`.
+Helper script: `scripts/lipp.py`. It never prints tokens or the client ID.
+
+Attempts on 31 Oct 2026, each with a fresh login by a sandbox personal account:
+
+| # | Step | Result | Debug ID |
+|---|---|---|---|
+| 1 | Code exchange (`POST /v1/oauth2/token`, `grant_type=authorization_code`) | 401 `invalid_authz_code`, "Authorization code not found in cache". The code had expired or was already used. | `f9986777872b1` |
+| 2 | Code exchange | **OK**. Granted scopes include `openid`, `email`, `https://uri.paypal.com/services/paypalattributes`. | — |
+| 2 | `GET /v1/identity/openidconnect/userinfo?schema=openid` | 401, empty body | `f3976904dfe7e` |
+| 3 | Code exchange | **OK**, same scopes as attempt 2 | — |
+| 3 | `GET /v1/identity/openidconnect/userinfo?schema=openid` | 401, `WWW-Authenticate: Unable to fetch details to serve the request` | `f839431e0d1d9` |
+| 3 | `GET /v1/identity/oauth2/userinfo?schema=paypalv1.1` | 400 `invalid_request`, "Unable to fetch details to serve the request" | `f169754ddd9cf` |
+| 4 | Code exchange (**new** sandbox personal account, private session) | **OK**, same scopes | — |
+| 4 | `GET /v1/identity/openidconnect/userinfo?schema=openid` | **200**. Fields: `email`, `email_verified`, `payer_id`, `sub`, `user_id`, `verified`, `verified_account`. `verified_account` = `"true"`. | `ca532ff4688e6` |
+| 4 | `GET /v1/identity/oauth2/userinfo?schema=paypalv1.1` | **200**. Fields: `emails`, `payer_id`, `sub`, `user_id`, `verified_account`. `verified_account` = `"true"`. | `ca532ff4bcd4a` |
+
+**Status: PASSED.** Log in with PayPal returns the account-verification status in `verified_account`.
+
+Notes for the build:
+- `verified_account` arrives as the **string** `"true"` (presumably `"false"` when unverified), while
+  `email_verified` is a JSON boolean. Parse it explicitly; don't rely on truthiness, because the string
+  `"false"` is truthy.
+- Use `/v1/identity/openidconnect/userinfo?schema=openid`. It also returns `email` and `email_verified`.
+- The first sandbox personal account always failed userinfo with "Unable to fetch details to serve the
+  request" (attempts 2–3). A freshly created account worked. Cause unknown. The app should show a clear
+  "couldn't read your verification status" state instead of assuming unverified.
+- Not yet observed: an **unverified** account's value. Create an unverified sandbox personal account
+  and repeat to see `"false"`, before relying on it in the demo's "Unverified → checklist item 1" scene.
+
+### Test 5 — digital order Completed via API: PASSED (API accepts it); hold effect unproven
+
+The documented call comes from the Tracking v1 OpenAPI spec (`developer.paypal.com/api/tracking/v1/schema.json`):
+- Tracker status `COMPLETED` is described as "Virtual product or service was completed."
+- Tracker `required` = `["transaction_id", "status"]`, so a tracking number is optional.
+- Orders v2 `/track` can't do this. It requires a tracking number and carrier, and allows only
+  `SHIPPED`/`CANCELLED`.
+
+Run:
+- First attempt: unwrapped body, request ID `standing-d1-dig-01-complete`. Result
+  `400 VALIDATION_ERROR "Tracker Collection is Empty"` (debug `f28145491add0`). The body must be
+  `{"trackers":[…]}`.
+- Corrected call: `POST /v1/shipping/trackers` with
+  `{"trackers":[{"transaction_id":"3WJ00519L0856334T","status":"COMPLETED"}]}` and no tracking number.
+  Request ID `standing-d1-dig-01-complete-v2`. Result: **201**, debug `f9336834c9aa9`.
+  Tracker ID `3WJ00519L0856334T-NOTRACKER`.
+- Read-back: `GET /v1/shipping/trackers?transaction_id=3WJ00519L0856334T` (debug `f331295166947`) shows
+  `status: COMPLETED`, `order_shippable_status: SHIPPED`, `shipment_uploader: MERCHANT`.
+
+Not established:
+- Nothing I could read says this API status is the same "Completed" that PayPal's help article says
+  releases digital/service holds after 7 days. The help article (`paypal.com/us/cshelp/article/help129`)
+  returned 403 to automated fetch.
+- The sandbox never holds funds, so a hold release can't be observed here.
+
+**Decision input:** build the digital module so it can send this call through the safe-fix queue.
+In the UI and pitch, describe it as "marks the order Completed in PayPal". Don't claim it releases funds.
+Keep the Completed-status reminders as well.
+
+## Scripts
+
+- `scripts/pp.py`: sandbox client. Refuses non-sandbox URLs and requires a request ID on writes.
+- `scripts/day1.py`: tests 2, 3 and 5. Writes results to `scripts/out/<run>.json`.
+- `scripts/lipp.py`: test 4.
