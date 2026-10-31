@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db";
 import { syncState } from "@/db/schema";
 
-export type SyncJob = "transactions" | "disputes";
+export type SyncJob = "transactions" | "disputes" | "trackers";
 
 export interface SyncReport {
   job: SyncJob;

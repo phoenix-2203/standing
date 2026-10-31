@@ -13,6 +13,7 @@ it("runs sync → metrics → alerts, and still computes metrics when a sync fai
   const now = new Date("2026-11-03T12:00:00Z");
   const pp = fakePayPal((call) => {
     if (call.path.startsWith("/v1/customer/disputes")) return json(503, {}, "dbg-disputes-down");
+    if (call.path.startsWith("/v1/shipping/trackers")) return json(200, { trackers: [] });
     return json(200, {
       transaction_details: [
         {
@@ -34,10 +35,11 @@ it("runs sync → metrics → alerts, and still computes metrics when a sync fai
   expect(report.sync.map((s) => [s.job, s.ok])).toEqual([
     ["transactions", true],
     ["disputes", false],
+    ["trackers", true],
   ]);
   expect(report.sync[1].debugId).toBe("dbg-disputes-down");
   expect(report.metrics.spike.last24hCents).toBe(2500);
   // One sale, no history: only the calm "New seller" status, nothing noisy.
   expect(report.alerts.fired.map((a) => a.kind)).toEqual(["new_seller"]);
-  expect(await db.select().from(syncState)).toHaveLength(2);
+  expect(await db.select().from(syncState)).toHaveLength(3);
 });
