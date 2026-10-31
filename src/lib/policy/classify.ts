@@ -147,10 +147,20 @@ function check(a: RawAnswer): string | null {
 }
 
 /** The clause's own words matching the model's quote (case and spacing ignored), or null if not in it. */
+// Same length in and out, so an index found in the folded text is valid in the original.
+const foldQuotes = (s: string) => s.replace(/[“”‘’'"]/g, '"').toLowerCase();
+
 function exactQuote(quote: string, clause: Clause): string | null {
-  const q = normalizeSpace(quote).toLowerCase();
+  // Models copy the clause as the prompt shows it: optionally with its lead-in and the " … " separator,
+  // with ' for ", or a closing full stop. None of that changes the words, so allow it; the words must
+  // still be the clause's own.
+  let q = foldQuotes(normalizeSpace(quote.replace(/…|\.\.\./g, " "))).replace(/[\s.]+$/, "");
+  if (clause.lead_in) {
+    const lead = foldQuotes(normalizeSpace(clause.lead_in));
+    if (q.startsWith(lead)) q = q.slice(lead.length).trim();
+  }
   const text = normalizeSpace(clause.text);
-  const at = text.toLowerCase().indexOf(q);
+  const at = foldQuotes(text).indexOf(q);
   return q.length >= 3 && at >= 0 ? text.slice(at, at + q.length) : null;
 }
 

@@ -40,6 +40,23 @@ describe("validate", () => {
     expect(r.rejected).toBeUndefined();
   });
 
+  it.each([
+    // Real Groq answers from the 31 Oct eval that the first validator wrongly rejected.
+    ["PROH-2a", "You may not use the PayPal service for activities that relate to transactions involving … (a) narcotics, steroids, certain controlled substances or other products that present a risk to consumer safety", "(a) narcotics, steroids"],
+    ["PROH-2h", "… (h) items that infringe or violate any copyright, trademark, right of publicity or privacy or any other proprietary right under the laws of any jurisdiction.", "(h) items that infringe"],
+    ["PROH-3b", "support pyramid or ponzi schemes, matrix programs, other 'get rich quick' schemes or certain multi-level marketing programs", 'other "get rich quick" schemes'],
+  ])("accepts %s quoted with lead-in, ellipsis, other quote marks or a full stop", (id, quote, expected) => {
+    const r = validate(ans("prohibited", id, quote), { name: "groq", model: "m" });
+    expect(r.rejected).toBeUndefined();
+    expect(r.quote).toContain(expected);
+  });
+
+  it("still rejects words that aren't the clause's, even with the lead-in", () => {
+    const r = validate(ans("prohibited", "PROH-2a", "You may not use the PayPal service for activities that relate to transactions involving … weight-loss pills"), { name: "groq", model: "m" });
+    expect(r.rejected?.problem).toBe("quote isn't in PROH-2a");
+    expect(validate(ans("prohibited", "PROH-2a", "You may not use the PayPal service for activities that"), { name: "groq", model: "m" }).rejected).toBeDefined();
+  });
+
   it("accepts allowed with no clause, and unclear with or without a clause", () => {
     expect(validate(ans("allowed"), { name: "gemini", model: "m" })).toMatchObject({ verdict: "allowed", clauseId: null, quote: null });
     expect(validate(ans("unclear"), { name: "gemini", model: "m" }).rejected).toBeUndefined();
