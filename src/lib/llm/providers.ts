@@ -56,7 +56,7 @@ export function gemini({ apiKey, model = "gemini-3.8-flash", fetch: f = globalTh
   };
 }
 
-export function groq({ apiKey, model = "openai/gpt-oss-20b", fetch: f = globalThis.fetch, timeoutMs = 60_000 }: ProviderOptions): LlmProvider {
+export function groq({ apiKey, model = "openai/gpt-oss-120b", fetch: f = globalThis.fetch, timeoutMs = 60_000 }: ProviderOptions): LlmProvider {
   return {
     name: "groq",
     model,
@@ -78,12 +78,16 @@ export function groq({ apiKey, model = "openai/gpt-oss-20b", fetch: f = globalTh
   };
 }
 
-/** Providers configured in the environment, in fallback order. */
+/**
+ * Providers for text tasks (policy check, pack plans), in fallback order: Groq first, Gemini second.
+ * Gemini's free tier allows 20 requests/day for gemini-3.8-flash, so it's kept for invoice images and as
+ * the fallback here.
+ */
 export function providersFromEnv(env: Record<string, string | undefined> = process.env): LlmProvider[] {
   const out: LlmProvider[] = [];
   const timeoutMs = env.LLM_TIMEOUT_MS ? Number(env.LLM_TIMEOUT_MS) : undefined;
-  if (env.GEMINI_API_KEY?.trim()) out.push(gemini({ apiKey: env.GEMINI_API_KEY.trim(), model: env.GEMINI_MODEL?.trim() || undefined, timeoutMs }));
   if (env.GROQ_API_KEY?.trim()) out.push(groq({ apiKey: env.GROQ_API_KEY.trim(), model: env.GROQ_MODEL?.trim() || undefined, timeoutMs }));
+  if (env.GEMINI_API_KEY?.trim()) out.push(gemini({ apiKey: env.GEMINI_API_KEY.trim(), model: env.GEMINI_MODEL?.trim() || undefined, timeoutMs }));
   return out;
 }
 

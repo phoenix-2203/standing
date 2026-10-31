@@ -155,7 +155,7 @@ describe("provider requests", () => {
     expect(await groq({ apiKey: "g-1", fetch: f }).generateJson(req)).toEqual({ ok: 2 });
     expect(calls[0].url).toBe("https://api.groq.com/openai/v1/chat/completions");
     expect(JSON.parse(calls[0].init.body as string)).toMatchObject({
-      model: "openai/gpt-oss-20b",
+      model: "openai/gpt-oss-120b",
       temperature: 0,
       response_format: { type: "json_schema", json_schema: { name: "policy_check", schema: ANSWER_SCHEMA, strict: true } },
     });
@@ -170,5 +170,13 @@ describe("provider requests", () => {
 
     const junk = capture({ candidates: [{ content: { parts: [{ text: "not json" }] } }] });
     await expect(gemini({ apiKey: "k", fetch: junk.f }).generateJson(req)).rejects.toThrow("response was not valid JSON");
+  });
+});
+
+describe("providersFromEnv", () => {
+  it("puts Groq gpt-oss-120b first and Gemini second", async () => {
+    const { providersFromEnv } = await import("@/lib/llm/providers");
+    expect(providersFromEnv({ GEMINI_API_KEY: "g", GROQ_API_KEY: "q" }).map((p) => `${p.name}:${p.model}`)).toEqual(["groq:openai/gpt-oss-120b", "gemini:gemini-3.8-flash"]);
+    expect(providersFromEnv({ GEMINI_API_KEY: "g" }).map((p) => p.name)).toEqual(["gemini"]);
   });
 });
