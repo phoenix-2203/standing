@@ -1,5 +1,7 @@
 # Standing — Build Blueprint & 12-Day Plan
 
+*Standing: stay in good standing with PayPal*
+
 As of 31 Oct 2026. Deadline: 12 Nov 2026, 9:00 p.m. Lagos (12:00 p.m. Pacific). Target: submitted 11 Nov.
 
 **One line:** Standing keeps a small seller's PayPal money moving — it catches what gets accounts held
@@ -129,7 +131,7 @@ Deterministic metrics (defaults are Standing's own, not PayPal rules — UI must
 |---|---|---|---|---|
 | 1 | Transaction Search returns sandbox sales | 200 OK with transactions (connection ✅ 31 Oct; waiting for data lag) | Retry after 3 h; if still failing Mon → switch to PayeeSeal | Pending (0 transactions before the 31 Oct orders) |
 | 2 | Script ~30 server-side sandbox card orders, captured | 30 capture IDs logged | Fewer buyer-approved orders, label spike simulated | ✅ Done 31 Oct: 30/30 captured + 1 digital order |
-| 3 | Push one tracking number via Shipment Tracking API | Success; visible on the transaction | Reconsider build | ✅ Done 31 Oct: 201, tracker on the order (sandbox web-UI check open) |
+| 3 | Push one tracking number via Shipment Tracking API | Success; visible on the transaction | Reconsider build | ✅ Done 31 Oct: 201, tracker on the order; tracker `STANDINGD1PHY01` visible on transaction `1GB72668J97404239` in the sandbox web UI (confirmed by user) |
 | 4 | Log in with PayPal returns account-verification status | Field present | Drop verified-seller check | ✅ Done 31 Oct: `verified_account` = `"true"` (unverified value not yet seen) |
 | 5 | Any API to set a digital order Completed without tracking | Documented call works | Reminder-only version (expected) | ✅ Done 31 Oct: `POST /v1/shipping/trackers` status `COMPLETED` → 201; hold-release effect unproven, keep reminders |
 

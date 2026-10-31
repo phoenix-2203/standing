@@ -10,7 +10,7 @@ and `scripts/out/d1.json` (replay).
 | # | Test | Result |
 |---|---|---|
 | 2 | ~30 server-side sandbox card orders, captured | **PASSED**: 30/30 captured, plus 1 digital order |
-| 3 | Push one tracking number via Shipment Tracking API | **PASSED (API)**: 201, and the tracker shows on the order. Web-UI check not done. |
+| 3 | Push one tracking number via Shipment Tracking API | **PASSED**: 201, the tracker shows on the order, and the web UI was confirmed by the user. |
 | 4 | Log in with PayPal returns account-verification status | **PASSED**: `verified_account` is returned on the 4th attempt, with a fresh sandbox personal account. |
 | 5 | Documented API sets a digital order to Completed without tracking | **PASSED (API accepts it)**. Effect on hold release is unproven. |
 
@@ -72,7 +72,7 @@ Request ID per order: `standing-<ref>-create`.
 **Transaction Search:** These captures won't appear in `/v1/reporting/transactions` for up to ~3 h
 (see test 1).
 
-### Test 3 — push one tracking number: PASSED (API)
+### Test 3 — push one tracking number: PASSED
 
 - `POST /v2/checkout/orders/2V743103EU320351C/track` with `capture_id: 1GB72668J97404239`, carrier USPS,
   tracking number `STANDINGD1PHY01` (a labelled test number), `notify_payer: false`.
@@ -80,9 +80,9 @@ Request ID per order: `standing-<ref>-create`.
 - Read-back: `GET` on the order (debug `f946519144215`) shows tracker
   `1GB72668J97404239-STANDINGD1PHY01`, status `SHIPPED`.
 - Replay with the same request ID: 200 (debug `f5524589044fe`), and the order still has **one** tracker.
-- **Still to check (you):** that the tracker shows on transaction `1GB72668J97404239` in the sandbox
-  business account's web UI (sandbox.paypal.com → Activity). The blueprint's pass criterion includes
-  "visible on the transaction".
+- **Web UI: confirmed by the user.** Tracker `STANDINGD1PHY01` is visible on transaction
+  `1GB72668J97404239` in the sandbox business account's web UI. This meets the blueprint's
+  "visible on the transaction" criterion.
 - Earlier connectivity probe: `trackers-batch` with a fake transaction ID returned `INVALID_TRANSACTION_ID`
   (debug `ca532c5bfbcae`). `trackers-batch` is marked deprecated in the spec.
 
@@ -159,3 +159,32 @@ Keep the Completed-status reminders as well.
 - `scripts/pp.py`: sandbox client. Refuses non-sandbox URLs and requires a request ID on writes.
 - `scripts/day1.py`: tests 2, 3 and 5. Writes results to `scripts/out/<run>.json`.
 - `scripts/lipp.py`: test 4.
+
+## Mon 2 Nov task — app skeleton, PayPal client, webhook (built 31 Oct 2026)
+
+Code tests (`npm test`, Vitest, PGlite in-process Postgres with the real migration): **31/31 pass**.
+- Client: sandbox guard (rejects live, look-alike and http URLs); writes without a request ID are refused
+  before any call; the caller's request ID is sent unchanged; one token is shared by concurrent calls and
+  refreshed 60 s before expiry; a 401 is retried once with a new token and the same request ID; token errors
+  carry no credentials; network failure/timeout → `PayPalUnknownOutcome`.
+- Actions: first response stored; a repeat (double click) answers from the store without calling PayPal;
+  concurrent sends with different answers keep the first; 4xx → failed, not resent; timeout → `unknown`, the retry
+  reuses the request ID and the stored payload; 5xx → `unknown`, not locked in; a request ID can't be reused for a
+  different action; cancelled actions are never sent.
+- Webhook: verified event stored; duplicate event ID ignored; bad signature → 400, nothing stored; missing headers,
+  invalid JSON or non-event body → 400 with no PayPal call; PayPal 5xx/timeout while verifying → 503; PayPal 4xx on
+  the verify request → 400; a fresh request ID per verification.
+
+Live sandbox smoke test (`next start`, real `.env` credentials, placeholder DB that is never reached):
+
+| Request | Result | Debug ID |
+|---|---|---|
+| POST without signature headers | 400 `missing_signature_headers`, no PayPal call | — |
+| Forged signature, webhook ID `WH-NOT-REAL` | Found a bug: PayPal answered 400 `INVALID_REQUEST` (webhook_id must be alphanumeric) and the route returned 503. Fixed: a 4xx on the verify request now returns 400 | `f65133855b89f` (direct call) |
+| Forged signature, webhook ID `WHNOTREAL1` | PayPal `verification_status: FAILURE` → 400 `signature_rejected` | `f513829e9e4a9` |
+
+Not yet tested:
+- A **genuine** PayPal delivery (valid signature → stored). It needs a webhook registered on the sandbox app
+  (none exist yet: `GET /v1/notifications/webhooks` → `[]`, debug `f237515bdcc07`) and a public URL.
+  This is the blueprint's Mon "done when": a sandbox webhook stored once, duplicate ignored.
+- Real Postgres. Docker isn't running, so the migration has only run on PGlite.
