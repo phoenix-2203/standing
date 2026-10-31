@@ -37,8 +37,10 @@ output (Gemini free tier or Claude) · react-pdf · AG Grid Community · Vitest.
 
 - **Commit after every working step** (a feature, a passing test, a fix) — aim for 5–15 meaningful
   commits a day, never padded ones. Messages like `feat: spike watcher 24h vs 28-day ratio`,
-  `test: refusal set 15/15`, `fix: parse verified_account as string`. Push to GitHub at least daily.
-  Never commit `.env`, keys or tokens.
+  `test: refusal set 15/15`, `fix: parse verified_account as string`.
+- **Push to GitHub (`origin main`) right after every commit**, so the public history shows steady
+  progress during the submission period. Before each push, make sure no `.env`, keys or tokens are
+  tracked. Never squash, rewrite or force-push history.
 - Record test outcomes in `TESTS.md` (what ran, result, PayPal debug IDs, date).
 - Keep a 5-line daily entry in `BUILDLOG.md` (proves work was done during the submission period).
 - Prefer finishing the core loop (connect → sync → alert → safe fix → pack) before any polish.
