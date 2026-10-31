@@ -6,3 +6,6 @@
 - Started the Mon 2 Nov task early: Next.js 16 + TypeScript skeleton, Drizzle schema + first migration.
 - TypeScript PayPal client (sandbox guard, token cache, required stable request IDs, first response stored).
 - Webhook endpoint with PayPal signature verification and event-ID dedupe; 31 Vitest tests pass.
+- Started the Tue 3 Nov task early: Transaction Search + disputes sync (backfill, overlap, cursor).
+- Metrics engine for the six §4 metrics and alert engine; 94 tests pass, spike alert fires on seeded data.
+- Live sandbox cycle passed; the day-1 orders aren't in Transaction Search yet (data refreshed 12:29Z).

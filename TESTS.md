@@ -188,3 +188,29 @@ Not yet tested:
   (none exist yet: `GET /v1/notifications/webhooks` → `[]`, debug `f237515bdcc07`) and a public URL.
   This is the blueprint's Mon "done when": a sandbox webhook stored once, duplicate ignored.
 - Real Postgres. Docker isn't running, so the migration has only run on PGlite.
+
+## Tue 3 Nov task — sync, metrics, alerts (built 31 Oct 2026)
+
+Code tests (`npm test`): **94/94 pass**, including the blueprint's "done when". The test
+`src/lib/alerts/engine.test.ts` seeds 28 days of 2 × $20/day plus 8 × $20 in the last 24 h as Transaction
+Search rows, and a refund that must not count. Result: spike ratio 4.0 → spike alert fires.
+All seeded data is simulated and test-only (`src/test/seed.ts`).
+
+API probes that shaped the sync (31 Oct, sandbox):
+
+| Call | Result | Debug ID |
+|---|---|---|
+| Transaction Search, 32-day window | 400 `INVALID_REQUEST` (date range) | `ca5334446fadd` |
+| Transaction Search, 31-day window, `page_size=500` | 200 | `ca533444c2a46` |
+| Disputes `start_time=…T00:00:00Z` (no ms) | 400 `INVALID_REQUEST` | `ca533443b8892` |
+| Disputes `start_time=…T00:00:00.000Z` | 200 | `ca5334425cfb2` |
+| Disputes `update_time_after=…` (both formats) | 200 | `ca533442b7bd5`, `ca53344344f0d` |
+
+Live cycle (`npm run test:live`, real sandbox, throwaway PGlite DB), 31 Oct 15:20 Lagos: **passed**.
+- Transaction Search: 3 backfill windows, 1 transaction (`0WW5775245286422M`, T0000, $500.00, 12:17Z,
+  note "for test"; not created by Standing's scripts). PayPal data was last refreshed at 12:29:59Z.
+- Disputes: 0. Metrics computed; spike ratio null (no baseline); no alerts.
+
+**Day-1 test 1 recheck:** Transaction Search returns 200 with transactions (the $500 payment above).
+The 31 day-1 orders are **not yet visible** about 2 h later, because `last_refreshed_datetime` is still
+12:29:59Z. Recheck before the go/switch decision.
