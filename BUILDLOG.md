@@ -11,3 +11,10 @@
 - Live sandbox cycle passed; the day-1 orders aren't in Transaction Search yet (data refreshed 12:29Z).
 - Metric decisions applied: New seller status, "not enough history" spike state, demo-shop order kinds.
 - Tracking read-back from PayPal; live cycle synced 16 real transactions and found the day-1 tracker.
+
+## 31 Oct 2026 (evening)
+- Eval set to 53 products; Groq eval 94% recall, T10 injection caught; quote validator fixed (Groq 83% → 91% verdicts on re-score).
+- Safe-fix queue (preview → cancel window → one-call send) with live sandbox tracking push and "marks the order Completed" (both 201).
+- Evidence ledger (payments, tracking, Completed, invoices, traffic sources) and pack builder with a code-computed summary.
+- Citation validator blocks forged citations, but tokens can be recombined into false claims: stopped before PDF/live pack.
+- Gemini switched to gemini-3.8-flash (2.5 closed to new keys); its eval is still running.

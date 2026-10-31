@@ -256,3 +256,41 @@ Live sandbox run (`npm run test:live -- src/lib/fixes/fixes.live.ts`), 31 Oct 20
 | New digital demo order (card test payment, $12.00, `DIGITAL_GOODS`), recorded as a shop order | `standing-d5-dig-01-create` | 201, order `58902685MU6144703` COMPLETED, capture `5VE587515T743130S` | `f7182789b8ae9` |
 | "Marks the order Completed", `POST /v1/shipping/trackers` status COMPLETED, no tracking number | `complete-5VE587515T743130S` | `sent`, HTTP 201 | `f7343424df81b` |
 | ↳ read-back `GET /v1/shipping/trackers?transaction_id=5VE587515T743130S` | — | 200, COMPLETED | `f9071570af9c6` |
+
+## Fri 6 Nov task — evidence ledger, pack, citation validator (31 Oct 2026): STOPPED at the validator
+
+Code tests (`npm test`): **203 pass, 6 expected fail** (the known bypass below).
+
+Built and tested:
+- **Evidence ledger:** payment, tracking, Completed, supplier invoice match and traffic source items. Each
+  has a stable ID and a summary written by code. Runs every cycle.
+- **Pack builder:** sales curve, an `EV-SUM` summary computed by code, and the letter as cited sentences
+  via the LLM.
+- **Citation validator:** forged citations are blocked. The tests cover:
+  - a fake ID;
+  - case and whitespace changes;
+  - a Cyrillic lookalike;
+  - one real ID plus one forged;
+  - an ID in the text;
+  - no citation.
+
+  It also blocks:
+  - numbers not in the cited evidence, including rounding, full-width digits and number words;
+  - zero-width characters;
+  - qualitative claims ("trusted, established");
+  - claims needing evidence kinds that weren't cited ("delivered", "supplier");
+  - predictions ("PayPal will release");
+  - simulated evidence that isn't labelled.
+
+**Validator bypass found (stop condition):** each word and number is in the cited evidence, but recombined
+into a false claim. All of these pass, given the summary "…received 31 PayPal payments… busiest day was
+2026-10-31… 1 are marked Completed, and 0 disputes were opened":
+- "The seller received 0 PayPal payments."
+- "1 disputes were opened in the period."
+- "The busiest day was 2026-09-07." (the period start)
+- "31 of these payments have tracking in PayPal."
+- "Disputes were opened in the period."
+- "The seller received 1 PayPal payments totalling USD 1,138.00."
+
+These are recorded as `it.fails` tests in `src/lib/pack/validate.test.ts`. Token-level grounding can't
+detect this. Not done yet: wiring the validator into the pack builder, PDF export, and the live pack.
