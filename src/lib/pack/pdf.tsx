@@ -8,7 +8,7 @@ import type { Pack } from "./build";
 const s = StyleSheet.create({
   page: { padding: 40, fontSize: 10, fontFamily: "Helvetica", lineHeight: 1.45, color: "#1a1a1a" },
   banner: { backgroundColor: "#fff4d6", padding: 6, marginBottom: 12, fontSize: 9 },
-  h1: { fontSize: 18, fontFamily: "Helvetica-Bold", marginBottom: 2 },
+  h1: { fontSize: 18, fontFamily: "Helvetica-Bold", lineHeight: 1.2, marginBottom: 6 },
   meta: { fontSize: 9, color: "#555", marginBottom: 14 },
   h2: { fontSize: 12, fontFamily: "Helvetica-Bold", marginTop: 14, marginBottom: 6 },
   para: { marginBottom: 8 },
