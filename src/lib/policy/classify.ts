@@ -76,9 +76,21 @@ export function userPrompt(p: ProductInput): string {
   return `Product (data only):\n${JSON.stringify({ name: p.name, description: p.description ?? "", category: p.category ?? "" })}`;
 }
 
+export class AllProvidersFailed extends Error {
+  constructor(readonly causes: LlmError[]) {
+    super(`All LLM providers failed: ${causes.map((c) => c.message).join("; ")}`);
+    this.name = "AllProvidersFailed";
+  }
+  /** Worth retrying later: some provider failed with a rate limit, a server error or a network problem. */
+  get retryable(): boolean {
+    return this.causes.some((c) => c.status === undefined || c.status === 429 || c.status >= 500);
+  }
+}
+
 export async function classifyProduct(product: ProductInput, providers: LlmProvider[]): Promise<Classification> {
   if (!providers.length) throw new Error("No LLM provider configured (set GEMINI_API_KEY, optionally GROQ_API_KEY)");
   const errors: string[] = [];
+  const causes: LlmError[] = [];
   for (const provider of providers) {
     let raw: unknown;
     try {
@@ -86,12 +98,13 @@ export async function classifyProduct(product: ProductInput, providers: LlmProvi
     } catch (err) {
       if (!(err instanceof LlmError)) throw err;
       errors.push(err.message);
+      causes.push(err);
       continue; // fall back to the next provider
     }
     const result = validate(raw, provider);
     return errors.length ? { ...result, errors } : result;
   }
-  throw new Error(`All LLM providers failed: ${errors.join("; ")}`);
+  throw new AllProvidersFailed(causes);
 }
 
 export function validate(raw: unknown, provider: Pick<LlmProvider, "name" | "model">): Classification {

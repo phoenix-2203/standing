@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { gemini, groq, type JsonRequest, LlmError, type LlmProvider } from "@/lib/llm/providers";
 import { CLASSIFIABLE, CLAUSES } from "./clauses";
-import { ANSWER_SCHEMA, classifyProduct, SYSTEM_PROMPT, userPrompt, validate } from "./classify";
+import { AllProvidersFailed, ANSWER_SCHEMA, classifyProduct, SYSTEM_PROMPT, userPrompt, validate } from "./classify";
 
 const fake = (answer: unknown, name: "gemini" | "groq" = "gemini"): LlmProvider & { seen: JsonRequest[] } => {
   const seen: JsonRequest[] = [];
@@ -91,6 +91,21 @@ describe("classifyProduct", () => {
   it("fails loudly when no provider is configured or all fail", async () => {
     await expect(classifyProduct(P, [])).rejects.toThrow(/No LLM provider/);
     await expect(classifyProduct(P, [fake(new LlmError("gemini", "down"))])).rejects.toThrow(/All LLM providers failed: gemini: down/);
+  });
+
+  it("says whether a total failure is worth retrying", async () => {
+    const fail = (...errs: LlmError[]) =>
+      classifyProduct(P, errs.map((e) => fake(e))).then(
+        () => {
+          throw new Error("expected a failure");
+        },
+        (e: unknown) => e as AllProvidersFailed,
+      );
+    expect((await fail(new LlmError("gemini", "quota", 429), new LlmError("groq", "down", 503))).retryable).toBe(true);
+    expect((await fail(new LlmError("gemini", "timeout"))).retryable).toBe(true);
+    expect((await fail(new LlmError("gemini", "API key not valid", 400))).retryable).toBe(false);
+    // Seen live 31 Oct: Gemini key rejected, Groq rate limited on tokens per minute.
+    expect((await fail(new LlmError("gemini", "API key not valid", 400), new LlmError("groq", "TPM", 429))).retryable).toBe(true);
   });
 });
 
