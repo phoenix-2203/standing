@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { gemini, groq, type JsonRequest, LlmError, type LlmProvider } from "@/lib/llm/providers";
 import { CLASSIFIABLE, CLAUSES } from "./clauses";
-import { AllProvidersFailed, ANSWER_SCHEMA, classifyProduct, SYSTEM_PROMPT, userPrompt, validate } from "./classify";
+import { loadEvalProducts } from "@/lib/evals/policy";
+import { AllProvidersFailed, ANSWER_SCHEMA, CLAUSE_NOTES, classifyProduct, SYSTEM_PROMPT, userPrompt, validate } from "./classify";
 
 const fake = (answer: unknown, name: "gemini" | "groq" = "gemini"): LlmProvider & { seen: JsonRequest[] } => {
   const seen: JsonRequest[] = [];
@@ -192,5 +193,36 @@ describe("the classifier sees the full clause text", () => {
   it("includes the clauses behind the real misses (cigars, in-game currency) in full", () => {
     expect(SYSTEM_PROMPT).toContain("PRE-15 | preapproval | Tobacco | Non-cigarette tobacco products, e-cigarettes, cigars");
     expect(SYSTEM_PROMPT).toContain("virtual in-game currencies");
+  });
+});
+
+describe("clause notes (Standing's examples)", () => {
+  it("are in the prompt, labelled as not PayPal's words, after the verbatim clause list", () => {
+    const at = SYSTEM_PROMPT.indexOf("Notes from Standing (examples to help apply a clause; not PayPal's words, so never quote them):");
+    expect(at).toBeGreaterThan(SYSTEM_PROMPT.indexOf("PRE-18 |"));
+    for (const [id, note] of Object.entries(CLAUSE_NOTES)) expect(SYSTEM_PROMPT).toContain(`${id}: ${note}`);
+    expect(CLAUSE_NOTES["PRE-06"]).toMatch(/raffle/);
+    expect(CLAUSE_NOTES["PRE-07"]).toMatch(/in-game currencies.*NFTs/);
+  });
+
+  it("can't be quoted: a quote taken from a note fails validation", () => {
+    const r = validate({ verdict: "preapproval", clause_id: "PRE-07", quote: "game credits, gems or points", confidence: 0.9, reason: "x" }, { name: "groq", model: "m" });
+    expect(r.rejected?.problem).toBe("quote isn't in PRE-07");
+  });
+
+  it("the prompt reuses no eval product wording (no 3 consecutive words from any product name or description)", () => {
+    const words = (s: string) => s.toLowerCase().match(/[a-z0-9]+/g) ?? [];
+    const promptText = ` ${words(SYSTEM_PROMPT).join(" ")} `;
+    const clauseText = ` ${words(CLASSIFIABLE.map((c) => `${c.lead_in ?? ""} ${c.name} ${c.text}`).join(" ")).join(" ")} `;
+    const leaks: string[] = [];
+    for (const p of loadEvalProducts()) {
+      const w = words(`${p.name} ${p.description}`);
+      for (let i = 0; i + 3 <= w.length; i++) {
+        const tri = ` ${w.slice(i, i + 3).join(" ")} `;
+        // Phrases that are PayPal's own clause wording are fine; anything else is a leak.
+        if (promptText.includes(tri) && !clauseText.includes(tri)) leaks.push(`${p.id}:${tri.trim()}`);
+      }
+    }
+    expect(leaks).toEqual([]);
   });
 });
