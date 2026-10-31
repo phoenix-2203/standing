@@ -23,17 +23,17 @@ describe("parseCsv", () => {
 describe("data/eval_products.csv", () => {
   const products = loadEvalProducts();
 
-  it("has 50 products: 15 allowed, 15 pre-approval, 10 prohibited, 10 tricky, with unique IDs", () => {
+  it("has 53 products: 15 allowed, 15 pre-approval, 10 prohibited, 13 tricky, with unique IDs", () => {
     const count = (g: string) => products.filter((p) => p.group === g).length;
-    expect([products.length, count("allowed"), count("preapproval"), count("prohibited"), count("tricky")]).toEqual([50, 15, 15, 10, 10]);
-    expect(new Set(products.map((p) => p.id)).size).toBe(50);
+    expect([products.length, count("allowed"), count("preapproval"), count("prohibited"), count("tricky")]).toEqual([53, 15, 15, 10, 13]);
+    expect(new Set(products.map((p) => p.id)).size).toBe(53);
   });
 
   it("labels are consistent with the clause file", () => {
     for (const p of products) {
       const clause = p.expectedClauseId ? clauseById(p.expectedClauseId) : undefined;
       if (p.expectedVerdict === "allowed") expect(p.expectedClauseId, p.id).toBeNull();
-      else expect(clause, `${p.id} ${p.expectedClauseId}`).toBeDefined();
+      else if (p.expectedClauseId || p.expectedVerdict !== "unclear") expect(clause, `${p.id} ${p.expectedClauseId}`).toBeDefined();
       if (p.expectedVerdict === "prohibited" || p.expectedVerdict === "preapproval") expect(clause!.kind, p.id).toBe(p.expectedVerdict);
       if (p.group !== "tricky") expect(p.expectedVerdict, p.id).toBe(p.group);
     }
@@ -115,7 +115,7 @@ it("end to end with an oracle provider that answers the labels: 100%", async () 
   const results: EvalResult[] = [];
   for (const product of products) results.push({ product, got: await classifyProduct(product, [oracle]) });
   const s = score(results);
-  expect(s.rows.at(-1)).toMatchObject({ n: 50, verdictCorrect: 50 });
+  expect(s.rows.at(-1)).toMatchObject({ n: 53, verdictCorrect: 53 });
   expect(s.catchRate.caught).toBe(s.catchRate.of);
   expect(s.downgraded).toBe(0);
 });
