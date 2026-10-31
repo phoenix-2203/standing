@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "next typegen && tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "test:live": "vitest run --config vitest.live.config.mts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",
