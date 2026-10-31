@@ -348,3 +348,40 @@ Misses:
 - T07 10000 in-game gold coins: expected preapproval PRE-07, got allowed. The product is a digital in-game currency, which is not covered by any PayPal prohibited or pre‑approval clause.
 - T09 Handmade sterling silver ring: expected unclear PRE-03, got allowed. The product is a handmade silver ring, not covered by any prohibited or pre‑approval clause.
 - T13 Herbal bitters that cure diabetes: expected unclear, got preapproval PRE-16. The herbal bitters claim to cure diabetes, making it a medical product that requires PayPal pre‑approval under the medical items or services clause.
+
+## Fri 6 Nov task, continued — bypass fixed by design, PDF, live pack (31 Oct 2026)
+
+Code tests (`npm test`): **223/223 pass, 0 expected-fail.**
+
+**The bypass is fixed by design.**
+- **Facts come from code.** Every factual sentence is either a template filled from the `EV-SUM` values or
+  a ledger item's code-written summary (`src/lib/pack/facts.ts`).
+- **The model only plans.** It returns an ordered list of fact IDs plus connecting sentences.
+- **Connecting sentences are tightly limited.** They're rejected for:
+  - digits, number or quantity words, or date words;
+  - claim words about payments, orders, disputes, delivery or PayPal outcomes;
+  - evidence IDs or hidden characters;
+  - any word outside a small list of linking and politeness words.
+- **The six former `it.fails` cases now pass as normal tests.** Each is blocked as a connecting
+  sentence, and none can be produced as a fact.
+- **Forged citations:** a forged fact ID is blocked, as are lookalike, case-changed and whitespace
+  variants. A pack whose plan cites a forged ID on both attempts ends `blocked`, with no letter.
+
+**PDF export:** `renderPackPdf` and `GET /api/packs/[id]/pdf` export only `ready` packs; any other pack
+gets 409 with the reasons. Each PDF has a sandbox/simulated banner, the letter with numbered evidence
+references, the sales curve, and an evidence appendix.
+
+**Live pack** (`npm run test:live -- src/lib/pack/pack.live.ts`), 31 Oct 2026 ~22:40 UTC: **ready**.
+- **Sync:** transactions OK (32), disputes OK (0), trackers OK (3); the ledger holds 36 items. One
+  traffic source added and labelled Simulated.
+- **Gemini failed:** `429` free-tier daily quota (20 requests/day for `gemini-3.8-flash`, used up by the
+  eval).
+- **Groq fallback:**
+  - The first live attempt failed with `400 Failed to validate JSON` when offered 40 facts. Fix:
+    at most 25 facts are offered, plus one retry on that error.
+  - On the rerun the pack is `ready` after 2 plan attempts (validator problems on the final attempt: none).
+- **Letter (all figures rendered by code):** "PayPal payments received between 2026-10-01 and
+  2026-10-31: 32, totalling USD 1146.00. Busiest day: 2026-10-31, with 32 of those payments… Disputes
+  opened in the period: 0. … Payments marked Completed in PayPal: 1 of 32. Payments with tracking in
+  PayPal: 2 of 32." The simulated traffic source is printed with its "Simulated:" prefix.
+- **PDF:** `packs/out/live-pack-2026-10-31.pdf` (5.5 KB, not committed); first page checked visually.
