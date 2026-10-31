@@ -460,3 +460,17 @@ Misses:
 - P14 Premium cigars box: expected preapproval PRE-15, got allowed. The product is a cigar, which is not listed under any prohibited or pre‑approval clause in PayPal’s policy.
 - T06 Pre-order sneakers (not in stock yet): expected unclear PROH-3d, got prohibited PROH-3d. Selling pre-order sneakers before possession violates PayPal's policy on selling items not yet in possession.
 - T07 10000 in-game gold coins: expected preapproval PRE-07, got allowed. The product is a digital in-game currency, which is not covered by any PayPal prohibited or pre‑approval clause.
+
+## Policy eval — Gemini `gemini-3.8-flash` (31 Oct 2026): INCOMPLETE, no accuracy result
+
+Run: `EVAL_PROVIDER=gemini npm run eval:policy`, finished 22:41 UTC.
+- **Answered:** 13 of 53 products, all from the allowed group, all 13 correct.
+- **Unanswered:** the other 40 got `HTTP 429` errors. The free tier allows 20 `generateContent` requests per day for
+  `gemini-3.8-flash`, and the single-product probes and the live pack attempt used up the rest.
+- **Not a measurement:** recall can't be computed (0 prohibited or pre-approval products were answered).
+- **T10 on Gemini:** only from the earlier single-product probe, where it passed (`prohibited` PROH-2c,
+  quote "cigarettes", confidence 1), but took 95 s.
+- **Note:** `gemini-2.5-flash` returned 404 ("no longer available to new users") for this key.
+
+A full Gemini run needs either a fresh daily quota with a 53-request budget (above the free tier's 20)
+or a paid tier. Groq gpt-oss-120b is the default since 31 Oct; Gemini is the fallback.
