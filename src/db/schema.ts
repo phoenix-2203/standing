@@ -1,4 +1,5 @@
 import {
+  boolean,
   date,
   index,
   integer,
@@ -222,3 +223,35 @@ export const shopOrders = pgTable("shop_orders", {
   itemCategories: jsonb("item_categories").$type<string[]>().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ---- Evidence and packs (Fri 6 Nov) -----------------------------------------------------------
+
+export const evidenceKind = pgEnum("evidence_kind", [
+  "txn", // a PayPal payment received
+  "delivery", // a tracking number on that payment
+  "digital_delivery", // the payment marked Completed (digital/service)
+  "invoice", // a supplier invoice the seller added, matched to products sold
+  "traffic_source", // where the sales came from, added by the seller
+  "sales_summary", // figures computed by Standing for one pack
+]);
+
+// The ledger an explanation pack may cite. IDs are stable (EV-TXN-<transaction>, …) so re-syncing updates
+// an item instead of adding one, and a pack's citations keep pointing at the same fact.
+export const evidenceItems = pgTable(
+  "evidence_items",
+  {
+    sellerId: text("seller_id").notNull(),
+    id: text("id").notNull(),
+    kind: evidenceKind("kind").notNull(),
+    transactionId: text("transaction_id"),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+    // One plain sentence of fact, written by code from the data (never by the AI).
+    summary: text("summary").notNull(),
+    facts: jsonb("facts").$type<Record<string, unknown>>().notNull(),
+    source: text("source").notNull(), // "paypal" (synced) | "seller" (added by the seller) | "standing" (computed)
+    simulated: boolean("simulated").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.sellerId, t.id] }), index("evidence_seller_kind").on(t.sellerId, t.kind)],
+);

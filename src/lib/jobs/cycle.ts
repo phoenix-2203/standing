@@ -7,6 +7,7 @@ import { syncDisputes } from "@/lib/sync/disputes";
 import type { SyncReport } from "@/lib/sync/state";
 import { syncTrackers } from "@/lib/sync/trackers";
 import { syncTransactions } from "@/lib/sync/transactions";
+import { syncLedger } from "@/lib/evidence/ledger";
 
 export interface CycleReport {
   sync: SyncReport[];
@@ -25,6 +26,8 @@ export async function runCycle(db: Db, paypal: PayPalClient, sellerId: string, n
     // After transactions, so new sales get their trackers read in the same cycle.
     await syncTrackers(db, paypal, sellerId, now),
   ];
+  // Each synced order adds its evidence (payment, tracking, Completed) for the explanation pack.
+  await syncLedger(db, sellerId, "USD", now);
   const metrics = await runMetrics(db, sellerId, now);
   const alerts = await applyAlerts(db, sellerId, metrics, now);
   return { sync, metrics, alerts };

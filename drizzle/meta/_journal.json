@@ -43,6 +43,13 @@
       "when": 1793481514284,
       "tag": "0005_safe_fix_queue",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793483377669,
+      "tag": "0006_evidence_ledger",
+      "breakpoints": true
     }
   ]
 }
