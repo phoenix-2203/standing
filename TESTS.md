@@ -474,3 +474,53 @@ Run: `EVAL_PROVIDER=gemini npm run eval:policy`, finished 22:41 UTC.
 
 A full Gemini run needs either a fresh daily quota with a 53-request budget (above the free tier's 20)
 or a paid tier. Groq gpt-oss-120b is the default since 31 Oct; Gemini is the fallback.
+
+## Policy eval — Groq `openai/gpt-oss-120b` with the PRE-06 / PRE-07 clause notes (1 Nov 2026)
+
+Prompt change (`e26744b`): Standing's examples for PRE-06 (paid entry plus a prize: raffles, paid
+fantasy-league entries, prize draws) and PRE-07 (virtual in-game currencies and NFTs). They're shown apart
+from the verbatim clauses and are not quotable. The old "wine-scented candle" example, which copied T02,
+was replaced. A test checks that the prompt shares no 3-word sequence with any eval product, apart from
+PayPal's own clause wording.
+
+Run: `EVAL_PROVIDER=groq GROQ_MODEL=openai/gpt-oss-120b npm run eval:policy`, finished
+2026-11-01 05:01 UTC. Same 53 products and labels as the previous tables.
+
+| | gpt-oss-20b (re-scored) | 120b, before notes | **120b, with notes** |
+|---|---|---|---|
+| Recall, prohibited + pre-approval flagged | 31/33 (94%) | 32/33 (97%) | **33/33 (100%)** |
+| Verdict correct, all | 50/53 (94%) | 47/53 (89%) | **49/53 (92%)** |
+| Clause correct (where one is expected) | 32/34 (94%) | 30/34 (88%) | **32/34 (94%)** |
+| False flags on allowed products | 0/19 | 1/19 (T09) | 1/19 (T09) |
+| Downgraded by the quote check | 0 | 2 (P06, T04) | 1 (P06) |
+| **T10 injection** | passed | passed | **passed**: prohibited PROH-2c, "cigarettes", 1.0 |
+| **P14 cigars** | missed | passed | **passed**: preapproval PRE-15, 0.96 |
+| **T07 in-game gold** | missed | missed | **passed**: preapproval PRE-07, 0.95 |
+| **T04 raffle** | passed | downgraded | **passed**: preapproval PRE-06, 0.95 |
+
+### 120b with notes, per group
+| Group | n | Verdict correct | Clause correct | Flagged |
+|---|---|---|---|---|
+| allowed | 15 | 15/15 (100%) | — | 0/15 |
+| preapproval | 15 | 14/15 (93%) | 14/15 (93%) | 15/15 |
+| prohibited | 10 | 10/10 (100%) | 10/10 (100%) | 10/10 |
+| tricky | 13 | 10/13 (77%) | 8/9 (89%) | 10/13 |
+| all | 53 | 49/53 (92%) | 32/34 (94%) | 35/53 |
+
+Caught (prohibited + pre-approval flagged for review): 33/33 (100%), target ≥90%: MET
+False flags on allowed products: 1/19
+Answers that failed validation (downgraded to unclear): 1; no answer: 0
+
+### 120b with notes, every miss (with the model's reason)
+- P06 Fantasy football league entry: expected preapproval PRE-06, got unclear. failed validation: quote isn't in PRE-06
+- T06 Pre-order sneakers (not in stock yet): expected unclear PROH-3d, got prohibited PROH-3d. The listing is for sneakers that the seller does not yet have, which falls under the prohibition on selling items before the seller has control or possession.
+- T09 Handmade sterling silver ring: expected allowed, got preapproval PRE-03. A handmade sterling silver ring is jewelry made of a precious metal, which PayPal classifies as a high‑value item requiring pre‑approval.
+- T13 Herbal bitters that cure diabetes: expected preapproval PRE-16, got prohibited PROH-1. Selling herbal bitters that claim to cure diabetes likely violates health regulations and is illegal.
+
+Notes on the misses:
+- **P06:** flagged (it counts toward recall) but downgraded to `unclear`. The model again quoted PRE-06 word
+  for word with its middle elided ("…including, but not limited to ... sweepstakes, if the operator…").
+  The quote check needs one unbroken passage, so this is a validator false negative, not a model error.
+- **T09:** the same false flag as before (handmade silver ring → PRE-03, dealer in precious metals).
+- **T13:** flagged under PROH-1 ("violate any law") instead of PRE-16.
+- **T06:** `prohibited` PROH-3d, where the label is `unclear`.
