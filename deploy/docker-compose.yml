@@ -1,0 +1,74 @@
+# Standing on a shared VPS, kept apart from everything else on the server:
+# - its own project name, network and volume; no host folders mounted; no access to the Docker socket;
+# - the app listens on 127.0.0.1 only (Caddy forwards to it); the database publishes no port at all;
+# - memory and CPU caps, so it can't starve other apps.
+# Run from the repo checkout:  docker compose -f deploy/docker-compose.yml --env-file /opt/standing/standing.env up -d --build
+name: standing
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: standing
+      POSTGRES_DB: standing
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in standing.env}
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks: [standing]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U standing"]
+      interval: 5s
+      retries: 20
+    mem_limit: 384m
+    cpus: 0.5
+
+  migrate:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: migrate }
+    environment:
+      DATABASE_URL: postgres://standing:${DB_PASSWORD}@db:5432/standing
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [standing]
+    restart: "no"
+    mem_limit: 384m
+
+  app:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: runner }
+    restart: unless-stopped
+    env_file: ${STANDING_ENV_FILE:-/opt/standing/standing.env}
+    environment:
+      DATABASE_URL: postgres://standing:${DB_PASSWORD}@db:5432/standing
+    depends_on:
+      db: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+    ports:
+      - "127.0.0.1:${STANDING_PORT:-3100}:3000" # localhost only: Caddy is the only way in
+    networks: [standing]
+    read_only: true
+    tmpfs: [/tmp, /app/.next/cache]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 768m
+    cpus: 1.0
+
+  # Triggers the 15-minute sync inside Standing's own network; nothing is added to the server's crontab.
+  scheduler:
+    image: curlimages/curl:8.11.1
+    restart: unless-stopped
+    env_file: ${STANDING_ENV_FILE:-/opt/standing/standing.env}
+    command:
+      - /bin/sh
+      - -c
+      - 'while true; do sleep 900; curl -fsS -m 300 -o /dev/null -X POST -H "Authorization: Bearer $$CRON_SECRET" http://app:3000/api/cron/run || echo "sync call failed"; done'
+    entrypoint: []
+    depends_on: [app]
+    networks: [standing]
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 32m
+
+networks:
+  standing: {}
+
+volumes:
+  db: {}

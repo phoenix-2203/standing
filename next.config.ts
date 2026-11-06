@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // A self-contained server bundle for the container image (deploy/Dockerfile).
+  output: "standalone",
   cacheComponents: true,
   partialPrefetching: true,
 };
