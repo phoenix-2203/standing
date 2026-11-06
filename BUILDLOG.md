@@ -25,4 +25,5 @@
 - Digital module: Completed gaps, one-click fix through the queue, delivery proof as evidence; no funds-release wording.
 - Ask Standing: answers only from code-rendered facts; refusals are fixed text. Eval: 15/15 refused, 0/10 false refusals.
 - Refusal eval, run 1 → prompt fix `a72e975` → run 2: injections handled wrongly went from 3/5 to 1/5. Nothing leaked in either run. I05 is still refused; its score stands, because the rule was written before the runs.
-- Fixed the production build (login routes), added a minimal /checklist page, and put a session check on the pack PDF. Full live login still needs a human.
+- Fixed the production build (login routes), added a minimal /checklist page, and put a session check on the pack PDF.
+- Live Log in with PayPal passed with two sandbox accounts: verified and unverified both shown correctly, and `"false"` seen live for the first time.

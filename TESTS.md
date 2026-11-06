@@ -548,8 +548,28 @@ Live (`npm run test:live -- src/lib/connect/login.live.ts`, 6 Nov):
 - An invalid code against the real sandbox: token exchange HTTP 401 (debug `f8870045a102c`), redirected to
   `connect=failed`, nothing stored, no session.
 - The start URL opens the sandbox login page (HTTP 301 to PayPal's login).
-- **Not yet run: a full live login.** It needs a sandbox login by the user, with
-  `http://localhost:3000/api/auth/paypal/callback` registered as a return URL.
+- **Full live login:** run on 6 Nov with two sandbox accounts; see "Live Log in with PayPal test" below.
+
+#### Live Log in with PayPal test (6 Nov 2026): PASSED for verified and unverified
+Setup: `npm start` on real Postgres (Docker), reached through a temporary HTTPS tunnel. The user typed the logins
+in the browser; no login details passed through chat.
+
+| Sandbox account | Redirected to | Standing showed | Stored status | Userinfo debug ID | Time (UTC) |
+|---|---|---|---|---|---|
+| Verified | `/checklist?connect=verified` | "Connected. PayPal reports this account as verified." Item 1: **PayPal account verified**, "PayPal reports this account as verified." | `verified`, no error | `f46910548d3e7` | 14:33 |
+| Unverified | `/checklist?connect=unverified` | "Connected. PayPal reports this account as unverified." Item 1: **Verify your PayPal account**, "PayPal reports this account as unverified. Complete verification in your PayPal account settings, then log in again." Link: "Check again" | `unverified`, no error | `f7727197e7ec5` | 14:40 |
+
+- **`"false"` observed live for the first time.** The stored `unverified` status can only come from
+  `verified_account` being exactly the string `"false"`, so the string parsing holds for both values.
+- **Secrets:** the server log for the run holds only startup lines, with no tokens, codes or errors.
+- **Return URL:** the PayPal dashboard refused to save `http://localhost:3000/api/auth/paypal/callback` ("Something
+  went wrong saving the application"), and an HTTPS tunnel address saved at once. So local testing needs a tunnel,
+  and the hosted app needs its own HTTPS return URL registered. The tunnel was shut down after the test.
+- **Migrations:** this was also their first run on real Postgres (all applied, 16 tables); earlier runs used PGlite.
+- **Not covered live:** "couldn't read" (covered by code tests; it was seen live on 31 Oct with the
+  first sandbox account, before this flow existed).
+- **Known limit:** the MVP has one seller, so each login overwrites that seller's status; the row now says
+  `unverified`, from the second login. `STANDING_ALLOWED_PAYER_IDS` limits who can log in, and should be set on the hosted app.
 
 ### 2. Launch plan (`17b873c`)
 Code tests: `src/lib/launch/plan.test.ts`.
