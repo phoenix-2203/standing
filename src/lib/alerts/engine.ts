@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db";
 import { alerts } from "@/db/schema";
 import type { Metrics } from "@/lib/metrics/compute";
+import { planContext } from "@/lib/launch/plan";
 import { evaluate } from "./rules";
 
 export type Alert = typeof alerts.$inferSelect;
@@ -13,7 +14,7 @@ export interface AlertRun {
 }
 
 export async function applyAlerts(db: Db, sellerId: string, metrics: Metrics, now = new Date()): Promise<AlertRun> {
-  const conditions = evaluate(metrics);
+  const conditions = evaluate(metrics, await planContext(db, sellerId, now));
   const open = await db
     .select()
     .from(alerts)

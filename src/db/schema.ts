@@ -309,3 +309,18 @@ export const paypalConnections = pgTable("paypal_connections", {
   lastError: text("last_error"), // e.g. "HTTP 401": never a token, code or response body
   checkedAt: timestamp("checked_at", { withTimezone: true }).notNull(),
 });
+
+// ---- Launch plan --------------------------------------------------------------------------------
+
+export const launchPlans = pgTable("launch_plans", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sellerId: text("seller_id").notNull(),
+  launchDate: date("launch_date").notNull(),
+  expectedMultiple: numeric("expected_multiple", { precision: 6, scale: 2 }).notNull(),
+  products: jsonb("products").$type<{ name: string; description: string; category: string }[]>().notNull(),
+  // Policy check of each launch product: the verdict, clause and quote shown to the seller.
+  policy: jsonb("policy").$type<{ name: string; verdict: string; clauseId: string | null; quote: string | null; reason: string }[]>().notNull(),
+  packId: uuid("pack_id"),
+  packBuiltAt: timestamp("pack_built_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

@@ -7,6 +7,7 @@ import { type Metrics, MIN_HISTORY_DAYS, THRESHOLDS } from "@/lib/metrics/comput
 export type AlertKind =
   | "new_seller"
   | "spike"
+  | "expected_spike"
   | "avg_ticket"
   | "large_order"
   | "new_product_type"
@@ -23,13 +24,21 @@ export interface AlertCondition {
   facts: Record<string, unknown>;
 }
 
+/** The launch plan whose window includes now. */
+export interface PlanContext {
+  launchDate: string;
+  expectedMultiple: number;
+  packId: string | null; // set only when the pre-built pack passed validation
+  flaggedProducts: string[]; // launch products whose policy check isn't "allowed"
+}
+
 export const THRESHOLD_NOTE = "Thresholds are Standing's defaults, not PayPal rules.";
 
 const usd = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 const times = (r: number) => `${(Math.floor(r * 10) / 10).toFixed(1)}×`; // round down: never overstate
 
 /** Every condition currently true. The 90-day dispute rate is shown but never alerts: PayPal publishes no threshold. */
-export function evaluate(m: Metrics): AlertCondition[] {
+export function evaluate(m: Metrics, plan: PlanContext | null = null): AlertCondition[] {
   const out: AlertCondition[] = [];
 
   if (m.history.newSeller) {
@@ -49,16 +58,26 @@ export function evaluate(m: Metrics): AlertCondition[] {
   }
 
   if (m.spike.ratio !== null && m.spike.ratio >= THRESHOLDS.spikeRatio) {
-    out.push({
-      kind: "spike",
-      severity: "warning",
-      title: "Sales spike",
-      message:
-        `Sales in the last 24 hours (${usd(m.spike.last24hCents)}) are ${times(m.spike.ratio)} your average day ` +
-        `over the previous ${Math.floor(m.spike.baselineDays)} days (${usd(m.spike.baselineDailyMeanCents)}). PayPal lists a spike in sales among ` +
-        `the reasons it may hold funds.`,
-      facts: { ...m.spike, threshold: THRESHOLDS.spikeRatio },
-    });
+    const base =
+      `Sales in the last 24 hours (${usd(m.spike.last24hCents)}) are ${times(m.spike.ratio)} your average day ` +
+      `over the previous ${Math.floor(m.spike.baselineDays)} days (${usd(m.spike.baselineDailyMeanCents)}). PayPal lists a spike in sales among ` +
+      `the reasons it may hold funds.`;
+    const facts = { ...m.spike, threshold: THRESHOLDS.spikeRatio, plan };
+    const planned = `${plan?.expectedMultiple}× you planned for your launch on ${plan?.launchDate}`;
+    if (plan && plan.flaggedProducts.length) {
+      out.push({ kind: "spike", severity: "warning", title: "Sales spike", message: `${base} Your launch plan has products that need attention first: ${list(plan.flaggedProducts)}.`, facts });
+    } else if (plan && m.spike.ratio <= plan.expectedMultiple) {
+      // Inside the plan. Calm only if the seller's case really is ready.
+      out.push(
+        plan.packId
+          ? { kind: "expected_spike", severity: "info", link: `/api/packs/${plan.packId}/pdf`, title: "Expected spike: pack ready", message: `${base} This is within the ${planned}, and your explanation pack is ready.`, facts }
+          : { kind: "expected_spike", severity: "warning", title: "Expected spike: pack not ready", message: `${base} This is within the ${planned}, but your explanation pack isn't ready yet.`, facts },
+      );
+    } else if (plan) {
+      out.push({ kind: "spike", severity: "warning", title: "Sales spike above your launch plan", message: `${base} That's more than the ${planned}.`, facts });
+    } else {
+      out.push({ kind: "spike", severity: "warning", title: "Sales spike", message: base, facts });
+    }
   }
 
   const t = m.avgTicket;
