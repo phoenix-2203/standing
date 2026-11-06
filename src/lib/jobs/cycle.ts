@@ -1,4 +1,5 @@
 import type { Db } from "@/db";
+import { sendDueFixes } from "@/lib/fixes/fixes";
 import { type AlertRun, applyAlerts } from "@/lib/alerts/engine";
 import { refreshLaunchPack } from "@/lib/launch/plan";
 import type { LlmProvider } from "@/lib/llm/providers";
@@ -22,6 +23,8 @@ export interface CycleReport {
  * A failed sync doesn't stop the cycle — metrics run on what's stored, and the report says what failed.
  */
 export async function runCycle(db: Db, paypal: PayPalClient, sellerId: string, now = new Date(), providers: LlmProvider[] = []): Promise<CycleReport> {
+  // Fixes whose cancel window has run out go first, so this cycle's read-back sees them.
+  await sendDueFixes(db, paypal, sellerId, now);
   const sync = [
     await syncTransactions(db, paypal, sellerId, now),
     await syncDisputes(db, paypal, sellerId, now),

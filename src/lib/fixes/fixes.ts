@@ -1,5 +1,6 @@
+import { and, eq, inArray, lte } from "drizzle-orm";
 import type { Db } from "@/db";
-import { shipments } from "@/db/schema";
+import { actions, shipments } from "@/db/schema";
 import { type Action, type ActionSpec, previewAction, sendAction, type SendResult } from "@/lib/paypal/actions";
 import type { PayPalClient } from "@/lib/paypal/client";
 
@@ -26,6 +27,7 @@ export function trackingPush(input: TrackingPushInput): ActionSpec {
   if (!/^[A-Z0-9_]{2,40}$/.test(input.carrier)) throw new Error("Carrier must be a PayPal carrier code, e.g. USPS");
   if (input.carrier === "OTHER" && !input.carrierNameOther?.trim()) throw new Error("Carrier OTHER needs the carrier's name");
   return {
+    sellerId: input.sellerId,
     type: "tracking_push",
     method: "POST",
     path: `/v2/checkout/orders/${input.orderId}/track`,
@@ -47,6 +49,7 @@ export function trackingPush(input: TrackingPushInput): ActionSpec {
 export function markCompleted(input: { sellerId: string; captureId: string }): ActionSpec {
   if (!PAYPAL_ID.test(input.captureId)) throw new Error("Capture ID must be a PayPal ID");
   return {
+    sellerId: input.sellerId,
     type: "digital_complete",
     method: "POST",
     path: "/v1/shipping/trackers",
@@ -77,6 +80,17 @@ export async function sendFix(db: Db, paypal: PayPalClient, sellerId: string, re
     }
   }
   return result;
+}
+
+/** Each cycle: send this seller's approved fixes whose cancel window has run out, and retry unknown outcomes. */
+export async function sendDueFixes(db: Db, paypal: PayPalClient, sellerId: string, now = new Date()): Promise<SendResult[]> {
+  const due = await db
+    .select({ requestId: actions.requestId })
+    .from(actions)
+    .where(and(eq(actions.sellerId, sellerId), inArray(actions.status, ["scheduled", "unknown"]), lte(actions.undoUntil, now)));
+  const results: SendResult[] = [];
+  for (const { requestId } of due) results.push(await sendFix(db, paypal, sellerId, requestId, now));
+  return results;
 }
 
 function shipmentFor(action: Action, sellerId: string) {

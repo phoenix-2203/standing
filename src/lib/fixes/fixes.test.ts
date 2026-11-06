@@ -22,6 +22,7 @@ beforeEach(async () => {
 describe("trackingPush", () => {
   it("builds the Orders v2 /track call with a stable request ID and a plain preview", () => {
     expect(trackingPush(push)).toEqual({
+      sellerId: SELLER,
       type: "tracking_push",
       method: "POST",
       path: "/v2/checkout/orders/82T98686KK690340N/track",

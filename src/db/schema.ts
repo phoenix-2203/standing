@@ -30,6 +30,7 @@ export const actionStatus = pgEnum("action_status", [
 
 export const actions = pgTable("actions", {
   id: uuid("id").primaryKey().defaultRandom(),
+  sellerId: text("seller_id"),
   type: text("type").notNull(),
   method: text("method").notNull(),
   path: text("path").notNull(),

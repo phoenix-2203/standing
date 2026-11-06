@@ -15,6 +15,7 @@ export const CANCEL_WINDOW_MS = 2 * 60_000;
 const STALE_SENDING_MS = 5 * 60_000;
 
 export interface ActionSpec {
+  sellerId?: string;
   type: string;
   method: Exclude<Method, "GET">;
   path: string;
@@ -34,6 +35,7 @@ export async function previewAction(db: Db, spec: ActionSpec): Promise<Action> {
   await db
     .insert(actions)
     .values({
+      sellerId: spec.sellerId ?? null,
       type: spec.type,
       method: spec.method,
       path: spec.path,
@@ -48,6 +50,11 @@ export async function previewAction(db: Db, spec: ActionSpec): Promise<Action> {
     throw new Error(`Request ID ${spec.requestId} already belongs to a different action (${action.type} ${action.method} ${action.path})`);
   }
   return action;
+}
+
+/** A cancelled action was never sent, so the seller can change their mind; the request ID stays the same. */
+export async function reopenCancelled(db: Db, requestId: string, now = new Date()): Promise<void> {
+  await db.update(actions).set({ status: "preview", undoUntil: null, updatedAt: now }).where(and(eq(actions.requestId, requestId), eq(actions.status, "cancelled")));
 }
 
 /** Step 2: the seller approves; the cancel window starts. Only a preview can be approved. */

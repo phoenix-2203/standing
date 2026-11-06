@@ -105,7 +105,8 @@ async function summaryItem(db: Db, sellerId: string, from: Date, to: Date, curve
   const busiest = curve.reduce((m, d) => (d.cents > m.cents ? d : m), curve[0] ?? { day: day(to), cents: 0, orders: 0 });
   const txnIds = new Set(ledger.filter((e) => e.kind === "txn").map((e) => e.transactionId));
   const tracked = new Set(ledger.filter((e) => e.kind === "delivery" && txnIds.has(e.transactionId)).map((e) => e.transactionId)).size;
-  const completed = new Set(ledger.filter((e) => e.kind === "digital_delivery" && txnIds.has(e.transactionId)).map((e) => e.transactionId)).size;
+  // Only PayPal's own tracker counts as "marked Completed"; a seller's delivery record is separate evidence.
+  const completed = new Set(ledger.filter((e) => e.kind === "digital_delivery" && e.source === "paypal" && txnIds.has(e.transactionId)).map((e) => e.transactionId)).size;
   const opened = (
     await db
       .select({ id: disputes.disputeId })
