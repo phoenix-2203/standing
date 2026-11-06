@@ -765,5 +765,9 @@ Caddy (see `deploy/README.md`).
 `umask 077` in the same shell). Caddy kept serving the old config, so the other sites were unaffected. The
 Caddyfile was restored from backup, the file was made readable (644, like the others), and the reload then passed.
 
+**New address (same evening):** `https://goodstanding.duckdns.org`, served by the same Caddy site block alongside the sslip
+name. It has its own Let's Encrypt certificate (valid until 4 Feb 2027), `APP_BASE_URL` was updated, and the login now sends
+PayPal `https://goodstanding.duckdns.org/api/auth/paypal/callback`.
+
 **Still to do:** register the hosted return URL and webhook in PayPal; log in with the test accounts; set
 `STANDING_ALLOWED_PAYER_IDS`; test a genuine webhook delivery.
