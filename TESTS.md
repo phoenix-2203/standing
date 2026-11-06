@@ -742,3 +742,28 @@ Normal questions answered from the expected facts (or "no data" where allowed): 
 - `next start` smoke test: `/checklist` 200; `/api/checklist` without a session 401; `/api/auth/paypal/start` 302 to
   the sandbox login with the state in an httpOnly cookie; callback with a bad state → `connect=bad_state`.
 - Code tests: **347/347 pass**.
+
+## Hosted deploy on the VPS (6 Nov 2026)
+
+`https://standing.104-251-218-80.sslip.io`. Docker Compose on the builder's VPS, next to other apps, behind
+Caddy (see `deploy/README.md`).
+
+**Isolation checks:**
+- The listening ports were the same before and after installing Docker (16).
+- The app listens on `127.0.0.1:3100` only.
+- Ports 3100 and 5432 are closed from the internet.
+- The database publishes no port.
+- The app runs as a non-root user, read-only, with a 768 MB memory cap.
+- No `.env` file is in the image.
+
+**Checked from outside:**
+- `/checklist` returns 200 over HTTPS (Let's Encrypt certificate, valid until 4 Feb 2027), and plain http redirects to https.
+- `/api/checklist`, `/api/ask` and `/api/cron/run` return 401 without a session or secret.
+- The login start redirects with the hosted callback and a `Secure` state cookie.
+
+**One hiccup:** the first Caddy reload failed, because the new site file was created root-only (an earlier
+`umask 077` in the same shell). Caddy kept serving the old config, so the other sites were unaffected. The
+Caddyfile was restored from backup, the file was made readable (644, like the others), and the reload then passed.
+
+**Still to do:** register the hosted return URL and webhook in PayPal; log in with the test accounts; set
+`STANDING_ALLOWED_PAYER_IDS`; test a genuine webhook delivery.
