@@ -14,7 +14,8 @@
     "test:live": "vitest run --config vitest.live.config.mts",
     "eval:policy": "node --env-file=.env --import tsx src/evals/run-policy-eval.ts",
     "eval:rescore": "node --import tsx src/evals/rescore-policy-eval.ts",
-    "eval:refusal": "node --env-file=.env --import tsx src/evals/run-refusal-eval.ts"
+    "eval:refusal": "node --env-file=.env --import tsx src/evals/run-refusal-eval.ts",
+    "cycle": "node --env-file=.env --import tsx src/jobs/run-cycle.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.9.0",

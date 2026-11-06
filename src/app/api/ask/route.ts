@@ -13,6 +13,11 @@ export async function POST(request: Request) {
   } catch {
     return Response.json({ error: "invalid_json" }, { status: 400 });
   }
-  const r = await askStanding(typeof question === "string" ? question : "", await loadAskFacts(getDb(), sellerId), providersFromEnv());
-  return Response.json({ decision: r.decision, refusalTopic: r.refusalTopic, text: r.text, sentences: r.sentences });
+  try {
+    const r = await askStanding(typeof question === "string" ? question : "", await loadAskFacts(getDb(), sellerId), providersFromEnv());
+    return Response.json({ decision: r.decision, refusalTopic: r.refusalTopic, text: r.text, sentences: r.sentences });
+  } catch (err) {
+    console.error(`Ask Standing failed: ${(err as Error).message.slice(0, 300)}`);
+    return Response.json({ error: "Standing couldn't answer right now. Please try again in a minute." }, { status: 503 });
+  }
 }

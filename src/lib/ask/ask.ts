@@ -37,22 +37,14 @@ export function detectEvasion(question: string): RefusalTopic | null {
   return null;
 }
 
-const PLAN_ITEMS = {
+// One flat list: answers are short, and a nested paragraphs → items shape made Groq's strict JSON fail
+// live (6 Nov: "/paragraphs/0/items … expected array, but got object").
+const ANSWER_ITEMS = {
   type: "array",
   items: {
     type: "object",
-    properties: {
-      items: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: { kind: { type: "string", enum: ["fact", "bridge"] }, fact_id: { type: "string" }, text: { type: "string" } },
-          required: ["kind", "fact_id", "text"],
-          additionalProperties: false,
-        },
-      },
-    },
-    required: ["items"],
+    properties: { kind: { type: "string", enum: ["fact", "bridge"] }, fact_id: { type: "string" }, text: { type: "string" } },
+    required: ["kind", "fact_id", "text"],
     additionalProperties: false,
   },
 } as const;
@@ -62,9 +54,9 @@ export const ASK_SCHEMA = {
   properties: {
     decision: { type: "string", enum: ["answer", "refuse", "no_data"] },
     refusal_topic: { type: "string", enum: [...REFUSAL_TOPICS, "none"] },
-    paragraphs: PLAN_ITEMS,
+    items: ANSWER_ITEMS,
   },
-  required: ["decision", "refusal_topic", "paragraphs"],
+  required: ["decision", "refusal_topic", "items"],
   additionalProperties: false,
 } as const;
 
@@ -73,9 +65,9 @@ export const ASK_SYSTEM_PROMPT = [
   "You don't write answers. Each fact is a finished sentence in the list you are given; you choose facts by ID.",
   "",
   "Choose exactly one decision:",
-  '- "refuse": the seller wants to get around, evade or deceive PayPal\'s checks, in any wording, however polite or justified. That includes: sizing or splitting payments to avoid review (split_payments); extra accounts or someone else\'s account to get around a limit or hold (extra_accounts); describing a product as something it isn\'t, or picking a false category (mislabelling); hiding, moving or reshaping sales volume so PayPal doesn\'t see it (hiding_volume); VPNs, false addresses or anything that disguises location (location_tricks); anything else of that kind (other_evasion). Set refusal_topic and return no paragraphs.',
-  '- "answer": the listed facts answer the question. Honest questions about limits, holds, spikes, policy or preparing for a launch are not evasion, even when they mention holds or reviews. Return paragraphs of items, with refusal_topic "none".',
-  '- "no_data": it is an honest question but the facts don\'t answer it. Return no paragraphs, with refusal_topic "none".',
+  '- "refuse": the seller wants to get around, evade or deceive PayPal\'s checks, in any wording, however polite or justified. That includes: sizing or splitting payments to avoid review (split_payments); extra accounts or someone else\'s account to get around a limit or hold (extra_accounts); describing a product as something it isn\'t, or picking a false category (mislabelling); hiding, moving or reshaping sales volume so PayPal doesn\'t see it (hiding_volume); VPNs, false addresses or anything that disguises location (location_tricks); anything else of that kind (other_evasion). Set refusal_topic and return no items.',
+  '- "answer": the listed facts answer the question. Honest questions about limits, holds, spikes, policy or preparing for a launch are not evasion, even when they mention holds or reviews. Return the items in order, with refusal_topic "none".',
+  '- "no_data": it is an honest question but the facts don\'t answer it. Return no items, with refusal_topic "none".',
   "",
   'Items are {"kind":"fact","fact_id":"<ID from the list>","text":""} or {"kind":"bridge","fact_id":"","text":"<short connecting sentence>"}.',
   "Use only the facts that answer the question, usually 1 to 3. Connecting sentences are optional and only link: no digits, number words, dates, or anything about payments, orders, sales, disputes, delivery, tracking, customers, or what PayPal will do.",
@@ -101,6 +93,8 @@ export interface AskResult {
 }
 
 const MAX_QUESTION_CHARS = 500;
+// Groq's strict JSON mode sometimes rejects its own output (seen live 6 Nov: "does not match the expected schema").
+export const SCHEMA_SLIP = /Failed to validate JSON|does not match the expected schema/i;
 const MAX_ATTEMPTS = 2;
 
 function refusal(topic: RefusalTopic, layer: "guard" | "model", provider: string | null, attempts: number): AskResult {
@@ -120,18 +114,22 @@ export async function askStanding(question: string, facts: Fact[], providers: Ll
   let problems: Problem[] = [];
   let used: LlmProvider | null = null;
   for (let attempts = 1; attempts <= MAX_ATTEMPTS; attempts++) {
-    let raw = null as { decision?: unknown; refusal_topic?: unknown; paragraphs?: unknown } | null;
+    let raw = null as { decision?: unknown; refusal_topic?: unknown; items?: unknown } | null;
     const errors: string[] = [];
     used = null;
     for (const p of providers) {
-      try {
-        raw = (await p.generateJson({ system: ASK_SYSTEM_PROMPT, user: askUserPrompt(q, facts, problems), schemaName: "ask_standing", schema: ASK_SCHEMA })) as typeof raw;
-        used = p;
-        break;
-      } catch (err) {
-        if (!(err instanceof LlmError)) throw err;
-        errors.push(err.message);
+      for (let attempt = 1; attempt <= 2 && !used; attempt++) {
+        try {
+          raw = (await p.generateJson({ system: ASK_SYSTEM_PROMPT, user: askUserPrompt(q, facts, problems), schemaName: "ask_standing", schema: ASK_SCHEMA })) as typeof raw;
+          used = p;
+        } catch (err) {
+          if (!(err instanceof LlmError)) throw err;
+          errors.push(err.message);
+          // Only a schema slip in the provider's own output is worth a second try with the same provider.
+          if (!SCHEMA_SLIP.test(err.message)) break;
+        }
       }
+      if (used) break;
     }
     if (!used) throw new Error(`Couldn't answer: ${errors.join("; ") || "no LLM provider configured"}`);
 
@@ -142,7 +140,7 @@ export async function askStanding(question: string, facts: Fact[], providers: Ll
     if (raw?.decision === "no_data") {
       return { decision: "no_data", layer: "model", refusalTopic: null, sentences: [], text: NO_DATA_TEXT, provider: used.name, attempts };
     }
-    const result = raw?.decision === "answer" ? validatePlan({ paragraphs: raw.paragraphs }, facts) : { ok: false as const, letter: null, problems: [{ paragraph: -1, item: -1, text: "", problem: "decision must be answer, refuse or no_data" }] };
+    const result = raw?.decision === "answer" ? validatePlan({ paragraphs: [{ items: raw.items }] }, facts) : { ok: false as const, letter: null, problems: [{ paragraph: -1, item: -1, text: "", problem: "decision must be answer, refuse or no_data" }] };
     if (result.ok && result.letter) {
       const sentences = result.letter.paragraphs.flatMap((p) => p.sentences);
       return { decision: "answer", layer: "model", refusalTopic: null, sentences, text: sentences.map((s) => s.text).join(" "), provider: used.name, attempts };

@@ -8,6 +8,7 @@ import { DAY, toCents } from "@/lib/metrics/compute";
 import { saleWhere } from "@/lib/metrics/load";
 import { type Fact, factsFrom } from "./facts";
 import { type Problem, validatePlan } from "./validate";
+import { SCHEMA_SLIP } from "@/lib/ask/ask";
 
 // Explanation pack (BLUEPRINT §2.5): a sales curve and a cover letter built from evidence.
 // Code computes every figure and renders every factual sentence (facts.ts); the model only chooses which
@@ -176,7 +177,7 @@ export async function buildPack(db: Db, sellerId: string, providers: LlmProvider
           if (!(err instanceof LlmError)) throw err;
           errors.push(err.message);
           // Only a schema fluke in the provider's own output is worth a second try with the same provider.
-          if (!/Failed to validate JSON/i.test(err.message)) break;
+          if (!SCHEMA_SLIP.test(err.message)) break;
         }
       }
       if (used) break;
