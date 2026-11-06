@@ -71,6 +71,13 @@
       "when": 1793485129047,
       "tag": "0009_policy_verdicts",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793969648472,
+      "tag": "0010_paypal_connections",
+      "breakpoints": true
     }
   ]
 }

@@ -52,7 +52,7 @@ beforeEach(async () => {
   await sale("1GB72668J97404239", "2026-11-04T10:00:00Z", "18.00");
   await sale("7X271304DH7155231", "2026-11-04T11:00:00Z", "20.00");
   await sale("OLD", "2026-08-01T10:00:00Z", "50.00"); // outside the 60 days
-  await db.insert(shipments).values({ sellerId: SELLER, transactionId: "1GB72668J97404239", trackerId: "T1", trackingNumber: "STANDINGD1PHY01", carrier: "USPS", status: "SHIPPED", source: "paypal_read" });
+  await db.insert(shipments).values({ sellerId: SELLER, transactionId: "1GB72668J97404239", trackerId: "T1", trackingNumber: "STANDINGD1PHY01", carrier: "USPS", status: "SHIPPED", source: "paypal_read", createdAt: new Date("2026-11-04T12:00:00Z") });
   await db.insert(disputes).values({ disputeId: "PP-D-1", sellerId: SELLER, createdAtPaypal: new Date("2026-11-05T00:00:00Z"), status: "OPEN", sellerTransactionIds: [], raw: {} });
   await syncLedger(db, SELLER);
   await addTrafficSource(db, SELLER, { label: "TikTok video", url: "https://www.tiktok.com/@maker/video/1", date: "2026-11-03", simulated: true });

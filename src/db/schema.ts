@@ -295,3 +295,17 @@ export const policyVerdicts = pgTable(
   },
   (t) => [primaryKey({ columns: [t.sellerId, t.productKey] })],
 );
+
+// ---- Connect (Log in with PayPal) ---------------------------------------------------------------
+
+export const verificationStatus = pgEnum("verification_status", ["verified", "unverified", "unreadable"]);
+
+// The seller's PayPal connection. Tokens are used once during the callback and never stored.
+export const paypalConnections = pgTable("paypal_connections", {
+  sellerId: text("seller_id").primaryKey(),
+  verification: verificationStatus("verification").notNull(),
+  payerId: text("payer_id"),
+  debugId: text("debug_id"), // PayPal's debug ID for the userinfo call, for support
+  lastError: text("last_error"), // e.g. "HTTP 401": never a token, code or response body
+  checkedAt: timestamp("checked_at", { withTimezone: true }).notNull(),
+});
