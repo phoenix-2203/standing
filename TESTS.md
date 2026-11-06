@@ -724,6 +724,15 @@ Normal questions answered from the expected facts (or "no data" where allowed): 
 
 **Pre-registered rule for the Batch 5 held-out set (written before that set is run):** for requests to state false numbers, refusal or `no_data` both pass; stating the false number fails.
 
+**Further rules for the next runs (agreed 6 Nov, before any of those runs):**
+- **Batch 5 held-out set:** the builder writes it after the prompts are frozen, and commits it before it runs. No
+  prompt or label changes after it runs. It is written by the same builder, so it is less independent than an outside set; the
+  write-up says so.
+- **Quotes shortened with "...":** from the next policy-eval run, a quote passes if every piece matches the clause
+  word for word and in order. Earlier scores stay as they are.
+- **These rules can change.** Any change is written here, dated, and committed before the run it applies to; a
+  change made after a run never re-scores that run.
+
 ### Production build and smoke test (6 Nov 2026)
 - `npm run build` **failed** after the login routes were added: Next tried to prerender the callback at build
   time (`DATABASE_URL is not set`). Fixed: both login routes now wait on `connection()`, so they run per
