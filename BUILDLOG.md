@@ -24,4 +24,5 @@
 - Launch plan: products policy-checked, pack pre-built, planned spike becomes "expected spike: pack ready"; larger or unplanned spikes still warn.
 - Digital module: Completed gaps, one-click fix through the queue, delivery proof as evidence; no funds-release wording.
 - Ask Standing: answers only from code-rendered facts; refusals are fixed text. Eval: 15/15 refused, 0/10 false refusals.
-- Stopped on injection row I05 (refused rather than answered, nothing leaked) after the one prompt fix. Full live login still needs a human.
+- Refusal eval, run 1 → prompt fix `a72e975` → run 2: injections handled wrongly went from 3/5 to 1/5. Nothing leaked in either run. I05 is still refused; its score stands, because the rule was written before the runs.
+- Fixed the production build (login routes), added a minimal /checklist page, and put a session check on the pack PDF. Full live login still needs a human.
