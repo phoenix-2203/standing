@@ -524,3 +524,58 @@ Notes on the misses:
 - **T09:** the same false flag as before (handmade silver ring → PRE-03, dealer in precious metals).
 - **T13:** flagged under PROH-1 ("violate any law") instead of PRE-16.
 - **T06:** `prohibited` PROH-3d, where the label is `unclear`.
+
+## Sat 7 Nov task — connect, launch plan, digital module, Ask Standing (built 6 Nov 2026)
+
+### 1. Connect and verified-seller check (`a89940b`)
+Code tests: `src/lib/connect/login.test.ts`.
+- **All three states:**
+  - `verified_account: "true"` → verified (checklist done).
+  - `"false"` → unverified (checklist item 1: "Verify your PayPal account").
+  - Anything else → **couldn't read** (checklist: "Couldn't read your verification status… doesn't mean
+    your account is unverified"). That covers HTTP 401 (as seen live on 31 Oct), HTTP 500, a missing
+    field, a boolean `true`/`false`, invalid JSON and network failure.
+- **State checks:** a wrong state, a missing state or a missing cookie means no PayPal call and nothing
+  stored. The state cookie is cleared after use.
+- **Failed or cancelled login:** a cancel at PayPal or a failed token exchange stores nothing and opens
+  no session.
+- **Secrets:** a test checks that the access token, refresh token, code, client ID and client secret
+  appear in neither the response, the cookies, the logs nor the database.
+- **Session cookie:** a forged seller, a changed expiry, the wrong secret, an expired cookie or a missing
+  secret are all rejected. Every seller route returns 401 without a valid session.
+
+Live (`npm run test:live -- src/lib/connect/login.live.ts`, 6 Nov):
+- An invalid code against the real sandbox: token exchange HTTP 401 (debug `f8870045a102c`), redirected to
+  `connect=failed`, nothing stored, no session.
+- The start URL opens the sandbox login page (HTTP 301 to PayPal's login).
+- **Not yet run: a full live login.** It needs a sandbox login by the user, with
+  `http://localhost:3000/api/auth/paypal/callback` registered as a return URL.
+
+### 2. Launch plan (`17b873c`)
+Code tests: `src/lib/launch/plan.test.ts`.
+- **Planned spike** (6× with 6× planned) → "Expected spike: pack ready" (info, links the pack PDF).
+- **Unplanned spike** → the normal "Sales spike" warning.
+- **Spike larger than planned** (8× vs 6×) → "Sales spike above your launch plan", still a warning.
+  The raw ratio is compared, so 3.08× against a 3× plan warns even though it displays as "3.0×".
+- **Also covered:**
+  - a spike outside the window (the launch date plus 2 days) warns;
+  - a blocked pack → "Expected spike: pack not ready" (warning);
+  - a launch product flagged by the policy check keeps the spike a warning and names the product;
+  - every product is policy-checked before the pack is built, and cached verdicts are reused;
+  - the pack is rebuilt once when the window opens.
+
+### 3. Digital-seller module (`eabb5de`)
+Code tests: `src/lib/digital/module.test.ts`.
+- **Gap list:** digital and service orders over 24 hours old and not marked Completed, oldest first. Physical,
+  too-new, already-Completed and other sellers' orders are excluded.
+- **One click:** preview and approval through the existing queue.
+  - Nothing is sent inside the cancel window.
+  - After the window, the cycle sends it once with request ID `complete-<capture>`, and the order leaves
+    the list.
+  - A double click keeps one action and one window.
+  - Cancelling, then clicking again later, reuses the same request ID.
+  - A timeout stays unknown and is retried with the same ID.
+  - Orders that aren't on the list, or belong to another seller, are refused.
+- **Delivery proof:** added as seller-labelled evidence (`EV-DLV-…`, "Simulated:" when simulated). It never
+  counts as "marked Completed" in the pack. A test bans "release", "funds" and "hold" in every
+  user-facing string.
