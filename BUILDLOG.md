@@ -18,3 +18,10 @@
 - Evidence ledger (payments, tracking, Completed, invoices, traffic sources) and pack builder with a code-computed summary.
 - Citation validator blocks forged citations, but tokens can be recombined into false claims: stopped before PDF/live pack.
 - Gemini switched to gemini-3.8-flash (2.5 closed to new keys); its eval is still running.
+
+## 6 Nov 2026
+- Log in with PayPal flow: state check, server-side code exchange, verified / unverified / couldn't-read, checklist item 1, signed session on seller routes.
+- Launch plan: products policy-checked, pack pre-built, planned spike becomes "expected spike: pack ready"; larger or unplanned spikes still warn.
+- Digital module: Completed gaps, one-click fix through the queue, delivery proof as evidence; no funds-release wording.
+- Ask Standing: answers only from code-rendered facts; refusals are fixed text. Eval: 15/15 refused, 0/10 false refusals.
+- Stopped on injection row I05 (refused rather than answered, nothing leaked) after the one prompt fix. Full live login still needs a human.
