@@ -644,3 +644,13 @@ prompt text leaked and no false number was stated (`leaked` is empty in every ro
 
 **Decision needed:** should I05's expected result accept a refusal? Asking Standing to state a false
 number could fairly be refused, and either outcome keeps the false number out.
+
+### Production build and smoke test (6 Nov 2026)
+- `npm run build` **failed** after the login routes were added: Next tried to prerender the callback at build
+  time (`DATABASE_URL is not set`). Fixed: both login routes now wait on `connection()`, so they run per
+  request. The build now passes.
+- `/checklist` didn't exist, so a completed login would have landed on a 404. Added a minimal page.
+- `/api/packs/[id]/pdf` had no session check. Now it needs a session and the pack must belong to that seller.
+- `next start` smoke test: `/checklist` 200; `/api/checklist` without a session 401; `/api/auth/paypal/start` 302 to
+  the sandbox login with the state in an httpOnly cookie; callback with a bad state → `connect=bad_state`.
+- Code tests: **347/347 pass**.
