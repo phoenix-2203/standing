@@ -769,5 +769,23 @@ Caddyfile was restored from backup, the file was made readable (644, like the ot
 name. It has its own Let's Encrypt certificate (valid until 4 Feb 2027), `APP_BASE_URL` was updated, and the login now sends
 PayPal `https://goodstanding.duckdns.org/api/auth/paypal/callback`.
 
-**Still to do:** register the hosted return URL and webhook in PayPal; log in with the test accounts; set
-`STANDING_ALLOWED_PAYER_IDS`; test a genuine webhook delivery.
+**PayPal registration and live checks (6 Nov, evening):**
+- **Return URL** `https://goodstanding.duckdns.org/api/auth/paypal/callback` is accepted by PayPal's login page.
+- **Webhook** `https://goodstanding.duckdns.org/api/webhooks/paypal` is registered for
+  `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.REFUNDED` and `CUSTOMER.DISPUTE.CREATED` / `UPDATED` /
+  `RESOLVED` (list call debug `f7188502e5148`).
+- **Forged delivery** to the hosted endpoint: PayPal's verification said FAILURE, and the route returned
+  400 `signature_rejected` (debug `f4707769cb50c`).
+- **Hosted login** with the verified sandbox account: stored `verified`, payer ID `NXMBX8LKWN6GW`, no error.
+- **Genuine webhook delivery: PASSED** (the Mon 2 Nov "done when").
+  - A sandbox card order of USD 5.00 (request ID `standing-webhook-test-01-create`, debug `ca566e8826861`; order
+    `3NL03426927043718`, capture `6JU602950U280064H`) produced `PAYMENT.CAPTURE.COMPLETED`, event
+    `WH-39272294RX935522E-06G171690Y858230N`.
+  - It was received at 20:39 UTC, its signature was verified by PayPal, and it was stored. PayPal's Webhook Events page
+    shows **Success**.
+- **Duplicate ignored: PASSED.**
+  - The same event was resent twice: once through the API (`/resend`, HTTP 202, debug `ca566eba15eb7`) and once
+    from the dashboard's Resend button.
+  - PayPal still shows Success (the app answered 200), and the database still holds exactly 1 row for the event ID.
+
+**Still to do:** a hosted login with the unverified account; set `STANDING_ALLOWED_PAYER_IDS`.
