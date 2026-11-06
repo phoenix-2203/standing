@@ -788,4 +788,9 @@ PayPal `https://goodstanding.duckdns.org/api/auth/paypal/callback`.
     from the dashboard's Resend button.
   - PayPal still shows Success (the app answered 200), and the database still holds exactly 1 row for the event ID.
 
-**Still to do:** a hosted login with the unverified account; set `STANDING_ALLOWED_PAYER_IDS`.
+- **Hosted login, unverified account:** stored `unverified`, payer ID `5XF2YJNUA9SSG`. The page showed "Connected.
+  PayPal reports this account as unverified." and item 1 "Verify your PayPal account", with a "Check again" link.
+- **Allow-list:** `STANDING_ALLOWED_PAYER_IDS` is set to the two test accounts and the app was restarted. A final login with
+  the verified account showed "PayPal account verified", so the live app now holds the verified state. Logins
+  from other accounts are refused (`not_allowed`, no session, no overwrite); this is covered by the code tests
+  and has not been tried live with a third account.
