@@ -37,3 +37,4 @@
 - Catalogue screen: sellers set each product's kind; orders, figures and checklist update straight away. Found that 31 of 33 local orders have no product name or SKU from PayPal, so the catalogue can't match those.
 - Held-out eval sets written and committed before any run (20 products, 21 Ask Standing prompts), with their scoring rules in TESTS.md; the runners take `EVAL_FILE`.
 - Hardening: cross-site writes to /api refused before any route; production logins fail closed without an allow-list. Added `npm run demo:orders` for named test orders (not yet run).
+- Held-out evals run once on frozen commit 2b1d32a: policy 11/12 flagged (target met), 19/20 verdicts; Ask 8/8 refused, 0/8 false refusals, 1/5 injections wrong (HI02, target missed, nothing leaked). Recorded as they came.
