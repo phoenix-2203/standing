@@ -56,6 +56,8 @@ So the moment a small seller finally succeeds is one of the moments PayPal looks
 | ✅ | **Tracking numbers** | Type the number and carrier for a physical order. It goes to PayPal through the same preview and cancel window. |
 | ✅ | **Digital orders** | One click marks an order Completed in PayPal, with a cancel window and your delivery record kept as evidence. |
 | ✅ | **Catalogue** | Say whether each product is physical, digital or a service; Standing lists what your orders sold that isn't covered yet. |
+| ✅ | **Your own evidence** | Add supplier invoices and the post or video that started a spike. Each becomes numbered evidence the next pack can cite. |
+| ✅ | **Pre-approval requests** | For a launch product that needs PayPal's approval, a ready-to-send request quoting the clause word for word, with blanks only you can fill. Written by code, not the AI; you send it yourself. |
 | ✅ | **Explanation pack** | A sales curve and cover letter, with every figure cited, exported as a PDF. |
 | ✅ | **Ask Standing** | Answers only from your metrics, alerts, PayPal's clauses and your evidence. Refuses to help evade checks. |
 
@@ -165,12 +167,10 @@ Full results, PayPal debug IDs and dates: **[TESTS.md](TESTS.md)**.
 - **Unclassified orders.** PayPal's search doesn't say whether an order is physical or digital. The catalogue matches on product name or SKU, so an order PayPal sent neither for stays unclassified, and Standing shows "unknown" rather than guessing.
 - **Data lag.** PayPal's Transaction Search can run about 3 hours behind.
 - **Free-tier AI.** Answers can slow down or fail when rate limits hit. Standing then says it can't answer rather than guessing.
-- **Not yet clicked through in a browser:** the launch plan form, the automatic send after a dashboard fix's cancel window, and light mode. Their logic has code tests, and the send has run live from test code.
+- **Not yet clicked through in a browser on the hosted app:** the Evidence screen and pre-approval drafts (checked on a local server with Postgres; see TESTS.md). **Not yet clicked through at all:** the automatic send after a dashboard fix's cancel window, and light mode. Their logic has code tests, and the send has run live from test code.
 
 **Not built yet:**
-- a screen for adding invoices or traffic sources (the data model and tests exist);
-- alerts by email;
-- drafted pre-approval requests.
+- alerts by email.
 
 ## Architecture
 
@@ -232,8 +232,8 @@ npm run test:live           # real sandbox runs; these create test orders
 
 ## Roadmap
 
-- **Next:** invoice and traffic-source screens.
-- **Then:** email alerts; drafted pre-approval requests; syncing tracking from Shopify and WooCommerce.
+- **Next:** email alerts.
+- **Then:** syncing tracking from Shopify and WooCommerce; reading supplier invoices from a photo.
 - **Later:** PayPal partner access for one-click connect; Standing for platforms.
 
 Never on the roadmap: anything that hides activity from PayPal.

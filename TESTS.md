@@ -1036,3 +1036,32 @@ Purpose: find out whether Transaction Search returns their item names. **Not kno
 
 - **Item names:** `npm run cycle` at about 08:46 UTC synced the 4 probe orders (created 05:18 UTC, so about 3.5 h of search lag). All 4 came back **with item name and SKU**: `5JN647759D070082C` Lavender soy candle / CND-LAV; `4T486626EA214431E` and `95W11926A86898418` Candle-making pattern PDF / PDF-PATTERN; `71811069JP0021720` Candle gift set / CND-GIFT12. So orders created with an item list do carry names through search; the 31 earlier local orders lack them because those test orders were created without items. The catalogue can match orders like these once the products are set up.
 - **Automatic send after the full window, in a browser (local production build):** on the dashboard's "Physical orders without tracking" card, entered `9400111202555842761107` / USPS for `5JN647759D070082C` and pressed Add tracking at 08:48:24 UTC. The preview named PayPal order `9AY527875G170912X` (so Orders v2 `/track` was used) and showed a 2-minute cancel countdown. Not touched after that. The queue sent it by itself at 08:50:28 UTC, 4 s after the window closed: **PayPal 201, debug ID `f177910bcc292`**, request ID `track-5JN647759D070082C-9400111202555842761107`, one attempt. **Passed.** Still not tested: the button on the hosted app.
+
+## Reliability, hardening, Evidence screen and pre-approval drafts (7 Nov 2026, written by Claude in chat)
+
+All checked with code tests: **459/459 pass**, typecheck and lint clean. `npm run build` couldn't run in Claude's sandbox
+(next/font can't reach Google Fonts there); **to do: run `npm run build` on the Mac before deploying.**
+
+- **LLM retry:** one retry for 429/500/502/503/504 or a dropped connection, waiting Retry-After (capped at 5 s, else 1 s).
+  No retry on a timeout or another 4xx; never more than two requests per call. 5 tests. This is aimed at the hosted
+  "Build a new pack" 503 on the first click; **the cause of that 503 wasn't confirmed** (check `docker logs` for the
+  "Pack build failed:" line).
+- **Webhook pre-checks:** the cert URL must be https on a paypal.com host, the algorithm `SHA…withRSA`, the body ≤256 KB.
+  All are checked before calling PayPal's verify API. 5 new tests; existing webhook tests unchanged.
+  **To do: after deploy, resend one event from the dashboard and confirm it is still accepted.**
+- **Delivery proof errors:** only `InvalidProof` messages reach the browser; anything else is a generic 500. 2 tests.
+- **Evidence screen** (`/evidence`, API under `/api/evidence`): list, add invoice, add traffic source, remove (seller-added
+  only). The "test data → Simulated" box is ticked by default. 9 new library tests, plus 4 routes added to the 401 test.
+  **In a browser** (local `next dev` + Postgres 16, dev login), desktop and 390 px mobile:
+  - added a 2-line invoice and a traffic source, both shown with the Simulated badge;
+  - an `http://` link was refused with the server's message;
+  - remove → 204, and the item is gone;
+  - a write from another Origin → 403.
+- **Pre-approval drafts** (`POST /api/policy/approval-draft`, button in the launch plan): template only. The clause is
+  quoted exactly, there is no outcome wording, and every `[BLANK]` is listed. 10 tests, plus the route added to the
+  401 test.
+  **In a browser:** a launch plan with a locally cached, simulated pre-approval verdict (PRE-14) showed the button. The
+  draft opened with 10 blanks, and "Copy" put the subject and message on the clipboard. This also clicked through the
+  launch plan form for the first time (POST 201).
+- **Not checked on the hosted app yet:** all of the above. Click through `/evidence` and one pre-approval draft after
+  the next deploy.

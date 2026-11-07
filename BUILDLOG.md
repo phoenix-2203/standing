@@ -44,3 +44,4 @@
 - New look, "The Record" (pine and paper, serif headings, mono figures), and a logo: a person standing on a base line. Dashboard now opens with what needs attention, counted by code. Page arrangement is left for later.
 - Logo replaced with the owner's chosen artwork, traced to a vector: a white side-profile figure on a ground line in a deep green tile. Below 40 px the figure is drawn larger so it still reads.
 - Probe orders reached Transaction Search with item names and SKUs, so the catalogue can match orders created with an item list. The tracking button's full 2-minute automatic send passed live (201).
+- Built from chat: one retry for busy LLM calls, webhook pre-checks, safe delivery-proof errors, the Evidence screen (invoices and traffic sources), and pre-approval request drafts.

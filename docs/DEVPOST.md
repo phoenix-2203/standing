@@ -51,6 +51,8 @@ listed in `docs/RESEARCH.md`.*
   number in it is written by code, never by the AI.
 - **Ask Standing.** Answers questions only from the seller's own figures, alerts, PayPal's clauses and
   evidence. It refuses to help evade PayPal's checks.
+- **Your own evidence.** Supplier invoices and the post that started a spike become numbered evidence the pack can cite.
+- **Pre-approval requests.** For a product that needs PayPal's approval, a draft quoting the clause word for word. Code writes it, and the seller fills the blanks and sends it.
 - **Orders table** built with AG Grid Community: sort, filter, search and paging over every PayPal payment.
 
 ## How we built it
@@ -108,9 +110,8 @@ PayPal writes and refusals; the AI routes and explains.
 
 ## What's next for Standing
 
-- Screens for adding invoices and traffic sources, and a button for adding tracking numbers.
-- Email alerts; drafted pre-approval requests.
-- Syncing tracking from store platforms.
+- Email alerts.
+- Syncing tracking from store platforms; reading supplier invoices from a photo.
 - PayPal partner access so any seller can connect without their own API keys.
 
 Never on the roadmap: anything that hides activity from PayPal.
