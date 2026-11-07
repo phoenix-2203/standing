@@ -37,7 +37,7 @@ export const THRESHOLD_NOTE = "Thresholds are Standing's defaults, not PayPal ru
 const usd = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 const times = (r: number) => `${(Math.floor(r * 10) / 10).toFixed(1)}×`; // round down: never overstate
 
-/** Every condition currently true. The 90-day dispute rate is shown but never alerts: PayPal publishes no threshold. */
+/** Every condition currently true. The 90-day dispute rate is shown but never alerts. PayPal's guide advises complaints below 1% of sales, which isn't the same measure. */
 export function evaluate(m: Metrics, plan: PlanContext | null = null): AlertCondition[] {
   const out: AlertCondition[] = [];
 

@@ -32,7 +32,7 @@ describe("facts come from code", () => {
   it("renders metrics with their computed numbers and notes", () => {
     const byId = Object.fromEntries(metricFacts(metrics).map((f) => [f.id, f.text]));
     expect(byId["M-SPIKE"]).toBe("Spike ratio: 4.0× (last 24 hours USD 160.00; average day over the previous 28 days USD 40.00). Standing alerts at 3×, its own default, not a PayPal rule.");
-    expect(byId["M-DISPUTES"]).toMatch(/1 disputes in \d+ orders .* PayPal publishes no exact threshold\.$/);
+    expect(byId["M-DISPUTES"]).toMatch(/1 disputes in \d+ orders .* keeping complaints below 1% of sales\.$/);
     expect(byId["M-TRACKING"]).toContain("have tracking");
   });
 

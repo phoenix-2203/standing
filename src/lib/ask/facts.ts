@@ -67,7 +67,7 @@ export function metricFacts(m: Metrics): Fact[] {
   out.push(
     fact(
       "M-DISPUTES",
-      d.rate === null ? "Dispute rate (90 days): no orders. PayPal publishes no exact threshold." : `Dispute rate (90 days): ${d.disputes} disputes in ${d.orders} orders (${pct(d.rate)}). PayPal publishes no exact threshold.`,
+      d.rate === null ? "Dispute rate (90 days): no orders. Standing doesn't alert on this. PayPal's guide advises keeping complaints below 1% of sales." : `Dispute rate (90 days): ${d.disputes} disputes in ${d.orders} orders (${pct(d.rate)}). Standing doesn't alert on this. PayPal's guide advises keeping complaints below 1% of sales.`,
     ),
   );
   return out;

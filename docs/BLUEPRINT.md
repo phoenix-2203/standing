@@ -105,7 +105,7 @@ Deterministic metrics (defaults are Standing's own, not PayPal rules — UI must
 - New product type = category sold in last 7 days, not in prior 60.
 - Tracking coverage = physical orders > 48 h old with tracking ÷ all such orders → alert < 90%.
 - Digital completion gap = digital orders > 24 h old not marked Completed.
-- Dispute rate (90 d) = disputes ÷ transactions (show note: PayPal publishes no exact threshold).
+- Dispute rate (90 d) = disputes ÷ transactions (no alert; show note: PayPal's guide advises keeping complaints below 1% of sales).
 
 Decisions (31 Oct):
 - Order = PayPal payment received (`T00xx`), completed or pending, positive, USD. Refunds, reversals and
