@@ -15,6 +15,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
             <Link href="/dashboard">Dashboard</Link>
             <Link href="/orders">Orders</Link>
             <Link href="/catalogue">Catalogue</Link>
+            <Link href="/evidence">Evidence</Link>
             <Link href="/packs">Packs</Link>
             <Link href="/checklist">Checklist</Link>
           </nav>
