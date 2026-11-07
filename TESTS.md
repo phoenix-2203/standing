@@ -1065,3 +1065,16 @@ All checked with code tests: **459/459 pass**, typecheck and lint clean. `npm ru
   launch plan form for the first time (POST 201).
 - **Not checked on the hosted app yet:** all of the above. Click through `/evidence` and one pre-approval draft after
   the next deploy.
+
+## Hosted checks and demo data day 1 (7 Nov 2026)
+
+- **Build and tests before pushing the 11 chat commits (`024ba58` … `0cf09d9`):** `npm test` **460/460 pass** (34 files); `npm run build` passes on the Mac (Google Fonts reachable). Pushed to `origin main` unchanged.
+- **Demo data, day 1 of 4:** `npm run demo:orders -- demo-1107 3 --baseline` (plan: 3 physical orders, USD 60.00), then with `--go` at 11:43 UTC. All 3 COMPLETED in the sandbox:
+
+  | Ref | Item | Order | Capture | Debug ID |
+  |---|---|---|---|---|
+  | demo-1107-phy-01 | Lavender soy candle, USD 18.00 | `9J412792NM8796058` | `1RY95650G0220162X` | `f313446e505e5` |
+  | demo-1107-phy-02 | Cedar soy candle, USD 20.00 | `37E53525G9912962H` | `6YU728663K365414G` | `f405876757d88` |
+  | demo-1107-phy-03 | Citrus soy candle, USD 22.00 | `8NC393135V964804H` | `4KC9537438951691U` | `f61515286d3d8` |
+
+  **To do (~14:45 UTC):** sync and confirm they appear in the orders table with item names.
