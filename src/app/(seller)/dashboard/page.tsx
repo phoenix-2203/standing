@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { DashboardData } from "@/lib/ui/data";
 import { api, time } from "@/lib/ui/client";
-import { AlertsCard, AskCard, DigitalCard, FiguresCard, LaunchCard, PackCard, TrackingCard, VerificationBadge } from "./parts";
+import Link from "next/link";
+import { AskCard, DigitalCard, LaunchCard, NeedsYouCard, PackCard, StandingCard, TrackingCard, VerificationBadge } from "./parts";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -53,18 +54,34 @@ export default function DashboardPage() {
         </div>
         <VerificationBadge item={data.verification} />
       </div>
-      <div className="stack">
-        <AlertsCard alerts={data.alerts} />
-        <FiguresCard data={data} />
-        <TrackingCard gaps={data.tracking} onChange={load} />
-        <div className="grid">
-          <DigitalCard gaps={data.digital} onChange={load} />
+      <nav className="action-bar" aria-label="Quick actions">
+        {data.latestPack?.status === "ready" && (
+          <a className="button" href={`/api/packs/${data.latestPack.id}/pdf`}>
+            Download your pack
+          </a>
+        )}
+        <Link className="button secondary" href="/evidence">
+          Add evidence
+        </Link>
+        <Link className="button secondary" href="/orders">
+          Review orders
+        </Link>
+        <a className="button secondary" href="#ask-h">
+          Ask Standing
+        </a>
+      </nav>
+      <div className="dash">
+        <div className="stack">
+          <NeedsYouCard alerts={data.alerts} />
+          <StandingCard rows={data.standing} />
+          {data.tracking.length > 0 && <TrackingCard gaps={data.tracking} onChange={load} />}
+          {data.digital.length > 0 && <DigitalCard gaps={data.digital} onChange={load} />}
+        </div>
+        <aside className="stack" aria-label="Your case">
           <PackCard latest={data.latestPack} />
-        </div>
-        <div className="grid">
-          <AskCard />
           <LaunchCard plans={data.launchPlans} onChange={load} />
-        </div>
+          <AskCard />
+        </aside>
       </div>
     </>
   );

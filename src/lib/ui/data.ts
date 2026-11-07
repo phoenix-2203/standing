@@ -7,6 +7,7 @@ import { listTrackingGaps } from "@/lib/fixes/tracking";
 import { computeMetrics, THRESHOLDS } from "@/lib/metrics/compute";
 import { loadMetricsInput } from "@/lib/metrics/load";
 import { planPackStatus } from "@/lib/launch/plan";
+import { standingRows } from "@/lib/ui/standing";
 
 // Read-only data for the seller's screens. Every number here is computed by code (CLAUDE.md rule 3);
 // the screens only display it.
@@ -33,6 +34,7 @@ export async function dashboardData(db: Db, sellerId: string, now = new Date()) 
       .sort((a, b) => (a.severity === b.severity ? b.lastSeenAt.getTime() - a.lastSeenAt.getTime() : a.severity === "warning" ? -1 : 1))
       .map((a) => ({ id: a.id, kind: a.kind, severity: a.severity, title: a.title, message: a.message, link: a.link, since: a.firstFiredAt.toISOString() })),
     metrics,
+    standing: standingRows(metrics, open),
     thresholds: THRESHOLDS,
     digital,
     tracking,

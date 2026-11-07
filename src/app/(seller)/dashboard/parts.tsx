@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { DashboardData } from "@/lib/ui/data";
-import { api, day, pct, time, times, usd } from "@/lib/ui/client";
+import { api, day, time, usd } from "@/lib/ui/client";
 import { ApprovalDraftButton } from "./approval-draft";
 
 // Every figure shown here was computed by Standing's code on the server; these components only format it.
@@ -18,80 +18,102 @@ export function VerificationBadge({ item }: { item: DashboardData["verification"
   );
 }
 
-export function AlertsCard({ alerts }: { alerts: DashboardData["alerts"] }) {
+const LINK_TEXT = (link: string) => (link.endsWith("/pdf") ? "Open the pack" : link === "/checklist" ? "See what to do" : "Open");
+
+/** What needs the seller, grouped by urgency like a task list: warnings first, then calm notes. One line each. */
+export function NeedsYouCard({ alerts }: { alerts: DashboardData["alerts"] }) {
+  const groups = [
+    { title: "Needs you", items: alerts.filter((a) => a.severity === "warning"), tone: "warn" },
+    { title: "Notes", items: alerts.filter((a) => a.severity !== "warning"), tone: "info" },
+  ].filter((g) => g.items.length);
   return (
-    <section className="card" aria-labelledby="alerts-h">
-      <h2 id="alerts-h">Signals</h2>
-      {alerts.length === 0 ? (
-        <p className="muted">Nothing needs your attention right now.</p>
+    <section className="card" aria-labelledby="needs-h">
+      <h2 id="needs-h">What needs you</h2>
+      {groups.length === 0 ? (
+        <p className="muted" style={{ margin: 0 }}>
+          Nothing needs your attention right now. Standing checks again every 15 minutes.
+        </p>
       ) : (
-        <div className="rows">
-          {alerts.map((a) => (
-            <div key={a.id} className={`alert ${a.severity === "info" ? "info" : ""}`}>
-              <h3>{a.title}</h3>
-              <p>{a.message}</p>
-              {a.link && (
-                <p className="small">
-                  <a href={a.link}>{a.link.endsWith("/pdf") ? "Open the explanation pack" : "See what to do"}</a>
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
+        groups.map((g) => (
+          <div key={g.title} className="task-group">
+            <h3 className="task-group-title">
+              {g.title} <span className="mono">{g.items.length}</span>
+            </h3>
+            <ul className="tasks">
+              {g.items.map((a) => (
+                <li key={a.id} className={`task ${g.tone}`}>
+                  <div>
+                    <strong>{a.title}</strong>
+                    <p className="muted small">{a.message}</p>
+                  </div>
+                  {a.link ? (
+                    <a className="button secondary task-action" href={a.link}>
+                      {LINK_TEXT(a.link)}
+                    </a>
+                  ) : (
+                    g.tone === "warn" && (
+                      <a className="button secondary task-action" href="/orders">
+                        Review orders
+                      </a>
+                    )
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
       )}
-      <p className="muted small" style={{ marginTop: "0.75rem", marginBottom: 0 }}>
-        Thresholds are Standing&apos;s defaults, not PayPal rules. PayPal&apos;s published reasons for holds include a spike in sales, a change in
-        average selling price or item type, and being a first-time seller.
-      </p>
     </section>
   );
 }
 
-export function FiguresCard({ data }: { data: DashboardData }) {
-  const m = data.metrics;
-  const t = data.thresholds;
-  const figures = [
-    {
-      label: "Spike ratio (last 24 h vs average day)",
-      value: m.spike.status === "not_enough_history" ? "Not enough history yet" : m.spike.ratio === null ? "—" : times(m.spike.ratio),
-      note: m.spike.status === "ok" ? `Alert at ${t.spikeRatio}× · last 24 h ${usd(m.spike.last24hCents)}` : `Last 24 h ${usd(m.spike.last24hCents)}`,
-    },
-    {
-      label: "Average order, 7 vs 28 days",
-      value: m.avgTicket.ratio === null ? "—" : times(m.avgTicket.ratio),
-      note: m.avgTicket.avg7dCents === null ? "No orders in the last 7 days" : `${usd(Math.round(m.avgTicket.avg7dCents))} vs ${usd(Math.round(m.avgTicket.avg28dCents ?? 0))} · alert at ${t.avgTicketRatio}×`,
-    },
-    {
-      label: "Tracking coverage (physical, over 48 h)",
-      value: m.trackingCoverage.coverage === null ? "—" : pct(m.trackingCoverage.coverage),
-      note:
-        m.trackingCoverage.coverage === null
-          ? `No classified physical orders due · ${m.trackingCoverage.unclassifiedOrders} unclassified`
-          : `${m.trackingCoverage.withTracking} of ${m.trackingCoverage.eligible} · alert below ${pct(t.trackingCoverage)}`,
-    },
-    {
-      label: "Digital orders not marked Completed",
-      value: String(m.digitalCompletionGap.count),
-      note: "Over 24 hours old",
-    },
-    {
-      label: "Dispute rate, 90 days",
-      value: m.disputeRate90d.rate === null ? "—" : `${(Math.floor(m.disputeRate90d.rate * 1000) / 10).toFixed(1)}%`,
-      note: `${m.disputeRate90d.disputes} of ${m.disputeRate90d.orders} orders · no alert. PayPal's guide advises complaints below 1% of sales`,
-    },
-  ];
+const STATE: Record<DashboardData["standing"][number]["state"], { label: string; tone: string }> = {
+  needs_you: { label: "Needs you", tone: "warn" },
+  expected: { label: "Expected, pack ready", tone: "ok" },
+  applies: { label: "Applies to you", tone: "info" },
+  clear: { label: "Clear", tone: "ok" },
+  no_history: { label: "Not enough history", tone: "" },
+  no_data: { label: "No data yet", tone: "" },
+  context: { label: "For context", tone: "" },
+};
+
+/** "Where you stand": each reason PayPal publishes, the seller's figure now, and Standing's reading. */
+export function StandingCard({ rows }: { rows: DashboardData["standing"] }) {
+  const needing = rows.filter((r) => r.state === "needs_you").length;
   return (
-    <section className="card" aria-labelledby="figures-h">
-      <h2 id="figures-h">Key figures</h2>
-      <div className="figures">
-        {figures.map((f) => (
-          <div key={f.label} className="figure">
-            <div className="label">{f.label}</div>
-            <div className={`value${/\d/.test(f.value) ? "" : " text"}`}>{f.value}</div>
-            <div className="note">{f.note}</div>
+    <section className="card" aria-labelledby="standing-h">
+      <div className="card-head">
+        <h2 id="standing-h">Where you stand</h2>
+        <span className="muted small">
+          {needing === 0 ? "No reason needs you today" : `${needing} of ${rows.length} need you today`}
+        </span>
+      </div>
+      <div className="standing-table" role="table" aria-label="PayPal's reasons and your figures">
+        <div className="standing-row head" role="row">
+          <span role="columnheader">Reason</span>
+          <span role="columnheader">You now</span>
+          <span role="columnheader">Standing&apos;s reading</span>
+        </div>
+        {rows.map((r) => (
+          <div key={r.key} className="standing-row" role="row">
+            <span role="cell">
+              <strong>{r.reason}</strong>
+              <span className="muted small block">{r.source}</span>
+            </span>
+            <span role="cell">
+              <span className="figure-text">{r.figure}</span>
+              <span className="muted small block">{r.threshold}</span>
+            </span>
+            <span role="cell">
+              {STATE[r.state].tone ? <span className={`badge ${STATE[r.state].tone}`}>{STATE[r.state].label}</span> : <span className="muted small">{STATE[r.state].label}</span>}
+            </span>
           </div>
         ))}
       </div>
+      <p className="muted small" style={{ margin: "0.75rem 0 0" }}>
+        Standing&apos;s reading of PayPal&apos;s published reasons, with Standing&apos;s own thresholds. It isn&apos;t PayPal&apos;s decision and can&apos;t
+        say what PayPal will do.
+      </p>
     </section>
   );
 }
