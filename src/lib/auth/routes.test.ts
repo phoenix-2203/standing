@@ -17,6 +17,7 @@ import { DELETE as evidenceRemove } from "@/app/api/evidence/[id]/route";
 import { POST as evidenceInvoice } from "@/app/api/evidence/invoices/route";
 import { GET as evidenceList } from "@/app/api/evidence/route";
 import { POST as evidenceTraffic } from "@/app/api/evidence/traffic-sources/route";
+import { POST as approvalDraftRoute } from "@/app/api/policy/approval-draft/route";
 
 const req = (method: string, cookie?: string) => new Request("https://standing.test/x", { method, headers: cookie ? { cookie } : {}, body: method === "POST" ? "{}" : undefined });
 const params = <T,>(p: T) => ({ params: Promise.resolve(p) }) as never;
@@ -41,6 +42,7 @@ describe("seller routes need a session", () => {
     ["POST /api/evidence/invoices", (r) => evidenceInvoice(r), "POST"],
     ["POST /api/evidence/traffic-sources", (r) => evidenceTraffic(r), "POST"],
     ["DELETE /api/evidence/[id]", (r) => evidenceRemove(r, params({ id: "EV-SRC-1" })), "DELETE"],
+    ["POST /api/policy/approval-draft", (r) => approvalDraftRoute(r), "POST"],
   ])("%s: 401 with no cookie or a forged one", async (_n, handler, method) => {
     process.env.SESSION_SECRET = "route-test-secret";
     expect((await handler(req(method))).status).toBe(401);

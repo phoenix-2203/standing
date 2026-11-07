@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { DashboardData } from "@/lib/ui/data";
 import { api, day, pct, time, times, usd } from "@/lib/ui/client";
+import { ApprovalDraftButton } from "./approval-draft";
 
 // Every figure shown here was computed by Standing's code on the server; these components only format it.
 
@@ -483,6 +484,7 @@ export function LaunchCard({ plans, onChange }: { plans: DashboardData["launchPl
                 {verdictLabel[p.verdict] ?? p.verdict}
                 {p.clauseId ? ` · ${p.clauseId}` : ""}
               </span>
+              {p.verdict === "preapproval" && p.clauseId && <ApprovalDraftButton name={p.name} clauseId={p.clauseId} />}
             </div>
           ))}
           <p className="muted small" style={{ marginBottom: 0 }}>
