@@ -879,3 +879,14 @@ injection rows handled wrongly.
 
 **I05** is the one wrong row again. It was refused as `hiding_volume` this time (`other_evasion` in run 2). Nothing leaked and
 no false number appeared. It stays a **fail** under the rule written before these runs, as decided on 6 Nov.
+
+## Catalogue screen (7 Nov 2026)
+
+- Code: `npx vitest run` 384/384 (19 new in `src/lib/catalogue/catalogue.test.ts`); typecheck clean; `npm run build` compiled.
+- Browser, local dev server on real local sandbox data (dev session, no PayPal call; nothing written to PayPal):
+  - Saved "Candle pattern PDF" as Digital, category Patterns: left "Seen in your orders", appeared under "Your products".
+  - `/api/orders`: 1 digital, 32 unclassified (was 33). Checklist counts went from 33 to 32 unclassified.
+  - Bad kind and blank name: 400 with a plain message. Bad ID on delete: 404.
+  - Remove: test product gone, order back to unclassified.
+- **Finding:** 31 of the 33 local orders have no product name or SKU in PayPal's data, so no catalogue entry can match them. The screen says so. Demo orders need item names.
+- Not tested: on the hosted app (not deployed yet); a second real seller in a browser (separation is code-tested only).
