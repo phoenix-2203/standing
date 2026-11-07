@@ -13,6 +13,10 @@ import { GET as orders } from "@/app/api/orders/route";
 import { GET as packsList, POST as packsBuild } from "@/app/api/packs/route";
 import { GET as packView } from "@/app/api/packs/[id]/route";
 import { GET as devSession } from "@/app/api/dev/session/route";
+import { DELETE as evidenceRemove } from "@/app/api/evidence/[id]/route";
+import { POST as evidenceInvoice } from "@/app/api/evidence/invoices/route";
+import { GET as evidenceList } from "@/app/api/evidence/route";
+import { POST as evidenceTraffic } from "@/app/api/evidence/traffic-sources/route";
 
 const req = (method: string, cookie?: string) => new Request("https://standing.test/x", { method, headers: cookie ? { cookie } : {}, body: method === "POST" ? "{}" : undefined });
 const params = <T,>(p: T) => ({ params: Promise.resolve(p) }) as never;
@@ -33,6 +37,10 @@ describe("seller routes need a session", () => {
     ["GET /api/packs", (r) => packsList(r), "GET"],
     ["POST /api/packs", (r) => packsBuild(r), "POST"],
     ["GET /api/packs/[id]", (r) => packView(r, params({ id: "00000000-0000-0000-0000-000000000001" })), "GET"],
+    ["GET /api/evidence", (r) => evidenceList(r), "GET"],
+    ["POST /api/evidence/invoices", (r) => evidenceInvoice(r), "POST"],
+    ["POST /api/evidence/traffic-sources", (r) => evidenceTraffic(r), "POST"],
+    ["DELETE /api/evidence/[id]", (r) => evidenceRemove(r, params({ id: "EV-SRC-1" })), "DELETE"],
   ])("%s: 401 with no cookie or a forged one", async (_n, handler, method) => {
     process.env.SESSION_SECRET = "route-test-secret";
     expect((await handler(req(method))).status).toBe(401);
