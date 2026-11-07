@@ -51,3 +51,6 @@ node_modules/
 
 # generated packs
 /packs/out/
+
+# Local Claude Code settings
+.claude/
