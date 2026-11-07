@@ -1,5 +1,6 @@
-// npm run demo:orders -- <tag> [count] [--go]
+// npm run demo:orders -- <tag> [count] [--baseline] [--go]
 // Creates the demo seller's launch-day burst as real sandbox card orders (see src/lib/shop/demo.ts).
+// --baseline makes an ordinary day (small physical orders only): run it on the days before the burst.
 // Without --go it only prints the plan. Stable request IDs: re-running a tag never doubles the orders.
 // Transaction Search can lag ~3 hours, so run it the evening before recording, then `npm run cycle`.
 import { getDb } from "@/db";
@@ -9,17 +10,18 @@ import { type OrdersV2Response, recordShopOrder } from "@/lib/shop/orders";
 
 const args = process.argv.slice(2);
 const go = args.includes("--go");
-const [tag, countArg] = args.filter((a) => a !== "--go");
+const baseline = args.includes("--baseline");
+const [tag, countArg] = args.filter((a) => !a.startsWith("--"));
 if (!tag) {
-  console.error("Usage: npm run demo:orders -- <tag> [count] [--go]   e.g. npm run demo:orders -- demo-1110 12 --go");
+  console.error("Usage: npm run demo:orders -- <tag> [count] [--baseline] [--go]   e.g. npm run demo:orders -- demo-1107 3 --baseline --go");
   process.exit(1);
 }
-const orders = demoOrders(tag, countArg ? Number(countArg) : undefined);
+const orders = demoOrders(tag, countArg ? Number(countArg) : undefined, { baseline });
 const sellerId = process.env.STANDING_SELLER_ID ?? "sandbox-seller";
 
 async function main() {
   const total = orders.reduce((s, o) => s + Number(o.unitPrice) * o.quantity, 0);
-  console.log(`${orders.length} test orders, USD ${total.toFixed(2)} in total, tag ${tag}${go ? "" : " (plan only: add --go to create them)"}`);
+  console.log(`${orders.length} test orders${baseline ? " (ordinary day)" : " (launch burst)"}, USD ${total.toFixed(2)} in total, tag ${tag}${go ? "" : " (plan only: add --go to create them)"}`);
   if (!go) {
     for (const o of orders) console.log(`  ${o.ref}  ${o.item.name} (${o.item.category})  USD ${o.unitPrice}`);
     return;

@@ -17,6 +17,11 @@ describe("demo orders", () => {
     expect(demoOrders("demo-1111")[0].requestId).not.toBe(a[0]);
   });
 
+  it("a baseline day is only the small physical orders", () => {
+    const o = demoOrders("demo-1107", 3, { baseline: true });
+    expect(o.map((x) => [x.item.category, x.unitPrice])).toEqual([["PHYSICAL_GOODS", "18.00"], ["PHYSICAL_GOODS", "20.00"], ["PHYSICAL_GOODS", "22.00"]]);
+  });
+
   it("rejects bad tags and counts", () => {
     expect(() => demoOrders("Demo Tag")).toThrow(/tag/);
     expect(() => demoOrders("demo", 0)).toThrow(/count/);

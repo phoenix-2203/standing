@@ -20,9 +20,11 @@ const PHYSICAL = [
 /**
  * A launch-day burst: `count` small physical orders, two digital pattern downloads (so the
  * not-marked-Completed check has work) and one large gift-set order (so the average-order signal moves).
+ * With `baseline`, only the `count` small physical orders: an ordinary day, run on the days before the
+ * burst so the sales curve has a normal level to spike from (sandbox orders can't be backdated).
  * `tag` scopes the request IDs, e.g. "demo-1110"; the same tag always yields the same orders.
  */
-export function demoOrders(tag: string, count = 12): DemoOrder[] {
+export function demoOrders(tag: string, count = 12, { baseline = false } = {}): DemoOrder[] {
   if (!/^[a-z0-9-]{3,24}$/.test(tag)) throw new Error("tag must be 3-24 lowercase letters, digits or dashes");
   if (!Number.isInteger(count) || count < 1 || count > 40) throw new Error("count must be 1 to 40");
   const out: DemoOrder[] = [];
@@ -32,6 +34,7 @@ export function demoOrders(tag: string, count = 12): DemoOrder[] {
     const p = PHYSICAL[i % PHYSICAL.length];
     add(`phy-${String(i + 1).padStart(2, "0")}`, { name: p.name, sku: p.sku, category: "PHYSICAL_GOODS" }, 1, p.price);
   }
+  if (baseline) return out;
   for (let i = 1; i <= 2; i++) add(`dig-${String(i).padStart(2, "0")}`, { name: "Candle-making pattern PDF", sku: "PDF-PATTERN", category: "DIGITAL_GOODS" }, 1, 12);
   add("gift-01", { name: "Candle gift set", sku: "CND-GIFT12", category: "PHYSICAL_GOODS" }, 1, 180);
   return out;
