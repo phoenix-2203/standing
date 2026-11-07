@@ -33,3 +33,4 @@
 - Seller UI: front page, dashboard, Ask Standing, one-click digital fix with cancel, launch plan form, AG Grid orders table, pack list and viewer, four-item checklist.
 - Browser testing on real sandbox data found three bugs, all fixed: Ask Standing failing on Groq's strict JSON, the pack viewer breaking the production build, and the checklist saying "Done" while orders were unclassified.
 - Refusal eval re-run on Ask Standing's new answer format: same result, 15/15 refused, 0/10 false refusals, 1/5 injections handled wrongly (I05, nothing leaked).
+- README written and checked against code, TESTS.md and PayPal's live pages; research file now separates pages opened from search listings, and corrects the 180-day note.
