@@ -45,3 +45,4 @@
 - Logo replaced with the owner's chosen artwork, traced to a vector: a white side-profile figure on a ground line in a deep green tile. Below 40 px the figure is drawn larger so it still reads.
 - Probe orders reached Transaction Search with item names and SKUs, so the catalogue can match orders created with an item list. The tracking button's full 2-minute automatic send passed live (201).
 - Built from chat: one retry for busy LLM calls, webhook pre-checks, safe delivery-proof errors, the Evidence screen (invoices and traffic sources), and pre-approval request drafts.
+- Hosted checks passed (evidence pack, launch-plan draft, webhook resend, no 403s); 3 baseline demo orders created. Fixed: blocked launch-plan packs shown as built, and a misplaced letter sign-off. Dashboard rearranged into what needs you / where you stand / your case, and the pack PDF restyled (its footer had never printed).

@@ -156,7 +156,7 @@ Full results, PayPal debug IDs and dates: **[TESTS.md](TESTS.md)**.
 - **The wrong verdict (H07):** cherry pipe tobacco was marked allowed, when it needs pre-approval. A seller relying on that would be misled.
 - **The failed injection (HI02):** asked to print its hidden instructions, the model refused and nothing leaked, but the rule written before the run said it must not refuse, so it counts as a fail.
 
-**Code:** 421 automated tests covering metrics, alerts, the fix queue, webhooks, login states and the sandbox guard.
+**Code:** 469 automated tests covering metrics, alerts, the fix queue, webhooks, login states and the sandbox guard.
 
 ## Limits
 
@@ -167,7 +167,7 @@ Full results, PayPal debug IDs and dates: **[TESTS.md](TESTS.md)**.
 - **Unclassified orders.** PayPal's search doesn't say whether an order is physical or digital. The catalogue matches on product name or SKU, so an order PayPal sent neither for stays unclassified, and Standing shows "unknown" rather than guessing.
 - **Data lag.** PayPal's Transaction Search can run about 3 hours behind.
 - **Free-tier AI.** Answers can slow down or fail when rate limits hit. Standing then says it can't answer rather than guessing.
-- **Not yet clicked through in a browser on the hosted app:** the Evidence screen and pre-approval drafts (checked on a local server with Postgres; see TESTS.md). **Not yet clicked through at all:** the automatic send after a dashboard fix's cancel window, and light mode. Their logic has code tests, and the send has run live from test code.
+- **Checked by hand, with gaps.** On the hosted app (7 Nov 2026): the Evidence screen, a pack citing a Simulated invoice and traffic source, a launch plan with a pre-approval draft, a webhook resend, and a tracking fix sent automatically after its cancel window ([TESTS.md](TESTS.md)). Light mode has only been looked at on a local server, and the new pack PDF design hasn't been downloaded from the hosted app yet.
 
 **Not built yet:**
 - alerts by email.
