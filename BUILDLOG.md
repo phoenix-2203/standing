@@ -42,3 +42,4 @@
 - Tracking button on the dashboard, through the queue; works without an order ID via /v1/shipping/trackers, 5/5 carriers live. A live re-run found that this route answers a replay with a 400, which would have shown "refused" for a fix that worked; now settled by reading the tracker back.
 - Dispute note now quotes PayPal's below-1% guidance. 4 probe orders created to see whether search returns item names.
 - New look, "The Record" (pine and paper, serif headings, mono figures), and a logo: a person standing on a base line. Dashboard now opens with what needs attention, counted by code. Page arrangement is left for later.
+- Logo replaced with the owner's chosen artwork, traced to a vector: a white side-profile figure on a ground line in a deep green tile. Below 40 px the figure is drawn larger so it still reads.
