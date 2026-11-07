@@ -54,6 +54,9 @@ export async function listDigitalGaps(db: Db, sellerId: string, now = new Date()
     });
 }
 
+/** The seller's proof input is invalid; the message is safe to show them. */
+export class InvalidProof extends Error {}
+
 export class NotAGap extends Error {}
 
 /**
@@ -83,11 +86,12 @@ export interface DeliveryProofInput {
 export async function addDeliveryProof(db: Db, sellerId: string, proof: DeliveryProofInput, now = new Date()): Promise<Evidence> {
   const [sale] = await db.select().from(transactions).where(and(eq(transactions.sellerId, sellerId), eq(transactions.transactionId, String(proof.transactionId))));
   if (!sale) throw new NotAGap(`Payment ${proof.transactionId} isn't one of this seller's payments`);
-  if (!Object.hasOwn(DELIVERY_METHODS, proof.method)) throw new Error(`Delivery method must be one of: ${Object.keys(DELIVERY_METHODS).join(", ")}`);
-  if (typeof proof.deliveredOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(proof.deliveredOn) || Number.isNaN(Date.parse(proof.deliveredOn))) throw new Error("Delivery date must be YYYY-MM-DD");
-  if (proof.deliveredOn > now.toISOString().slice(0, 10)) throw new Error("Delivery date can't be in the future");
+  if (!Object.hasOwn(DELIVERY_METHODS, proof.method)) throw new InvalidProof(`Delivery method must be one of: ${Object.keys(DELIVERY_METHODS).join(", ")}`);
+  if (typeof proof.deliveredOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(proof.deliveredOn) || Number.isNaN(Date.parse(proof.deliveredOn))) throw new InvalidProof("Delivery date must be YYYY-MM-DD");
+  if (proof.deliveredOn > now.toISOString().slice(0, 10)) throw new InvalidProof("Delivery date can't be in the future");
+  if (proof.reference != null && typeof proof.reference !== "string") throw new InvalidProof("Reference must be text");
   const reference = proof.reference?.trim();
-  if (reference && !/^[\w .:/#-]{1,80}$/.test(reference)) throw new Error("Reference must be up to 80 letters, digits or simple punctuation");
+  if (reference && !/^[\w .:/#-]{1,80}$/.test(reference)) throw new InvalidProof("Reference must be up to 80 letters, digits or simple punctuation");
 
   const hash = createHash("sha256").update(JSON.stringify([proof.method, proof.deliveredOn, reference ?? ""])).digest("hex").slice(0, 8).toUpperCase();
   const item = {
