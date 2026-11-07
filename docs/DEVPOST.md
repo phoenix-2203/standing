@@ -14,6 +14,11 @@ must be copied from TESTS.md on the day, not from this draft.
 - Code: https://github.com/phoenix-2203/standing (MIT)
 - Video: **[TO FILL: YouTube link, under 3 minutes]**
 
+**Gallery images** (`docs/devpost/`, 1500 × 1000, 3:2): upload `1-cover.png` first, because Devpost uses
+the first image as the thumbnail. Then `2-where-the-ai-stops.png`, `3-safe-fixes.png` and `4-tested.png`, and
+fresh screenshots of the hosted app taken after the demo orders. The numbers on `4-tested.png` match the README
+on 7 Nov; if any result changes, update both.
+
 **Test credentials (private field, not the public write-up):** the two sandbox logins (verified and
 unverified). **[TO FILL in Devpost's private field only. Never in the README, the video or this file.]**
 
