@@ -77,6 +77,32 @@ describe("validatePlan: a good plan renders", () => {
     expect(v.letter!.paragraphs[1].sentences.at(-1)!.text).toMatch(/^Simulated: /);
   });
 
+  it("always ends the letter with the sign-off, whatever order the plan gave (seen on the hosted app, 7 Nov)", () => {
+    // The hosted pack 8278f731… put "Thank you…" before the last facts: the plan's order, rendered as given.
+    const v = validatePlan(
+      plan(
+        [bridge("This letter explains recent activity on our account."), fact(`${SUM.id}#orders`)],
+        [bridge("Thank you for your time and consideration."), fact(TRK.id), fact(SRC.id)],
+        [bridge("We would be happy to answer any questions.")],
+      ),
+      FACTS,
+    );
+    expect(v.ok).toBe(true);
+    const texts = v.letter!.paragraphs.map((p) => p.sentences.map((s) => s.text));
+    expect(texts).toEqual([
+      ["This letter explains recent activity on our account.", "PayPal payments received between 2026-09-07 and 2026-11-06: 31, totalling USD 1138.00."],
+      [TRK.summary, SRC.summary],
+      ["Thank you for your time and consideration.", "We would be happy to answer any questions."],
+    ]);
+    // Moving sentences never drops or adds a fact.
+    expect(v.letter!.paragraphs.flatMap((p) => p.sentences).filter((s) => s.kind === "fact")).toHaveLength(3);
+  });
+
+  it("leaves a letter with no sign-off as it is, and never moves a fact", () => {
+    const v = validatePlan(plan([fact(`${SUM.id}#orders`)], [bridge("The supporting details are listed below."), fact(TRK.id)]), FACTS);
+    expect(v.letter!.paragraphs.map((p) => p.sentences.length)).toEqual([1, 2]);
+  });
+
   it("ignores any text the model attached to a fact item", () => {
     const v = validatePlan(plan([fact(`${SUM.id}#disputes`, "PayPal will release all funds today.")]), FACTS);
     expect(v.ok).toBe(true);

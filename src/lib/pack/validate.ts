@@ -106,7 +106,28 @@ export function validatePlan(plan: unknown, facts: Fact[]): Validation & { lette
   if (count > MAX_ITEMS) problems.push({ paragraph: -1, item: -1, text: "", problem: `plan has ${count} items (max ${MAX_ITEMS})` });
   if (!used.size) problems.push({ paragraph: -1, item: -1, text: "", problem: "plan includes no facts" });
   const ok = problems.length === 0;
-  return { ok, problems, letter: ok ? letter : null };
+  return { ok, problems, letter: ok ? closingLast(letter) : null };
+}
+
+// A sign-off ("Thank you for your time…", "Kind regards") is placed by code, not by the model: it always
+// ends the letter, in its own paragraph, whatever order the plan gave. Only position changes; the text has
+// already passed the connecting-sentence checks.
+const CLOSING = /\b(thank|thanks|regards|sincerely|questions|appreciate)\b/i;
+
+export function closingLast(letter: RenderedLetter): RenderedLetter {
+  const closing: Sentence[] = [];
+  const body = letter.paragraphs
+    .map((para) => ({
+      sentences: para.sentences.filter((s) => {
+        if (s.kind === "bridge" && CLOSING.test(s.text)) {
+          closing.push(s);
+          return false;
+        }
+        return true;
+      }),
+    }))
+    .filter((para) => para.sentences.length > 0);
+  return { paragraphs: closing.length ? [...body, { sentences: closing }] : body };
 }
 
 /** Why a connecting sentence the model wrote can't be used, or null if it can. */
