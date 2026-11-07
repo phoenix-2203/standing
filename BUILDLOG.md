@@ -39,3 +39,5 @@
 - Hardening: cross-site writes to /api refused before any route; production logins fail closed without an allow-list. Added `npm run demo:orders` for named test orders (not yet run).
 - Held-out evals run once on frozen commit 2b1d32a: policy 11/12 flagged (target met), 19/20 verdicts; Ask 8/8 refused, 0/8 false refusals, 1/5 injections wrong (HI02, target missed, nothing leaked). Recorded as they came.
 - Redeployed: the cross-site check doesn't block the app's own writes (Ask 200, pack 201 on second click; first click 503, cause unconfirmed), forged requests get 403, and the 15-minute scheduler is confirmed repeating.
+- Tracking button on the dashboard, through the queue; works without an order ID via /v1/shipping/trackers, 5/5 carriers live. A live re-run found that this route answers a replay with a 400, which would have shown "refused" for a fix that worked; now settled by reading the tracker back.
+- Dispute note now quotes PayPal's below-1% guidance. 4 probe orders created to see whether search returns item names.

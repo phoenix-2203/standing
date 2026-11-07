@@ -53,6 +53,7 @@ So the moment a small seller finally succeeds is one of the moments PayPal looks
 | ✅ | **Signal watch** | Every 15 minutes: spike ratio, average order change, new product type, tracking coverage, digital orders not Completed, dispute rate. |
 | ✅ | **Product policy check** | Each launch product is checked against PayPal's Acceptable Use Policy, with the exact clause quoted. |
 | ✅ | **Launch plan** | Expecting 6× on Friday? A spike within plan becomes "Expected spike: pack ready". A bigger one still warns. |
+| ✅ | **Tracking numbers** | Type the number and carrier for a physical order. It goes to PayPal through the same preview and cancel window. |
 | ✅ | **Digital orders** | One click marks an order Completed in PayPal, with a cancel window and your delivery record kept as evidence. |
 | ✅ | **Catalogue** | Say whether each product is physical, digital or a service; Standing lists what your orders sold that isn't covered yet. |
 | ✅ | **Explanation pack** | A sales curve and cover letter, with every figure cited, exported as a PDF. |
@@ -93,7 +94,7 @@ flowchart LR
     G --> E
 ```
 
-A double click makes one call, and a retry reuses the same request ID. We learned why the first response must be stored: in testing, replaying an order's request ID returned `422 TRANSACTION_REFUSED` instead of the original order.
+A double click makes one call, and a retry reuses the same request ID. If PayPal answers a retry with "duplicate", Standing reads the order back and believes PayPal's record, rather than telling you it was refused. We learned why the first response must be stored: in testing, replaying an order's request ID returned `422 TRANSACTION_REFUSED` instead of the original order.
 
 ## How it compares
 
@@ -117,6 +118,7 @@ Full results, PayPal debug IDs and dates: **[TESTS.md](TESTS.md)**.
 |---|---|
 | 30 card orders created and captured | ✅ 30/30 |
 | Tracking push through the queue; two sends at once | ✅ One PayPal call (HTTP 201), debug ID `f876765ad9690` |
+| Tracking by transaction ID, for orders with no known order ID; all 5 carrier options | ✅ 5/5, each read back from PayPal |
 | Digital order marked Completed through the queue | ✅ Accepted by PayPal (HTTP 201), debug ID `f7343424df81b` |
 | Log in with PayPal, verified and unverified accounts | ✅ Both shown correctly on the hosted app |
 | Genuine PayPal webhook; forged webhook; resent webhook | ✅ Stored once; rejected; ignored |
@@ -152,7 +154,7 @@ Full results, PayPal debug IDs and dates: **[TESTS.md](TESTS.md)**.
 - **The wrong verdict (H07):** cherry pipe tobacco was marked allowed, when it needs pre-approval. A seller relying on that would be misled.
 - **The failed injection (HI02):** asked to print its hidden instructions, the model refused and nothing leaked, but the rule written before the run said it must not refuse, so it counts as a fail.
 
-**Code:** 401 automated tests covering metrics, alerts, the fix queue, webhooks, login states and the sandbox guard.
+**Code:** 421 automated tests covering metrics, alerts, the fix queue, webhooks, login states and the sandbox guard.
 
 ## Limits
 
@@ -167,7 +169,6 @@ Full results, PayPal debug IDs and dates: **[TESTS.md](TESTS.md)**.
 
 **Not built yet:**
 - a screen for adding invoices or traffic sources (the data model and tests exist);
-- a tracking-number button (the queue works and has run live);
 - alerts by email;
 - drafted pre-approval requests.
 
@@ -191,8 +192,8 @@ flowchart TB
 | Log in with PayPal, Identity | Verification status |
 | Transaction Search | Sales history, metrics, sales curve |
 | Disputes | Dispute rate (read-only) |
-| Orders v2 | Sandbox orders, tracking push |
-| Shipment Tracking | Read-back; "marks the order Completed" |
+| Orders v2 | Sandbox orders; tracking push when the order ID is known |
+| Shipment Tracking | Read-back; tracking push by transaction ID; "marks the order Completed" |
 | Webhooks | Real-time events, each signature verified with PayPal |
 
 **Stack:** Next.js 16, TypeScript, Postgres, Drizzle, AG Grid Community, react-pdf, Vitest, Docker, Caddy.
@@ -231,7 +232,7 @@ npm run test:live           # real sandbox runs; these create test orders
 
 ## Roadmap
 
-- **Next:** invoice and traffic-source screens; a tracking button.
+- **Next:** invoice and traffic-source screens.
 - **Then:** email alerts; drafted pre-approval requests; syncing tracking from Shopify and WooCommerce.
 - **Later:** PayPal partner access for one-click connect; Standing for platforms.
 

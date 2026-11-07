@@ -991,3 +991,43 @@ https://goodstanding.duckdns.org, on the commit with the cross-site check. The u
 **Scheduler on the hosted app: repeating.** `last_run_at` readings: 03:02:27 UTC (before the redeploy), about 04:47 UTC (dashboard) and 05:02:35 UTC. The last two have no redeploy between them and are 15 minutes apart. All three jobs OK.
 
 Also on the hosted app: `/api/products` 200 (Catalogue API). Not tried there: saving a product, and the PDF download of this pack.
+
+## Tracking button and tracking by transaction ID (7 Nov 2026)
+
+Code: `npx vitest run` **421/421**; typecheck and lint clean; `npm run build` compiled.
+
+**Live sandbox** (`npm run test:live`, `-t 'tracking by transaction ID|Completed replayed'`), `POST /v1/shipping/trackers` with labelled test numbers on day-1 captures, for orders whose PayPal order ID isn't known (Transaction Search's `paypal_reference_id` has type `TXN`, not an order ID):
+
+| Carrier | Capture | First run | Read-back (carrier, status) | Debug ID (read-back) |
+|---|---|---|---|---|
+| USPS | `0KA603561R998142L` | sent | STANDINGD7USPS, USPS, SHIPPED | `f364229e2fced` |
+| UPS | `0MR493725R555252N` | sent | STANDINGD7UPS, UPS, SHIPPED | `f333075c6f1fb` |
+| FEDEX | `0V070374TB2731508` | sent | STANDINGD7FEDEX, FEDEX, SHIPPED | `f3093598e6cd9` |
+| DHL | `1PM458967T448544K` | sent | STANDINGD7DHL, DHL, SHIPPED | `f6266226b8720` |
+| OTHER (GIG Logistics) | `1WP49974J7411162H` | sent | STANDINGD7OTHER, OTHER, SHIPPED | `f98346842c479` |
+
+The first run's own debug IDs weren't captured (a log filter dropped them); its pass is the test's assertion plus the read-backs above, taken on the second run.
+
+**Bug found by the live re-run, fixed.** This route doesn't replay the way Orders v2 `/track` does:
+- Tracking number replayed with the same request ID: `400 DUPLICATE_TRACKER` (e.g. debug `f2413775d749a`), not the first answer.
+- Completed replayed: `400 INVALID_TRACKING_NUMBER`, "Empty tracking number not allowed after a valid tracking number is added" (debug `f34828531c73b`).
+- Effect before the fix: after a timeout whose call had landed, the retry would have shown "PayPal refused it" for a fix that worked. The fake PayPal in the code tests couldn't show this.
+- Fix: `settleDuplicate` in `src/lib/fixes/fixes.ts` reads the tracker back. There → sent. Read-back fails → unknown. Absent → a duplicate stays unknown; the Completed error stays failed, because the order has a tracking number and isn't Completed.
+- After the fix, re-running all 6 live: 6/6 settle as sent.
+
+**Browser, local dev server** (no write reached PayPal): the card and the dispute note render; Carrier "Other" asks for a name; "Add tracking" showed the exact preview and `Cancel (1:58)`; Cancel worked, status `cancelled`, 0 attempts. Temporary test product removed afterwards.
+
+**Not yet tested:** the button's automatic send after the full 2-minute window, in a browser (needs a physical order; the probe orders below will provide one); the button on the hosted app.
+
+## Demo probe orders (7 Nov 2026)
+
+`npm run demo:orders -- probe-1107 1 --go`: 4 real sandbox card orders, USD 222.00, all COMPLETED:
+
+| Ref | Order | Capture | Debug ID |
+|---|---|---|---|
+| probe-1107-phy-01 | `9AY527875G170912X` | `5JN647759D070082C` | `f185717a3a851` |
+| probe-1107-dig-01 | `1U773108H6135280D` | `4T486626EA214431E` | `f126424cc82b9` |
+| probe-1107-dig-02 | `3XL006986G3666316` | `95W11926A86898418` | `f239735638f7a` |
+| probe-1107-gift-01 | `23C59591M44410424` | `71811069JP0021720` | `f3458337fb8f0` |
+
+Purpose: find out whether Transaction Search returns their item names. **Not known yet**: not in search straight after creation (expected lag up to 3 hours). The full burst is kept for the evening before recording, because the spike signal only counts the last 24 hours.
