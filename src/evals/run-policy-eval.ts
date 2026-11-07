@@ -1,4 +1,4 @@
-// npm run eval:policy — classify every product in data/eval_products.csv with the configured LLM
+// npm run eval:policy — classify every product in data/eval_products.csv (or EVAL_FILE) with the configured LLM
 // provider(s) and print the accuracy table. Results also go to evals/out/ (git-ignored).
 import { mkdirSync, writeFileSync } from "node:fs";
 import { providersFromEnv } from "@/lib/llm/providers";
@@ -15,7 +15,8 @@ async function main() {
   const pick = process.env.EVAL_PROVIDER?.trim();
   const providers = providersFromEnv().filter((p) => !pick || p.name === pick);
   if (!providers.length) throw new Error(pick ? `Provider ${pick} isn't configured in .env` : "Set GEMINI_API_KEY (and optionally GROQ_API_KEY) in .env");
-  const products = loadEvalProducts();
+  const file = process.env.EVAL_FILE?.trim() || "data/eval_products.csv";
+  const products = loadEvalProducts(file);
   const only = process.env.EVAL_ONLY?.split(",");
   const results: EvalResult[] = [];
 
@@ -39,10 +40,10 @@ async function main() {
   }
 
   const at = new Date().toISOString();
-  const meta = `Policy eval ${at} · ${providers.map((p) => `${p.name}:${p.model}`).join(" → ")} · ${results.length} products`;
+  const meta = `Policy eval ${at} · ${providers.map((p) => `${p.name}:${p.model}`).join(" → ")} · ${results.length} products from ${file}`;
   console.log(formatScore(score(results), meta));
   mkdirSync("evals/out", { recursive: true });
-  writeFileSync(`evals/out/policy-${at.replace(/[:.]/g, "-")}.json`, JSON.stringify({ meta, results }, null, 1));
+  writeFileSync(`evals/out/policy-${file.includes("heldout") ? "heldout-" : ""}${at.replace(/[:.]/g, "-")}.json`, JSON.stringify({ meta, results }, null, 1));
 }
 
 main().catch((err) => {
