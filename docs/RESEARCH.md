@@ -1,27 +1,40 @@
 # Problem research (public sources)
 
-Standing has no seller interviews. This file collects **public sources only**, newest first, with dates.
+Standing has no seller interviews. This file collects **public sources only**, with dates.
 Nothing here is a seller interview or a quote from one, and it must never be presented as one. Testing is by the builder.
 
-Checked 6 Nov 2026 from web search results. Each page still needs opening before anything from it is quoted
-word for word in the README or video.
+Two levels of checking, kept apart on purpose:
+- **Opened and read:** the page itself was read in Nov 2026. These may be quoted word for word.
+- **Listing only:** seen in search results or a page title. Don't quote these or use their numbers.
 
-## Current (2026)
+## Opened and read (Nov 2026)
 
-| Finding | Source | Date |
+| What it says | Source | Date on the page |
 |---|---|---|
-| PayPal went live in Nigeria via Paga on 27 Jan 2026. Nigerians can receive international payments into a linked Paga wallet and withdraw in naira. Coverage says it doesn't erase two decades of history: past restrictions were tied to fraud and compliance concerns. | [TechCabal](https://techcabal.com/2026/01/27/paypal-returns-to-nigeria-after-two-decades-this-time-through-paga/), [Nairametrics](https://nairametrics.com/2026/01/27/paypal-goes-live-in-nigeria-through-paga-enabling-global-payments-and-local-withdrawals/), [TechAfrica News](https://techafricanews.com/2026/01/30/so-paypal-is-back-in-nigeria-but-what-actually-changed/) | 27–30 Jan 2026 |
-| Merchant guides for 2026 say a sudden spike in sales, a jump in average order value or a shift into higher-risk categories can trigger an automatic review even with a clean dispute history. Resolution comes through the Resolution Center, usually with an explanation of the spike and sales records. | [Technobezz, 2026](https://www.technobezz.com/paypal-account-limited-how-to-resolve-it), [PaymentNerds, 2026](https://paymentnerds.com/blog/paypal-account-limitations-explained-how-merchants-recover-frozen-funds/) | 2026 (third-party) |
-| Guides say adding tracking, or marking a digital or service order Completed, can release a hold sooner. One says funds typically release within 24 hours of delivery confirmation when tracking is provided. | [SaleHoo, 2026](https://www.salehoo.com/learn/coping-with-paypal-payment-holds), [Synctrack](https://synctrack.io/blog/paypal-money-on-hold/) | 2026 (third-party) |
+| Reasons for holds include: "You're a first-time seller."; "Your selling pattern appears unusual or changed."; "a recent spike in sales or a change in your average selling price, business platform, or type of item being sold."; "You're selling higher-risk items." | [PayPal: funds availability](https://www.paypal.com/us/brc/article/funds-availability) | None (live page) |
+| "Your funds are usually held for up to 21 days." | Same page | None (live page) |
+| Advice: "Ship promptly and give customers valid tracking information"; "Monitor and try to keep complaint rates below 1% of your sales". Uploading tracking from supported carriers is listed as a way to prevent delays. | Same page | None (live page) |
+| The page does **not** mention marking digital orders Completed. | Same page | None (live page) |
+| Holding your balance "for up to 180 days if reasonably needed to protect against the risk of liability or if you have violated our Acceptable Use Policy". | [PayPal User Agreement](https://www.paypal.com/us/legalhub/paypal/useragreement-full) | Last updated 4 Nov 2026 |
+| Limits can follow when sellers "Experience rapidly increasing sales volume, which is out of nature with your usual sales patterns." or "Start selling an entirely new type of product, such as a higher-cost item like jewelry." | [PayPal help534](https://www.paypal.com/us/cshelp/article/why-is-my-paypal-account-limited-help534) | None (live page) |
+| "we hold the initial payments you receive for up to 21 days." A positive selling history and confirmed identity bring faster access. | [PayPal help848](https://www.paypal.com/us/cshelp/article/new-paypal-account-%E2%80%93-payments-on-hold-and-accessing-your-money-quicker-help848) | None (live page) |
+| The policy clauses in `data/policy_clauses.json`. | [PayPal Acceptable Use Policy](https://www.paypal.com/us/legalhub/paypal/acceptableuse-full) | Last updated 29 Oct 2022; retrieved 31 Oct 2026 |
+| "Paga and PayPal have launched live account linking in Nigeria", letting users receive international payments into Paga wallets and withdraw in naira. | [Nairametrics](https://nairametrics.com/2026/01/27/paypal-goes-live-in-nigeria-through-paga-enabling-global-payments-and-local-withdrawals/) | 27 Jan 2026 |
 
-## PayPal's own current help pages (live pages, no publication date shown)
+## Listing only (not opened, or title only)
 
-| Finding | Source |
-|---|---|
-| New sellers' initial payments can be held for up to 21 days, to cover buyer complaints. A positive selling history and identity confirmation get money released sooner. | [PayPal help848](https://www.paypal.com/us/cshelp/article/new-paypal-account-%E2%80%93-payments-on-hold-and-accessing-your-money-quicker-help848) |
-| An account may be limited after a rapid increase in sales volume out of line with usual patterns, a high rate of claims and chargebacks, or starting to sell a new, higher-cost product type. | [PayPal help534](https://www.paypal.com/us/cshelp/article/why-is-my-paypal-account-limited-help534) |
+| What it appears to say | Source | Date |
+|---|---|---|
+| Other coverage of the Nigeria launch. TechCabal refused automated access (403). | [TechCabal](https://techcabal.com/2026/01/27/paypal-returns-to-nigeria-after-two-decades-this-time-through-paga/), [TechAfrica News](https://techafricanews.com/2026/01/30/so-paypal-is-back-in-nigeria-but-what-actually-changed/) | 27–30 Jan 2026 |
+| Merchant guides say a sales spike, a jump in order value or a riskier category can trigger review. | [Technobezz](https://www.technobezz.com/paypal-account-limited-how-to-resolve-it), [PaymentNerds](https://paymentnerds.com/blog/paypal-account-limitations-explained-how-merchants-recover-frozen-funds/) | 2026 (third-party) |
+| Guides say adding tracking, or marking a digital or service order Completed, can release a hold sooner. These are the only sources for that claim, and one sells a tracking app. Standing never makes the claim. | [SaleHoo](https://www.salehoo.com/learn/coping-with-paypal-payment-holds), [Synctrack](https://synctrack.io/blog/paypal-money-on-hold/) | 2026 (third-party) |
+| Competitors: Synctrack, TrackiPal, PalSync and PaySync sync tracking; Synctrack's title also lists disputes management and chargeback prevention. Chargeflow covers chargebacks. Ratings and review counts vary by site, so none are used. | [Synctrack](https://apps.shopify.com/synctrack), [TrackiPal](https://apps.shopify.com/trackipal), [Chargeflow](https://www.chargeflow.io) | Checked Nov 2026 |
 
 ## Not used
-- 180-day hold figures that appear only on third-party sites (unverified; PayPal's own figure for new sellers is 21 days).
 - The terms.law candle-maker story in the blueprint: the site now shows as a "private members-only forum" and the story can't be checked.
-- Anything older than 2026 that isn't one of PayPal's own live help pages.
+- Any named individual seller's case: no recent one could be verified.
+- "13,300 stores" and LegitScript claims about competitors: not verified.
+- Anything older than 2026, unless it's one of PayPal's own current pages or terms.
+
+## Correction
+An earlier version of this file said the 180-day figure appeared only on third-party sites. That was wrong: it is in PayPal's User Agreement, quoted above.
