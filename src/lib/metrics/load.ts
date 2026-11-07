@@ -25,6 +25,14 @@ export function saleWhere(sellerId: string, currency: string) {
   );
 }
 
+/** How an order's line item finds its catalogue product: exact SKU first, then name ignoring case and outer spaces. */
+export function productMatcher<P extends { sku: string | null; name: string }>(catalogue: P[]) {
+  const bySku = new Map(catalogue.filter((p) => p.sku).map((p) => [p.sku!, p]));
+  const byName = new Map(catalogue.map((p) => [p.name.trim().toLowerCase(), p]));
+  return (item: { sku: string | null; name: string | null }): P | null =>
+    (item.sku && bySku.get(item.sku)) || (item.name && byName.get(item.name.trim().toLowerCase())) || null;
+}
+
 // Orders v2 item category → kind. DONATION and unknown values don't classify an order.
 const SHOP_CATEGORY_KIND: Record<string, Kind> = { PHYSICAL_GOODS: "physical", DIGITAL_GOODS: "digital" };
 
@@ -59,14 +67,13 @@ export async function loadMetricsInput(db: Db, sellerId: string, asOf: Date, cur
       .where(and(eq(disputes.sellerId, sellerId), gt(disputes.createdAtPaypal, from), lte(disputes.createdAtPaypal, asOf))),
   ]);
 
-  const bySku = new Map(catalogue.filter((p) => p.sku).map((p) => [p.sku!, p]));
-  const byName = new Map(catalogue.map((p) => [p.name.trim().toLowerCase(), p]));
+  const match = productMatcher(catalogue);
   const shopByCapture = new Map(shop.map((o) => [o.captureId, o]));
 
   const sales: Sale[] = txns.map((t) => {
     const matched = items
       .filter((i) => i.transactionId === t.transactionId)
-      .map((i) => (i.sku && bySku.get(i.sku)) || (i.name && byName.get(i.name.trim().toLowerCase())) || null)
+      .map(match)
       .filter((p) => p !== null);
     const ship = tracked.filter((s) => s.transactionId === t.transactionId);
     return {

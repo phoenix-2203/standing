@@ -56,6 +56,7 @@ export async function buildChecklist(db: Db, sellerId: string, now = new Date())
             c.unclassifiedOrders > 0
               ? `Standing can't tell which of your ${c.unclassifiedOrders} orders are physical yet, because their products aren't in your catalogue.`
               : "No physical orders older than 48 hours yet.",
+          ...(c.unclassifiedOrders > 0 ? { action: { label: "Add your products", href: "/catalogue" } } : {}),
         }
       : c.coverage >= THRESHOLDS.trackingCoverage
         ? { id: "tracking", state: "done", title: "Tracking on physical orders", detail: `${c.withTracking} of ${c.eligible} physical orders older than 48 hours have tracking in PayPal.` }
@@ -72,6 +73,7 @@ export async function buildChecklist(db: Db, sellerId: string, now = new Date())
           state: "unknown",
           title: "Digital orders marked Completed",
           detail: `Standing can't tell whether any of your ${c.unclassifiedOrders} unclassified orders are digital, because their products aren't in your catalogue.`,
+          action: { label: "Add your products", href: "/catalogue" },
         }
       : g.count === 0
       ? { id: "digital", state: "done", title: "Digital orders marked Completed", detail: "No digital or service orders over 24 hours old are waiting to be marked Completed." }

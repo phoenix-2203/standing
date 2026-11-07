@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AllCommunityModule, type ColDef, colorSchemeDark, ModuleRegistry, themeQuartz } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useEffect, useMemo, useState } from "react";
@@ -111,7 +112,7 @@ export default function OrdersPage() {
         )}
       </div>
       <p className="muted small" style={{ marginTop: "0.75rem" }}>
-        &ldquo;Unclassified&rdquo; means the order&apos;s products aren&apos;t in your catalogue yet, so Standing can&apos;t tell physical from digital.
+        &ldquo;Unclassified&rdquo; means the order&apos;s products aren&apos;t in your catalogue yet, so Standing can&apos;t tell physical from digital. <Link href="/catalogue">Add them to your catalogue</Link>.
       </p>
     </>
   );

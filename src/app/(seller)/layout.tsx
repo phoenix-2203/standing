@@ -12,6 +12,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
           <nav className="nav" aria-label="Main">
             <Link href="/dashboard">Dashboard</Link>
             <Link href="/orders">Orders</Link>
+            <Link href="/catalogue">Catalogue</Link>
             <Link href="/packs">Packs</Link>
             <Link href="/checklist">Checklist</Link>
           </nav>
