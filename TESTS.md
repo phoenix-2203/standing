@@ -1015,7 +1015,7 @@ The first run's own debug IDs weren't captured (a log filter dropped them); its 
 - Fix: `settleDuplicate` in `src/lib/fixes/fixes.ts` reads the tracker back. There → sent. Read-back fails → unknown. Absent → a duplicate stays unknown; the Completed error stays failed, because the order has a tracking number and isn't Completed.
 - After the fix, re-running all 6 live: 6/6 settle as sent.
 
-**Browser, local dev server** (no write reached PayPal): the card and the dispute note render; Carrier "Other" asks for a name; "Add tracking" showed the exact preview and `Cancel (1:58)`; Cancel worked, status `cancelled`, 0 attempts. Temporary test product removed afterwards.
+**Browser, local dev server** (no write reached PayPal): the card and the dispute note render; Carrier "Other" asks for a name; "Add tracking" showed the exact preview and `Cancel (1:58)`; Cancel worked, status `cancelled`, 0 attempts; PayPal's read-back for that order shows only its earlier COMPLETED tracker, not the cancelled number (debug `f9477870fa0a5`). Temporary test product removed afterwards.
 
 **Not yet tested:** the button's automatic send after the full 2-minute window, in a browser (needs a physical order; the probe orders below will provide one); the button on the hosted app.
 
