@@ -13,35 +13,40 @@ const TRACKING_NUMBER = /^[A-Za-z0-9-]{1,64}$/;
 
 export interface TrackingPushInput {
   sellerId: string;
-  orderId: string;
+  orderId?: string | null; // known for demo-shop orders; PayPal's Transaction Search doesn't report it
   captureId: string;
   trackingNumber: string;
   carrier: string; // PayPal carrier code, e.g. USPS, UPS, DHL, OTHER
   carrierNameOther?: string; // required when carrier is OTHER
 }
 
-/** Physical order: add a tracking number via Orders v2 `POST /v2/checkout/orders/{id}/track`. */
+/**
+ * Physical order: add a tracking number. Orders v2 `POST /v2/checkout/orders/{id}/track` when the order ID is
+ * known; otherwise `POST /v1/shipping/trackers`, which needs only the transaction ID.
+ */
 export function trackingPush(input: TrackingPushInput): ActionSpec {
-  if (!PAYPAL_ID.test(input.orderId) || !PAYPAL_ID.test(input.captureId)) throw new Error("Order and capture IDs must be PayPal IDs");
+  if ((input.orderId && !PAYPAL_ID.test(input.orderId)) || !PAYPAL_ID.test(input.captureId)) throw new Error("Order and capture IDs must be PayPal IDs");
   if (!TRACKING_NUMBER.test(input.trackingNumber)) throw new Error("Tracking number must be 1–64 letters, digits or dashes");
   if (!/^[A-Z0-9_]{2,40}$/.test(input.carrier)) throw new Error("Carrier must be a PayPal carrier code, e.g. USPS");
   if (input.carrier === "OTHER" && !input.carrierNameOther?.trim()) throw new Error("Carrier OTHER needs the carrier's name");
+  const carrier = { carrier: input.carrier, ...(input.carrier === "OTHER" ? { carrier_name_other: input.carrierNameOther!.trim() } : {}) };
   return {
     sellerId: input.sellerId,
     type: "tracking_push",
     method: "POST",
-    path: `/v2/checkout/orders/${input.orderId}/track`,
-    payload: {
-      capture_id: input.captureId,
-      tracking_number: input.trackingNumber,
-      carrier: input.carrier,
-      ...(input.carrier === "OTHER" ? { carrier_name_other: input.carrierNameOther!.trim() } : {}),
-      notify_payer: false,
-    },
+    ...(input.orderId
+      ? {
+          path: `/v2/checkout/orders/${input.orderId}/track`,
+          payload: { capture_id: input.captureId, tracking_number: input.trackingNumber, ...carrier, notify_payer: false },
+        }
+      : {
+          path: "/v1/shipping/trackers",
+          payload: { trackers: [{ transaction_id: input.captureId, tracking_number: input.trackingNumber, status: "SHIPPED", ...carrier, notify_buyer: false }] },
+        }),
     requestId: `track-${input.captureId}-${input.trackingNumber}`,
     summary:
       `Add tracking ${input.trackingNumber} (${input.carrier === "OTHER" ? input.carrierNameOther!.trim() : input.carrier}) ` +
-      `to PayPal order ${input.orderId}, payment ${input.captureId}. The buyer is not emailed.`,
+      `to ${input.orderId ? `PayPal order ${input.orderId}, ` : ""}payment ${input.captureId}. The buyer is not emailed.`,
   };
 }
 
@@ -69,7 +74,8 @@ export async function previewFix(db: Db, spec: ActionSpec): Promise<Action> {
  * (the read-back later finds the same tracker ID and updates that row instead of adding one).
  */
 export async function sendFix(db: Db, paypal: PayPalClient, sellerId: string, requestId: string, now = new Date()): Promise<SendResult> {
-  const result = await sendAction(db, paypal, requestId, now);
+  const first = await sendAction(db, paypal, requestId, now);
+  const result = first.outcome === "failed" && !first.fromStore ? await settleDuplicate(db, paypal, first.action, now) : first;
   if (result.outcome === "sent") {
     const row = shipmentFor(result.action, sellerId);
     if (row) {
@@ -80,6 +86,35 @@ export async function sendFix(db: Db, paypal: PayPalClient, sellerId: string, re
     }
   }
   return result;
+}
+
+/**
+ * `POST /v1/shipping/trackers` doesn't replay: the same request ID after a lost answer gets a 400, not the original
+ * response (`DUPLICATE_TRACKER` for a tracking number, `INVALID_TRACKING_NUMBER` for Completed; TESTS.md, 7 Nov). That
+ * isn't a refusal, and it isn't proof either: read the tracker back and believe PayPal's record. No answer → unknown.
+ * Read back and absent: a duplicate stays unknown; the Completed error is a real refusal (the order has a tracking
+ * number but isn't Completed), so it stays failed instead of retrying every cycle.
+ */
+async function settleDuplicate(db: Db, paypal: PayPalClient, action: Action, now: Date): Promise<SendResult> {
+  const failed: SendResult = { outcome: "failed", action, fromStore: false };
+  const response = JSON.stringify(action.paypalResponse ?? "");
+  const duplicate = response.includes("DUPLICATE_TRACKER");
+  if (!duplicate && !(action.type === "digital_complete" && response.includes("INVALID_TRACKING_NUMBER"))) return failed;
+  const wanted = shipmentFor(action, action.sellerId ?? "");
+  if (!wanted) return failed;
+  const mark = async (status: "sent" | "unknown") => {
+    const [row] = await db.update(actions).set({ status, updatedAt: now }).where(eq(actions.requestId, action.requestId)).returning();
+    return row;
+  };
+  try {
+    const back = await paypal.request<{ trackers?: { tracking_number?: string; status: string }[] }>("GET", `/v1/shipping/trackers?transaction_id=${encodeURIComponent(wanted.transactionId)}`);
+    const there = back.body?.trackers?.some((t) => (wanted.trackingNumber ? t.tracking_number === wanted.trackingNumber : t.status === "COMPLETED"));
+    if (there) return { outcome: "sent", action: await mark("sent"), fromStore: false };
+    if (!duplicate && back.status === 200) return failed;
+  } catch {
+    // No answer from the read-back: fall through to unknown.
+  }
+  return { outcome: "unknown", action: await mark("unknown") };
 }
 
 /** Each cycle: send this seller's approved fixes whose cancel window has run out, and retry unknown outcomes. */
@@ -96,14 +131,15 @@ export async function sendDueFixes(db: Db, paypal: PayPalClient, sellerId: strin
 function shipmentFor(action: Action, sellerId: string) {
   const p = action.payload as Record<string, unknown>;
   if (action.type === "tracking_push") {
-    const captureId = p.capture_id as string;
-    const trackingNumber = p.tracking_number as string;
+    const tracker = (p.trackers as Record<string, unknown>[] | undefined)?.[0] ?? p;
+    const captureId = (tracker.capture_id ?? tracker.transaction_id) as string;
+    const trackingNumber = tracker.tracking_number as string;
     return {
       sellerId,
       transactionId: captureId,
       trackerId: `${captureId}-${trackingNumber}`,
       trackingNumber,
-      carrier: p.carrier as string,
+      carrier: tracker.carrier as string,
       status: "SHIPPED",
       source: "standing_push",
     };

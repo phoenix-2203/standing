@@ -77,3 +77,39 @@ it("digital 'marks the order Completed' via POST /v1/shipping/trackers", async (
   console.log("read-back:", back.status, back.debugId, JSON.stringify(back.body?.trackers?.map((t) => t.status)));
   expect(back.body?.trackers?.some((t) => t.status === "COMPLETED")).toBe(true);
 });
+
+// No order ID, as for any order that didn't come through the demo shop: the route the dashboard button uses.
+// Day-1 captures with no tracker; labelled test numbers. Each carrier code the UI offers is tried once.
+it.each([
+  ["0KA603561R998142L", "USPS", "STANDINGD7USPS"],
+  ["0MR493725R555252N", "UPS", "STANDINGD7UPS"],
+  ["0V070374TB2731508", "FEDEX", "STANDINGD7FEDEX"],
+  ["1PM458967T448544K", "DHL", "STANDINGD7DHL"],
+  ["1WP49974J7411162H", "OTHER", "STANDINGD7OTHER"],
+])("tracking by transaction ID via POST /v1/shipping/trackers: %s %s", async (captureId, carrier, trackingNumber) => {
+  const db = await testDb();
+  const paypal = paypalFromEnv();
+  const spec = trackingPush({ sellerId: SELLER, captureId, trackingNumber, carrier, carrierNameOther: carrier === "OTHER" ? "GIG Logistics" : undefined });
+  await previewFix(db, spec);
+  await approveAction(db, spec.requestId, new Date(), WINDOW_MS);
+  await sleep(WINDOW_MS + 200);
+  const r = await sendFix(db, paypal, SELLER, spec.requestId);
+  console.log(JSON.stringify({ carrier, requestId: spec.requestId, outcome: r.outcome, http: r.action.paypalHttpStatus, debugId: r.action.paypalDebugId, response: r.outcome === "failed" ? r.action.paypalResponse : undefined }));
+  const back = await paypal.request<{ trackers?: { tracking_number?: string; carrier?: string; status: string }[] }>("GET", `/v1/shipping/trackers?transaction_id=${captureId}`);
+  console.log("read-back:", back.status, back.debugId, JSON.stringify(back.body?.trackers?.map((t) => [t.tracking_number, t.carrier, t.status])));
+  expect(r.outcome).toBe("sent");
+  expect(back.body?.trackers?.some((t) => t.tracking_number === trackingNumber)).toBe(true);
+}, 30_000);
+
+// What PayPal does when the Completed call is replayed: a tracker from an earlier run, same request ID.
+it("Completed replayed on an order already Completed settles as sent, from the read-back", async () => {
+  const db = await testDb();
+  const paypal = paypalFromEnv();
+  const spec = markCompleted({ sellerId: SELLER, captureId: "5VE587515T743130S" });
+  await previewFix(db, spec);
+  await approveAction(db, spec.requestId, new Date(), WINDOW_MS);
+  await sleep(WINDOW_MS + 200);
+  const r = await sendFix(db, paypal, SELLER, spec.requestId);
+  console.log(JSON.stringify({ requestId: spec.requestId, outcome: r.outcome, status: r.action.status, http: r.action.paypalHttpStatus, debugId: r.action.paypalDebugId, response: r.action.paypalResponse }));
+  expect(r.outcome).toBe("sent");
+}, 30_000);

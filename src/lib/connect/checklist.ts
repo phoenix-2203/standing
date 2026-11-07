@@ -65,7 +65,7 @@ export async function buildChecklist(db: Db, sellerId: string, now = new Date())
             state: "todo",
             title: "Add tracking to physical orders",
             detail: `${c.eligible - c.withTracking} of ${c.eligible} physical orders older than 48 hours have no tracking in PayPal.`,
-            action: { label: "See orders", href: "/orders" },
+            action: { label: "Add tracking", href: "/dashboard#tracking" },
           },
     g.count === 0 && c.unclassifiedOrders > 0
       ? {

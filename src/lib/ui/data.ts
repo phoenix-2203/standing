@@ -3,6 +3,7 @@ import type { Db } from "@/db";
 import { actions, alerts, evidenceItems, launchPlans, packs, shipments, syncState } from "@/db/schema";
 import { verificationItem } from "@/lib/connect/checklist";
 import { listDigitalGaps } from "@/lib/digital/module";
+import { listTrackingGaps } from "@/lib/fixes/tracking";
 import { computeMetrics, THRESHOLDS } from "@/lib/metrics/compute";
 import { loadMetricsInput } from "@/lib/metrics/load";
 
@@ -11,10 +12,11 @@ import { loadMetricsInput } from "@/lib/metrics/load";
 
 export async function dashboardData(db: Db, sellerId: string, now = new Date()) {
   const metrics = computeMetrics(await loadMetricsInput(db, sellerId, now));
-  const [verification, open, digital, sync, plans, recentPacks] = await Promise.all([
+  const [verification, open, digital, tracking, sync, plans, recentPacks] = await Promise.all([
     verificationItem(db, sellerId),
     db.select().from(alerts).where(and(eq(alerts.sellerId, sellerId), eq(alerts.status, "open"))),
     listDigitalGaps(db, sellerId, now),
+    listTrackingGaps(db, sellerId, now),
     db.select().from(syncState).where(eq(syncState.sellerId, sellerId)),
     db
       .select()
@@ -32,6 +34,7 @@ export async function dashboardData(db: Db, sellerId: string, now = new Date()) 
     metrics,
     thresholds: THRESHOLDS,
     digital,
+    tracking,
     launchPlans: plans.map((p) => ({ id: p.id, launchDate: p.launchDate, expectedMultiple: Number(p.expectedMultiple), policy: p.policy, packId: p.packId })),
     latestPack: recentPacks[0] ? { ...recentPacks[0], createdAt: recentPacks[0].createdAt.toISOString() } : null,
     sync: sync.map((s) => ({ job: s.job, lastRunAt: s.lastRunAt?.toISOString() ?? null, ok: !s.lastError, lastError: s.lastError, syncedThrough: s.syncedThrough?.toISOString() ?? null })),

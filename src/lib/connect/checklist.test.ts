@@ -32,7 +32,7 @@ describe("buildChecklist", () => {
     await order("U1", null, 72);
     expect((await byId()).tracking).toMatchObject({ state: "unknown", detail: expect.stringContaining("1 orders") });
     await order("P1", "PHYSICAL_GOODS", 72);
-    expect((await byId()).tracking).toMatchObject({ state: "todo", title: "Add tracking to physical orders", action: { href: "/orders" } });
+    expect((await byId()).tracking).toMatchObject({ state: "todo", title: "Add tracking to physical orders", action: { href: "/dashboard#tracking" } });
     await db.insert(shipments).values({ sellerId: SELLER, transactionId: "P1", trackerId: "P1-T", trackingNumber: "T", carrier: "USPS", status: "SHIPPED", source: "paypal_read" });
     expect((await byId()).tracking).toMatchObject({ state: "done", detail: "1 of 1 physical orders older than 48 hours have tracking in PayPal." });
   });

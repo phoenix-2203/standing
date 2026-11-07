@@ -76,7 +76,7 @@ export function FiguresCard({ data }: { data: DashboardData }) {
     {
       label: "Dispute rate, 90 days",
       value: m.disputeRate90d.rate === null ? "—" : `${(Math.floor(m.disputeRate90d.rate * 1000) / 10).toFixed(1)}%`,
-      note: `${m.disputeRate90d.disputes} of ${m.disputeRate90d.orders} orders · PayPal publishes no exact threshold`,
+      note: `${m.disputeRate90d.disputes} of ${m.disputeRate90d.orders} orders · no alert. PayPal's guide advises complaints below 1% of sales`,
     },
   ];
   return (
@@ -118,8 +118,9 @@ export function DigitalCard({ gaps, onChange }: { gaps: DashboardData["digital"]
   );
 }
 
-function DigitalRow({ gap, onChange }: { gap: DashboardData["digital"][number]; onChange: () => void }) {
-  const [fix, setFix] = useState<Fix | null>(gap.fix ? { ...gap.fix } : null);
+/** A fix in the queue: counts down its cancel window, then asks the server to send (the queue refuses anything earlier). */
+function useQueuedFix(initial: Fix | null, onChange: () => void) {
+  const [fix, setFix] = useState<Fix | null>(initial);
   const [now, setNow] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
   const due = fix?.undoUntil ? Date.parse(fix.undoUntil) : null;
@@ -131,7 +132,6 @@ function DigitalRow({ gap, onChange }: { gap: DashboardData["digital"][number]; 
     return () => clearInterval(id);
   }, [waiting]);
 
-  // When the window runs out, ask the server to send. The queue itself refuses anything earlier.
   useEffect(() => {
     if (fix?.status !== "scheduled" || due === null || due > now || busy) return;
     let live = true;
@@ -148,15 +148,6 @@ function DigitalRow({ gap, onChange }: { gap: DashboardData["digital"][number]; 
     };
   }, [fix, due, now, busy, onChange]);
 
-  async function start() {
-    setBusy(true);
-    const res = await api<Fix & { error?: string }>(`/api/digital/orders/${gap.transactionId}/complete`, { method: "POST" });
-    setBusy(false);
-    setNow(Date.now());
-    if (res.status !== 200 || !res.data) return setFix({ requestId: "", status: "error", undoUntil: null, error: res.data?.error ?? "Couldn't start the fix." });
-    setFix(res.data);
-  }
-
   async function cancel() {
     if (!fix) return;
     setBusy(true);
@@ -166,6 +157,146 @@ function DigitalRow({ gap, onChange }: { gap: DashboardData["digital"][number]; 
   }
 
   const secondsLeft = due ? Math.max(0, Math.ceil((due - now) / 1000)) : 0;
+  return { fix, setFix, setNow, busy, setBusy, waiting, secondsLeft, cancel };
+}
+
+/** Where a started fix stands: the cancel button during the window, then PayPal's outcome. */
+function FixState({ q }: { q: ReturnType<typeof useQueuedFix> }) {
+  const { fix, waiting, secondsLeft, busy, cancel } = q;
+  if (!fix) return null;
+  if (waiting) {
+    return (
+      <button className="secondary" onClick={cancel} disabled={busy}>
+        Cancel ({Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")})
+      </button>
+    );
+  }
+  if (fix.status === "sent" || fix.outcome === "sent") return <span className="badge ok">Sent to PayPal</span>;
+  if (fix.status === "failed") return <span className="badge bad">PayPal refused it</span>;
+  if (fix.status === "unknown") return <span className="badge warn">No answer yet: will retry</span>;
+  return <span className="badge info">Sending…</span>;
+}
+
+const CARRIERS = [
+  ["USPS", "USPS"],
+  ["UPS", "UPS"],
+  ["FEDEX", "FedEx"],
+  ["DHL", "DHL"],
+  ["OTHER", "Other…"],
+] as const;
+
+/** Physical orders with no tracking: the seller types the number; nothing here ever makes one up. */
+export function TrackingCard({ gaps, onChange }: { gaps: DashboardData["tracking"]; onChange: () => void }) {
+  return (
+    <section className="card" id="tracking" aria-labelledby="tracking-h">
+      <h2 id="tracking-h">Physical orders without tracking</h2>
+      {gaps.length === 0 ? (
+        <p className="muted">No physical orders are waiting for tracking. Orders count once their products are in your catalogue.</p>
+      ) : (
+        <div className="rows">
+          {gaps.map((g) => (
+            <TrackingRow key={g.transactionId} gap={g} onChange={onChange} />
+          ))}
+        </div>
+      )}
+      <p className="muted small" style={{ marginTop: "0.75rem", marginBottom: 0 }}>
+        Goes to PayPal with the number you type. You can cancel it for 2 minutes before it is sent. The buyer is not emailed.
+      </p>
+    </section>
+  );
+}
+
+function TrackingRow({ gap, onChange }: { gap: DashboardData["tracking"][number]; onChange: () => void }) {
+  const q = useQueuedFix(gap.fix ? { ...gap.fix } : null, onChange);
+  const { fix, setFix, setNow, busy, setBusy, waiting } = q;
+  const [number, setNumber] = useState("");
+  const [carrier, setCarrier] = useState("");
+  const [carrierName, setCarrierName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const open = !fix || fix.status === "cancelled" || fix.status === "failed";
+
+  async function start(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    const res = await api<Fix & { error?: string }>(`/api/tracking/orders/${gap.transactionId}`, {
+      method: "POST",
+      body: JSON.stringify({ trackingNumber: number, carrier, carrierNameOther: carrierName }),
+    });
+    setBusy(false);
+    setNow(Date.now());
+    if (res.status !== 200 || !res.data) return setError(res.data?.error ?? "The tracking number couldn't be queued.");
+    setFix(res.data);
+  }
+
+  return (
+    <div className="stack" style={{ paddingBlock: "0.75rem", gap: "0.5rem" }}>
+      <div className="row" style={{ border: 0, padding: 0 }}>
+        <div>
+          <div className="mono">{gap.transactionId}</div>
+          <div className="muted small">
+            {usd(gap.cents)} · {day(gap.at)}
+            {gap.overdue && " · over 48 hours old"}
+          </div>
+        </div>
+        {!open && <FixState q={q} />}
+      </div>
+      {fix?.summary && waiting && <div className="small">{fix.summary}</div>}
+      {fix?.status === "failed" && <div className="small error">PayPal refused that number. Check it and try again.</div>}
+      {open && (
+        <form className="form" onSubmit={start}>
+          <div className="form-row">
+            <label>
+              Tracking number
+              <input required maxLength={64} pattern="[A-Za-z0-9\\-]+" title="Letters, digits and dashes only" value={number} onChange={(e) => setNumber(e.target.value)} />
+            </label>
+            <label>
+              Carrier
+              <select required value={carrier} onChange={(e) => setCarrier(e.target.value)}>
+                <option value="" disabled>
+                  Choose…
+                </option>
+                {CARRIERS.map(([code, label]) => (
+                  <option key={code} value={code}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {carrier === "OTHER" && (
+              <label>
+                Carrier name
+                <input required maxLength={60} value={carrierName} onChange={(e) => setCarrierName(e.target.value)} />
+              </label>
+            )}
+          </div>
+          <div>
+            <button disabled={busy}>{busy ? "Saving…" : fix?.status === "cancelled" ? "Add tracking again" : "Add tracking"}</button>
+          </div>
+          {error && (
+            <p className="error small" role="alert">
+              {error}
+            </p>
+          )}
+        </form>
+      )}
+    </div>
+  );
+}
+
+function DigitalRow({ gap, onChange }: { gap: DashboardData["digital"][number]; onChange: () => void }) {
+  const q = useQueuedFix(gap.fix ? { ...gap.fix } : null, onChange);
+  const { fix, setFix, setNow, busy, setBusy, waiting } = q;
+
+  async function start() {
+    setBusy(true);
+    const res = await api<Fix & { error?: string }>(`/api/digital/orders/${gap.transactionId}/complete`, { method: "POST" });
+    setBusy(false);
+    setNow(Date.now());
+    if (res.status !== 200 || !res.data) return setFix({ requestId: "", status: "error", undoUntil: null, error: res.data?.error ?? "Couldn't start the fix." });
+    setFix(res.data);
+  }
+
   return (
     <div className="row">
       <div>
@@ -182,18 +313,8 @@ function DigitalRow({ gap, onChange }: { gap: DashboardData["digital"][number]; 
           <button onClick={start} disabled={busy}>
             {fix?.status === "cancelled" ? "Mark Completed again" : "Mark Completed"}
           </button>
-        ) : waiting ? (
-          <button className="secondary" onClick={cancel} disabled={busy}>
-            Cancel ({Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")})
-          </button>
-        ) : fix.status === "sent" || fix.outcome === "sent" ? (
-          <span className="badge ok">Sent to PayPal</span>
-        ) : fix.status === "failed" ? (
-          <span className="badge bad">PayPal refused it</span>
-        ) : fix.status === "unknown" ? (
-          <span className="badge warn">No answer yet: will retry</span>
         ) : (
-          <span className="badge info">Sending…</span>
+          <FixState q={q} />
         )}
       </div>
     </div>

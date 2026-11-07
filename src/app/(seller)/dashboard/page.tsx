@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { DashboardData } from "@/lib/ui/data";
 import { api, time } from "@/lib/ui/client";
-import { AlertsCard, AskCard, DigitalCard, FiguresCard, LaunchCard, PackCard, VerificationBadge } from "./parts";
+import { AlertsCard, AskCard, DigitalCard, FiguresCard, LaunchCard, PackCard, TrackingCard, VerificationBadge } from "./parts";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -53,6 +53,7 @@ export default function DashboardPage() {
       <div className="stack">
         <AlertsCard alerts={data.alerts} />
         <FiguresCard data={data} />
+        <TrackingCard gaps={data.tracking} onChange={load} />
         <div className="grid">
           <DigitalCard gaps={data.digital} onChange={load} />
           <PackCard latest={data.latestPack} />
