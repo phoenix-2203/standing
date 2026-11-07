@@ -35,3 +35,4 @@
 - Refusal eval re-run on Ask Standing's new answer format: same result, 15/15 refused, 0/10 false refusals, 1/5 injections handled wrongly (I05, nothing leaked).
 - README written and checked against code, TESTS.md and PayPal's live pages; research file now separates pages opened from search listings, and corrects the 180-day note.
 - Catalogue screen: sellers set each product's kind; orders, figures and checklist update straight away. Found that 31 of 33 local orders have no product name or SKU from PayPal, so the catalogue can't match those.
+- Held-out eval sets written and committed before any run (20 products, 21 Ask Standing prompts), with their scoring rules in TESTS.md; the runners take `EVAL_FILE`.
