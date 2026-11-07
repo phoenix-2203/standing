@@ -31,16 +31,31 @@ interface ProviderOptions {
   model?: string;
   fetch?: typeof fetch;
   timeoutMs?: number;
+  /** Wait before the one retry of a transient failure (tests pass a no-op). */
+  sleep?: (ms: number) => Promise<void>;
+}
+
+const realSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+// Busy or briefly failing upstream: worth one more try. A timeout isn't (it already waited the full time),
+// and 4xx other than 429 means the request itself is wrong.
+const TRANSIENT_STATUS = new Set([429, 500, 502, 503, 504]);
+const MAX_RETRY_WAIT_MS = 5_000;
+const DEFAULT_RETRY_WAIT_MS = 1_000;
+
+/** How long to wait before retrying, from Retry-After (seconds) when present, capped so a page never hangs. */
+export function retryWaitMs(retryAfter: string | null): number {
+  const secs = retryAfter === null ? NaN : Number(retryAfter);
+  return Number.isFinite(secs) && secs >= 0 ? Math.min(secs * 1000, MAX_RETRY_WAIT_MS) : DEFAULT_RETRY_WAIT_MS;
 }
 
 // gemini-2.5-flash is closed to new API keys (404, 31 Oct 2026). 3.8 Flash can think for over 90 s on a
 // hard product, so the timeout is generous.
-export function gemini({ apiKey, model = "gemini-3.8-flash", fetch: f = globalThis.fetch, timeoutMs = 150_000 }: ProviderOptions): LlmProvider {
+export function gemini({ apiKey, model = "gemini-3.8-flash", fetch: f = globalThis.fetch, timeoutMs = 150_000, sleep = realSleep }: ProviderOptions): LlmProvider {
   return {
     name: "gemini",
     model,
     async generateJson(req) {
-      const res = await call("gemini", f, timeoutMs, `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      const res = await call("gemini", f, timeoutMs, sleep, `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
         headers: { "x-goog-api-key": apiKey },
         body: {
           systemInstruction: { parts: [{ text: req.system }] },
@@ -56,12 +71,12 @@ export function gemini({ apiKey, model = "gemini-3.8-flash", fetch: f = globalTh
   };
 }
 
-export function groq({ apiKey, model = "openai/gpt-oss-120b", fetch: f = globalThis.fetch, timeoutMs = 60_000 }: ProviderOptions): LlmProvider {
+export function groq({ apiKey, model = "openai/gpt-oss-120b", fetch: f = globalThis.fetch, timeoutMs = 60_000, sleep = realSleep }: ProviderOptions): LlmProvider {
   return {
     name: "groq",
     model,
     async generateJson(req) {
-      const res = await call("groq", f, timeoutMs, "https://api.groq.com/openai/v1/chat/completions", {
+      const res = await call("groq", f, timeoutMs, sleep, "https://api.groq.com/openai/v1/chat/completions", {
         headers: { Authorization: `Bearer ${apiKey}` },
         body: {
           model,
@@ -95,19 +110,38 @@ async function call(
   provider: string,
   f: typeof fetch,
   timeoutMs: number,
+  sleep: (ms: number) => Promise<void>,
   url: string,
   { headers, body }: { headers: Record<string, string>; body: unknown },
 ): Promise<unknown> {
-  let res: Response;
-  try {
-    res = await f(url, {
+  const send = () =>
+    f(url, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(timeoutMs),
     });
-  } catch (err) {
-    throw new LlmError(provider, `request failed (${(err as Error).name})`);
+  // At most one retry, for a busy upstream (429/5xx) or a dropped connection, so a single blip doesn't
+  // reach the seller. A timeout isn't retried: it already waited the full time.
+  const attempt = async (): Promise<Response> => {
+    try {
+      return await send();
+    } catch (err) {
+      throw new LlmError(provider, `request failed (${(err as Error).name})`);
+    }
+  };
+  let res: Response;
+  for (let tries = 1; ; tries++) {
+    try {
+      res = await attempt();
+    } catch (err) {
+      if (tries >= 2 || (err as LlmError).message.endsWith("(TimeoutError)")) throw err;
+      await sleep(DEFAULT_RETRY_WAIT_MS);
+      continue;
+    }
+    if (tries >= 2 || !TRANSIENT_STATUS.has(res.status)) break;
+    await res.body?.cancel().catch(() => {});
+    await sleep(retryWaitMs(res.headers.get("retry-after")));
   }
   const text = await res.text();
   if (!res.ok) {
