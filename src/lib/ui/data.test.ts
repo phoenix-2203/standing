@@ -7,7 +7,7 @@ import { runMetrics } from "@/lib/metrics/load";
 import { recordShopOrder } from "@/lib/shop/orders";
 import { upsertTransaction } from "@/lib/sync/transactions";
 import { testDb } from "@/test/helpers";
-import { dashboardData, orderRows, packDetail, packList } from "./data";
+import { dashboardData, orderRows, packDetail, packList, protectionLabel } from "./data";
 
 const SELLER = "seller-1";
 const NOW = new Date("2026-11-08T12:00:00Z");
@@ -46,6 +46,28 @@ describe("orderRows", () => {
     ]);
     expect(rows.find((r) => r.transactionId === "MISSING")).toMatchObject({ amount: 18.5, amountText: "USD 18.50" });
     expect(rows.find((r) => r.transactionId === "TRACKED")!.evidence).toBe(2); // payment + tracking
+    expect(rows.map((r) => r.trackingState)).toEqual(["none", "completed", "missing", "tracked"]);
+  });
+
+  it("shows PayPal's own Seller Protection flag and item names exactly as PayPal sent them", async () => {
+    const tx = (id: string, protection: string | undefined, items: string[]) =>
+      upsertTransaction(db, SELLER, {
+        transaction_info: { transaction_id: id, transaction_event_code: "T0006", transaction_status: "S", transaction_initiation_date: hoursAgo(10), transaction_amount: { currency_code: "USD", value: "5.00" }, ...(protection ? { protection_eligibility: protection } : {}) },
+        cart_info: { item_details: items.map((name) => ({ item_name: name, item_quantity: "1" })) },
+      });
+    await tx("E", "01", ["Lavender soy candle", "Gift wrap"]);
+    await tx("N", "02", []);
+    await tx("P", "03", ["Candle gift set"]);
+    await tx("X", undefined, []);
+    await syncLedger(db, SELLER, "USD", NOW);
+    const rows = Object.fromEntries((await orderRows(db, SELLER, NOW)).map((r) => [r.transactionId, [r.protection, r.items]]));
+    expect(rows).toEqual({ E: ["eligible", "Lavender soy candle, Gift wrap"], N: ["not eligible", ""], P: ["partial", "Candle gift set"], X: ["not stated", ""] });
+  });
+});
+
+describe("protectionLabel", () => {
+  it("maps PayPal's codes and never guesses an unknown one", () => {
+    expect(["01", "02", "03", "04", null, 1].map(protectionLabel)).toEqual(["eligible", "not eligible", "partial", "not stated", "not stated", "not stated"]);
   });
 });
 

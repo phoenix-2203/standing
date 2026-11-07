@@ -1,6 +1,6 @@
-import { and, desc, eq, gte, inArray } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import type { Db } from "@/db";
-import { actions, alerts, evidenceItems, launchPlans, packs, shipments, syncState } from "@/db/schema";
+import { actions, alerts, evidenceItems, launchPlans, packs, shipments, syncState, transactionItems, transactions } from "@/db/schema";
 import { verificationItem } from "@/lib/connect/checklist";
 import { listDigitalGaps } from "@/lib/digital/module";
 import { listTrackingGaps } from "@/lib/fixes/tracking";
@@ -51,8 +51,22 @@ export interface OrderRow {
   kind: string; // physical / digital / service / unclassified
   categories: string;
   tracking: string; // e.g. "USPS STANDINGD1PHY01 (SHIPPED)", "Completed", "missing", "—"
+  trackingState: "tracked" | "completed" | "missing" | "none";
   evidence: number;
   fix: string | null; // status of a Standing fix for this order, if any
+  items: string; // item names as PayPal returned them, "" when PayPal sent none
+  protection: Protection;
+}
+
+/** PayPal's own Seller Protection flag on the transaction, read as sent (Transaction Search `protection_eligibility`). */
+export type Protection = "eligible" | "partial" | "not eligible" | "not stated";
+
+/** Codes from PayPal's Transaction Search spec: 01 eligible, 02 not eligible, 03 partially eligible. */
+export function protectionLabel(code: unknown): Protection {
+  if (code === "01") return "eligible";
+  if (code === "02") return "not eligible";
+  if (code === "03") return "partial";
+  return "not stated";
 }
 
 /** One row per sale in the last 90 days: the AG Grid table. */
@@ -60,10 +74,15 @@ export async function orderRows(db: Db, sellerId: string, now = new Date()): Pro
   const { sales } = await loadMetricsInput(db, sellerId, now);
   const ids = sales.map((s) => s.id);
   if (!ids.length) return [];
-  const [ship, ev, fixes] = await Promise.all([
+  const [ship, ev, fixes, flags, items] = await Promise.all([
     db.select().from(shipments).where(inArray(shipments.transactionId, ids)),
     db.select({ transactionId: evidenceItems.transactionId }).from(evidenceItems).where(and(eq(evidenceItems.sellerId, sellerId), inArray(evidenceItems.transactionId, ids))),
     db.select({ requestId: actions.requestId, status: actions.status, payload: actions.payload }).from(actions).where(eq(actions.sellerId, sellerId)),
+    db
+      .select({ id: transactions.transactionId, code: sql<string | null>`${transactions.raw}->'transaction_info'->>'protection_eligibility'` })
+      .from(transactions)
+      .where(inArray(transactions.transactionId, ids)),
+    db.select({ id: transactionItems.transactionId, name: transactionItems.name, position: transactionItems.position }).from(transactionItems).where(inArray(transactionItems.transactionId, ids)),
   ]);
   return sales
     .sort((a, b) => b.at.getTime() - a.at.getTime())
@@ -81,8 +100,15 @@ export async function orderRows(db: Db, sellerId: string, now = new Date()): Pro
         kind: s.kind ?? "unclassified",
         categories: s.categories.join(", "),
         tracking: tracked ? `${tracked.carrier ?? ""} ${tracked.trackingNumber} (${tracked.status})`.trim() : completed ? "Completed" : physicalDue ? "missing" : "—",
+        trackingState: tracked ? "tracked" : completed ? "completed" : physicalDue ? "missing" : "none",
         evidence: ev.filter((e) => e.transactionId === s.id).length,
         fix: fix?.status ?? null,
+        items: items
+          .filter((i) => i.id === s.id && i.name)
+          .sort((a, b) => a.position - b.position)
+          .map((i) => i.name)
+          .join(", "),
+        protection: protectionLabel(flags.find((f) => f.id === s.id)?.code),
       };
     });
 }
