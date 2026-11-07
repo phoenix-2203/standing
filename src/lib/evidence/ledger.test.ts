@@ -3,7 +3,7 @@ import type { Db } from "@/db";
 import { evidenceItems, products, shipments, transactionItems, transactions } from "@/db/schema";
 import { upsertTransaction } from "@/lib/sync/transactions";
 import { testDb } from "@/test/helpers";
-import { addInvoice, addTrafficSource, syncLedger } from "./ledger";
+import { addInvoice, addTrafficSource, InvalidEvidence, removeSellerEvidence, sellerEvidence, syncLedger } from "./ledger";
 
 const SELLER = "seller-1";
 const sale = (id: string, value = "18.00", items?: object[], code = "T0006") =>
@@ -97,8 +97,13 @@ describe("addInvoice", () => {
     [{ date: "20/10/2026" }, /YYYY-MM-DD/],
     [{ lines: [] }, /lines/],
     [{ lines: [{ description: "x", quantity: 1.5 }] }, /lines/],
+    [{ date: "2026-02-30" }, /YYYY-MM-DD/],
+    [{ date: "2099-01-01" }, /future/],
+    [{ lines: Array.from({ length: 51 }, () => ({ description: "x", quantity: 1 })) }, /lines/],
+    [{ supplier: 7 }, /supplier/],
+    [{ simulated: "yes" }, /simulated/],
   ])("rejects %j", async (bad, msg) => {
-    await expect(addInvoice(db, SELLER, { supplier: "S", invoiceNumber: "1", date: "2026-10-20", lines: [{ description: "x", quantity: 1 }], ...bad })).rejects.toThrow(msg);
+    await expect(addInvoice(db, SELLER, { supplier: "S", invoiceNumber: "1", date: "2026-10-20", lines: [{ description: "x", quantity: 1 }], ...(bad as object) })).rejects.toThrow(msg);
   });
 });
 
@@ -116,7 +121,30 @@ describe("addTrafficSource", () => {
     [{ url: "http://example.com" }, /https/],
     [{ url: "not a url" }, /valid URL/],
     [{ label: "" }, /label/],
+    [{ date: "2099-01-01" }, /future/],
+    [{ url: `https://example.com/${"a".repeat(600)}` }, /too long/],
   ])("rejects %j", async (bad, msg) => {
-    await expect(addTrafficSource(db, SELLER, { label: "x", url: "https://example.com", date: "2026-10-30", ...bad })).rejects.toThrow(msg);
+    await expect(addTrafficSource(db, SELLER, { label: "x", url: "https://example.com", date: "2026-10-30", ...(bad as object) })).rejects.toThrow(msg);
+  });
+
+  it("input mistakes are InvalidEvidence, the only errors whose text the routes show the seller", async () => {
+    await expect(addTrafficSource(db, SELLER, { label: "x", url: "nope", date: "2026-10-30" })).rejects.toBeInstanceOf(InvalidEvidence);
+    await expect(addInvoice(db, SELLER, { supplier: "", invoiceNumber: "1", date: "2026-10-20", lines: [] })).rejects.toBeInstanceOf(InvalidEvidence);
+  });
+});
+
+describe("seller-added evidence list and removal", () => {
+  it("lists only what this seller added, newest first, and removes only those items", async () => {
+    await db.insert(evidenceItems).values({ sellerId: SELLER, id: "EV-TXN-1", kind: "txn", occurredAt: new Date("2026-10-31T00:00:00Z"), summary: "Payment", facts: {}, source: "paypal" });
+    const older = await addTrafficSource(db, SELLER, { label: "Newsletter", url: "https://example.com/news", date: "2026-10-01", simulated: true });
+    const newer = await addTrafficSource(db, SELLER, { label: "Video", url: "https://example.com/video", date: "2026-10-30", simulated: true });
+    await addTrafficSource(db, "someone-else", { label: "Theirs", url: "https://example.com/theirs", date: "2026-10-30" });
+
+    expect((await sellerEvidence(db, SELLER)).map((e) => e.id)).toEqual([newer.id, older.id]);
+    expect(await removeSellerEvidence(db, SELLER, older.id)).toBe(true);
+    expect(await removeSellerEvidence(db, SELLER, older.id)).toBe(false);
+    expect(await removeSellerEvidence(db, SELLER, "EV-TXN-1")).toBe(false);
+    expect(await removeSellerEvidence(db, SELLER, (await sellerEvidence(db, "someone-else"))[0].id)).toBe(false);
+    expect((await sellerEvidence(db, SELLER)).map((e) => e.id)).toEqual([newer.id]);
   });
 });

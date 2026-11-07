@@ -9,6 +9,12 @@ import { saleWhere } from "@/lib/metrics/load";
 // invoices and traffic sources are data, never instructions; simulated inputs say so in their summary.
 
 export type Evidence = typeof evidenceItems.$inferSelect;
+
+/** The seller's input is invalid; the message is safe to show them. */
+export class InvalidEvidence extends Error {}
+
+const MAX_INVOICE_LINES = 50;
+const isText = (v: unknown, max: number) => typeof v === "string" && v.trim().length > 0 && v.length <= max;
 type NewEvidence = typeof evidenceItems.$inferInsert;
 
 const day = (d: Date) => d.toISOString().slice(0, 10);
@@ -87,11 +93,12 @@ export interface InvoiceInput {
 
 /** A supplier invoice the seller adds, matched (by exact product name or SKU) to products they sold. */
 export async function addInvoice(db: Db, sellerId: string, inv: InvoiceInput, now = new Date()): Promise<Evidence> {
-  if (!inv.supplier.trim() || !inv.invoiceNumber.trim()) throw new Error("Invoice needs a supplier and an invoice number");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(inv.date)) throw new Error("Invoice date must be YYYY-MM-DD");
-  if (!inv.lines.length || inv.lines.some((l) => !l.description.trim() || !Number.isInteger(l.quantity) || l.quantity <= 0)) {
-    throw new Error("Invoice lines need a description and a whole positive quantity");
+  if (!isText(inv.supplier, 120) || !isText(inv.invoiceNumber, 60)) throw new InvalidEvidence("Invoice needs a supplier and an invoice number");
+  if (!validDate(inv.date) || inv.date > day(now)) throw new InvalidEvidence("Invoice date must be YYYY-MM-DD, not in the future");
+  if (!Array.isArray(inv.lines) || !inv.lines.length || inv.lines.length > MAX_INVOICE_LINES || inv.lines.some((l) => !isText(l?.description, 200) || !Number.isInteger(l.quantity) || l.quantity <= 0 || l.quantity > 1_000_000)) {
+    throw new InvalidEvidence(`Invoice lines (1 to ${MAX_INVOICE_LINES}) need a description and a whole positive quantity`);
   }
+  if (inv.simulated !== undefined && typeof inv.simulated !== "boolean") throw new InvalidEvidence("simulated must be true or false");
 
   const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
   const catalogue = await db.select().from(products).where(eq(products.sellerId, sellerId));
@@ -147,13 +154,15 @@ export interface TrafficSourceInput {
 export async function addTrafficSource(db: Db, sellerId: string, src: TrafficSourceInput, now = new Date()): Promise<Evidence> {
   let url: URL;
   try {
-    url = new URL(src.url);
+    url = new URL(String(src.url));
   } catch {
-    throw new Error("Traffic source needs a valid URL");
+    throw new InvalidEvidence("Traffic source needs a valid URL");
   }
-  if (url.protocol !== "https:") throw new Error("Traffic source URL must be https");
-  if (!src.label.trim() || src.label.length > 120) throw new Error("Traffic source needs a short label");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(src.date)) throw new Error("Traffic source date must be YYYY-MM-DD");
+  if (url.protocol !== "https:") throw new InvalidEvidence("Traffic source URL must be https");
+  if (url.href.length > 500) throw new InvalidEvidence("Traffic source URL is too long");
+  if (!isText(src.label, 120)) throw new InvalidEvidence("Traffic source needs a short label");
+  if (!validDate(src.date) || src.date > day(now)) throw new InvalidEvidence("Traffic source date must be YYYY-MM-DD, not in the future");
+  if (src.simulated !== undefined && typeof src.simulated !== "boolean") throw new InvalidEvidence("simulated must be true or false");
   return upsert(
     db,
     {
@@ -168,6 +177,28 @@ export async function addTrafficSource(db: Db, sellerId: string, src: TrafficSou
     },
     now,
   );
+}
+
+function validDate(v: unknown): v is string {
+  return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v)) && new Date(`${v}T00:00:00Z`).toISOString().startsWith(v);
+}
+
+/** What the seller added themselves (invoices, traffic sources, delivery proof), newest first. */
+export async function sellerEvidence(db: Db, sellerId: string): Promise<Evidence[]> {
+  const rows = await db.select().from(evidenceItems).where(and(eq(evidenceItems.sellerId, sellerId), eq(evidenceItems.source, "seller")));
+  return rows.sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime());
+}
+
+/**
+ * Remove one item the seller added. PayPal-sourced evidence can't be removed here (the sync owns it), and
+ * packs already built keep their own copy of what they cited. Returns false if there was nothing to remove.
+ */
+export async function removeSellerEvidence(db: Db, sellerId: string, id: string): Promise<boolean> {
+  const gone = await db
+    .delete(evidenceItems)
+    .where(and(eq(evidenceItems.sellerId, sellerId), eq(evidenceItems.id, id), eq(evidenceItems.source, "seller")))
+    .returning({ id: evidenceItems.id });
+  return gone.length > 0;
 }
 
 async function upsert(db: Db, item: NewEvidence, now: Date): Promise<Evidence> {
