@@ -794,3 +794,33 @@ PayPal `https://goodstanding.duckdns.org/api/auth/paypal/callback`.
   the verified account showed "PayPal account verified", so the live app now holds the verified state. Logins
   from other accounts are refused (`not_allowed`, no session, no overwrite); this is covered by the code tests
   and has not been tried live with a third account.
+
+## Sun 8 Nov task — seller UI (built 6–7 Nov 2026)
+
+Code tests (`npm test`): **365/365 pass**. Production build passes. Checked in a browser against the local database
+with real sandbox data (33 payments), at desktop and phone width (no sideways scrolling on the dashboard at 375 px).
+
+| Screen | What was checked |
+|---|---|
+| Front page | Explains Standing, labelled as a sandbox demo, with Log in with PayPal |
+| Dashboard | Verification badge, signals ("Unusually large order", "New seller"), key figures with the Standing-default and no-PayPal-threshold notes |
+| Ask Standing | A real Groq answer in 1.9 s, made only of code-rendered facts |
+| Digital orders | Click → preview text and a live Cancel countdown → cancel. Tested with one day-1 order temporarily treated as digital in the local database only. The action ended `cancelled` with 0 attempts and no PayPal response, and the test rows were removed |
+| Orders | AG Grid Community: 33 rows, sort, filter, search, paging, dark theme |
+| Packs | A real pack built in 2.4 s (Groq plan), status `ready`; viewer shows the letter with numbered evidence, sales curve and evidence list |
+| Checklist | Four items worked out by code. Tracking and digital say "unknown", not "done", while orders are unclassified |
+
+**Not tested in a browser:**
+- Waiting out the 2-minute window so the dashboard itself sends the fix. The queue's send was tested live on 31 Oct, and
+  the send step is covered by code tests.
+- The launch plan form.
+- Light mode.
+- These screens on the hosted app (needs a deploy and a login).
+
+**Bugs found while testing:**
+- **Ask Standing failed live.** Groq's strict JSON rejected the nested `paragraphs → items` format ("expected array, but got
+  object"), and the route returned 500. Fixed: one flat list of items, one retry on that error, and a 503 with a plain message
+  on failure. This changes the format the refusal eval ran on, so the eval is being re-run.
+- **The pack viewer broke the production build** (`3b5c809`, `ef223c0`): `useParams()` outside `<Suspense>`. Fixed before
+  anything was deployed from those commits.
+- **The checklist said "Done" for digital orders while all orders were unclassified.** Fixed: it says "Unknown".

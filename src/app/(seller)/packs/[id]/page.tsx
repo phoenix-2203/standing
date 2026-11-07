@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { api, day, time } from "@/lib/ui/client";
 
 type PackView = {
@@ -18,7 +18,16 @@ type PackView = {
   attempts: number;
 };
 
+// The pack ID comes from the URL, so that part renders inside Suspense (Next requires it).
 export default function PackPage() {
+  return (
+    <Suspense fallback={<p className="muted">Loading…</p>}>
+      <PackDetail />
+    </Suspense>
+  );
+}
+
+function PackDetail() {
   const { id } = useParams<{ id: string }>();
   const [pack, setPack] = useState<PackView | null>(null);
   const [state, setState] = useState<"loading" | "ok" | "missing" | "signed_out">("loading");

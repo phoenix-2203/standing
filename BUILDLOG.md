@@ -28,3 +28,8 @@
 - Fixed the production build (login routes), added a minimal /checklist page, and put a session check on the pack PDF.
 - Live Log in with PayPal passed with two sandbox accounts: verified and unverified both shown correctly, and `"false"` seen live for the first time.
 - Deployed to the VPS at https://goodstanding.duckdns.org (Docker, isolated, behind Caddy); a genuine PayPal webhook was stored once and its resends were ignored.
+
+## 7 Nov 2026
+- Seller UI: front page, dashboard, Ask Standing, one-click digital fix with cancel, launch plan form, AG Grid orders table, pack list and viewer, four-item checklist.
+- Browser testing on real sandbox data found three bugs, all fixed: Ask Standing failing on Groq's strict JSON, the pack viewer breaking the production build, and the checklist saying "Done" while orders were unclassified.
+- Refusal eval re-running because Ask Standing's answer format changed.
