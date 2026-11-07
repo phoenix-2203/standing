@@ -86,6 +86,14 @@ export async function refreshLaunchPack(db: Db, sellerId: string, providers: Llm
   await prebuildPack(db, plan, providers, now);
 }
 
+/** The state of a plan's pre-built pack, as stored: a blocked pack must never be shown as built. */
+export type PlanPackStatus = "ready" | "blocked" | "none";
+export async function planPackStatus(db: Db, packId: string | null): Promise<PlanPackStatus> {
+  if (!packId) return "none";
+  const [pack] = await db.select({ status: packs.status }).from(packs).where(eq(packs.id, packId));
+  return pack?.status === "ready" ? "ready" : pack?.status === "blocked" ? "blocked" : "none";
+}
+
 /** What the alert rules need to know about the active plan. */
 export async function planContext(db: Db, sellerId: string, now: Date): Promise<PlanContext | null> {
   const plan = await activePlan(db, sellerId, now);

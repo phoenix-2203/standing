@@ -6,7 +6,7 @@ import { type JsonRequest, LlmError, type LlmProvider } from "@/lib/llm/provider
 import { computeMetrics } from "@/lib/metrics/compute";
 import { testDb } from "@/test/helpers";
 import { AS_OF, daysAgo, steady } from "@/test/seed";
-import { activePlan, createLaunchPlan, InvalidLaunchPlan, planContext, refreshLaunchPack } from "./plan";
+import { activePlan, createLaunchPlan, InvalidLaunchPlan, planContext, planPackStatus, refreshLaunchPack } from "./plan";
 
 const SELLER = "seller-1";
 const LAUNCH = AS_OF.toISOString().slice(0, 10); // 2026-11-03
@@ -142,6 +142,15 @@ describe("createLaunchPlan", () => {
     await db.delete(packs);
     const failing: LlmProvider = { ...model(), async generateJson(req) { if (req.schemaName === "letter_plan") throw new LlmError("groq", "HTTP 503"); return { verdict: "allowed", clause_id: "", quote: "", confidence: 1, reason: "x" }; } };
     expect(await plan({}, failing as never)).toMatchObject({ packId: null, packBuiltAt: null });
+  });
+
+  it("reports a blocked pre-built pack as blocked, never as built (seen on the hosted app, 7 Nov)", async () => {
+    const good = await plan();
+    expect(await planPackStatus(db, good.packId)).toBe("ready");
+    const blocked = await plan({}, model({ plan: "forged" }));
+    expect(blocked.packId).toBeTruthy(); // a pack row exists…
+    expect(await planPackStatus(db, blocked.packId)).toBe("blocked"); // …but it isn't ready
+    expect(await planPackStatus(db, null)).toBe("none");
   });
 
   it("stores nothing when the policy check can't run", async () => {

@@ -410,7 +410,7 @@ export function AskCard() {
   );
 }
 
-type PlanResult = { error?: string; policy?: { name: string; verdict: string; clauseId: string | null; quote: string | null; reason: string }[]; packId?: string | null };
+type PlanResult = { error?: string; policy?: { name: string; verdict: string; clauseId: string | null; quote: string | null; reason: string }[]; packId?: string | null; packStatus?: "ready" | "blocked" | "none" };
 
 export function LaunchCard({ plans, onChange }: { plans: DashboardData["launchPlans"]; onChange: () => void }) {
   const [date, setDate] = useState("");
@@ -450,7 +450,7 @@ export function LaunchCard({ plans, onChange }: { plans: DashboardData["launchPl
               <span>
                 {day(p.launchDate)} · up to {p.expectedMultiple}× · {p.policy.length} product{p.policy.length === 1 ? "" : "s"}
               </span>
-              <span className={`badge ${p.packId ? "ok" : "warn"}`}>{p.packId ? "pack built" : "pack not built"}</span>
+              <PlanPackBadge status={p.packStatus} packId={p.packId} />
             </div>
           ))}
         </div>
@@ -488,10 +488,30 @@ export function LaunchCard({ plans, onChange }: { plans: DashboardData["launchPl
             </div>
           ))}
           <p className="muted small" style={{ marginBottom: 0 }}>
-            {result.packId ? "Your explanation pack is pre-built for this launch." : "The pack will be built when the launch window opens."}
+            {result.packStatus === "ready" ? (
+              "Your explanation pack is pre-built for this launch."
+            ) : result.packStatus === "blocked" && result.packId ? (
+              <>
+                Standing built a pack, but its checks stopped the letter, so it isn&apos;t ready. <Link href={`/packs/${result.packId}`}>See why</Link>, or build a new one from Packs. It is rebuilt when the launch window opens.
+              </>
+            ) : (
+              "The pack will be built when the launch window opens."
+            )}
           </p>
         </div>
       )}
     </section>
   );
+}
+
+/** A launch plan's pack as stored: a blocked pack is never shown as built. */
+function PlanPackBadge({ status, packId }: { status: "ready" | "blocked" | "none"; packId: string | null }) {
+  if (status === "ready") return <span className="badge ok">pack ready</span>;
+  if (status === "blocked" && packId)
+    return (
+      <Link className="badge bad" href={`/packs/${packId}`}>
+        pack blocked: see why
+      </Link>
+    );
+  return <span className="badge warn">pack not built</span>;
 }

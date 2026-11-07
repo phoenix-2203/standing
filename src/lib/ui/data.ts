@@ -6,6 +6,7 @@ import { listDigitalGaps } from "@/lib/digital/module";
 import { listTrackingGaps } from "@/lib/fixes/tracking";
 import { computeMetrics, THRESHOLDS } from "@/lib/metrics/compute";
 import { loadMetricsInput } from "@/lib/metrics/load";
+import { planPackStatus } from "@/lib/launch/plan";
 
 // Read-only data for the seller's screens. Every number here is computed by code (CLAUDE.md rule 3);
 // the screens only display it.
@@ -35,7 +36,9 @@ export async function dashboardData(db: Db, sellerId: string, now = new Date()) 
     thresholds: THRESHOLDS,
     digital,
     tracking,
-    launchPlans: plans.map((p) => ({ id: p.id, launchDate: p.launchDate, expectedMultiple: Number(p.expectedMultiple), policy: p.policy, packId: p.packId })),
+    launchPlans: await Promise.all(
+      plans.map(async (p) => ({ id: p.id, launchDate: p.launchDate, expectedMultiple: Number(p.expectedMultiple), policy: p.policy, packId: p.packId, packStatus: await planPackStatus(db, p.packId) })),
+    ),
     latestPack: recentPacks[0] ? { ...recentPacks[0], createdAt: recentPacks[0].createdAt.toISOString() } : null,
     sync: sync.map((s) => ({ job: s.job, lastRunAt: s.lastRunAt?.toISOString() ?? null, ok: !s.lastError, lastError: s.lastError, syncedThrough: s.syncedThrough?.toISOString() ?? null })),
   };
