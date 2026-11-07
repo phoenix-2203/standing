@@ -16,6 +16,19 @@ export interface WebhookDeps {
   webhookId: string;
 }
 
+// PayPal's events are a few KB; anything far larger isn't one, and isn't worth a verification call.
+const MAX_BODY_BYTES = 256 * 1024;
+
+/** PayPal's signing certificate always comes from an https paypal.com host. */
+function looksLikePayPalCert(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:" && (u.hostname === "paypal.com" || u.hostname.endsWith(".paypal.com"));
+  } catch {
+    return false;
+  }
+}
+
 interface PayPalEvent {
   id: string;
   event_type: string;
@@ -34,9 +47,17 @@ export async function handlePayPalWebhook(request: Request, deps: WebhookDeps): 
   const missing = Object.entries(sig).filter(([, v]) => !v).map(([k]) => SIGNATURE_HEADERS[k as keyof typeof SIGNATURE_HEADERS]);
   if (missing.length) return reply(400, { error: "missing_signature_headers", missing });
 
+  // Cheap checks first, so forged traffic costs no call to PayPal. PayPal's own verification still decides.
+  if (!looksLikePayPalCert(sig.certUrl!)) return reply(400, { error: "cert_url_not_paypal" });
+  if (!/^SHA\d+withRSA$/.test(sig.authAlgo!)) return reply(400, { error: "unsupported_auth_algo" });
+  const declared = Number(request.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) return reply(413, { error: "body_too_large" });
+  const raw = await request.text();
+  if (Buffer.byteLength(raw) > MAX_BODY_BYTES) return reply(413, { error: "body_too_large" });
+
   let event: PayPalEvent;
   try {
-    event = JSON.parse(await request.text());
+    event = JSON.parse(raw);
   } catch {
     return reply(400, { error: "invalid_json" });
   }

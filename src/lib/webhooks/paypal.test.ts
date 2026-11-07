@@ -96,6 +96,26 @@ describe("PayPal webhook", () => {
   });
 
   it.each([
+    ["a non-PayPal cert URL", { "paypal-cert-url": "https://evil.example/cert.pem" }, 400, "cert_url_not_paypal"],
+    ["an http cert URL", { "paypal-cert-url": "http://api.sandbox.paypal.com/v1/notifications/certs/CERT-1" }, 400, "cert_url_not_paypal"],
+    ["a look-alike cert host", { "paypal-cert-url": "https://paypal.com.evil.example/cert" }, 400, "cert_url_not_paypal"],
+    ["an unknown auth algorithm", { "paypal-auth-algo": "none" }, 400, "unsupported_auth_algo"],
+  ])("rejects %s without calling PayPal", async (_name, overrides, status, error) => {
+    const pp = fakePayPal(verifies("SUCCESS"));
+    const res = await handlePayPalWebhook(delivery(event, overrides), { db, paypal: pp.client, webhookId: WEBHOOK_ID });
+    expect([res.status, (await res.json()).error]).toEqual([status, error]);
+    expect(pp.calls).toHaveLength(0);
+  });
+
+  it("rejects an oversized body (413) without calling PayPal", async () => {
+    const pp = fakePayPal(verifies("SUCCESS"));
+    const big = { ...event, padding: "x".repeat(300 * 1024) };
+    const res = await handlePayPalWebhook(delivery(big), { db, paypal: pp.client, webhookId: WEBHOOK_ID });
+    expect(res.status).toBe(413);
+    expect(pp.calls).toHaveLength(0);
+  });
+
+  it.each([
     ["invalid JSON", "{not json"],
     ["a non-event body", { hello: "world" }],
   ])("rejects %s without calling PayPal", async (_name, body) => {
