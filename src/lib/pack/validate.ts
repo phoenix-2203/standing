@@ -32,6 +32,8 @@ export interface Problem {
 export interface Validation {
   ok: boolean;
   problems: Problem[];
+  /** Connecting sentences left out of the letter (only with dropBadBridges). Never shown to anyone. */
+  dropped?: Problem[];
 }
 
 const MAX_ITEMS = 40;
@@ -63,8 +65,16 @@ const BRIDGE_WORDS = new Set(
   ).split(/\s+/),
 );
 
-export function validatePlan(plan: unknown, facts: Fact[]): Validation & { letter: RenderedLetter | null } {
+/**
+ * With `dropBadBridges`, a connecting sentence whose only fault is a word outside the allowed list (a harmless
+ * linking phrase such as "Additional information follows.") is left out and listed in `dropped`, instead of
+ * failing the plan. A sentence with a digit, number, date, claim, evidence ID or hidden character still fails
+ * the plan, and so does any bad fact reference: those mean the model tried to state something. Used only
+ * after the model has had its retries, so one stray linking phrase can't block a pack whose facts are sound.
+ */
+export function validatePlan(plan: unknown, facts: Fact[], { dropBadBridges = false } = {}): Validation & { letter: RenderedLetter | null } {
   const problems: Problem[] = [];
+  const dropped: Problem[] = [];
   const add = (p: number, i: number, text: string, problem: string) => problems.push({ paragraph: p, item: i, text, problem });
   const fail = (problem: string) => ({ ok: false, problems: [{ paragraph: -1, item: -1, text: "", problem }], letter: null });
 
@@ -97,6 +107,7 @@ export function validatePlan(plan: unknown, facts: Fact[]): Validation & { lette
         return;
       }
       const problem = bridgeProblem(item.text);
+      if (problem && dropBadBridges && problem.startsWith(OUTSIDE_LIST)) return void dropped.push({ paragraph: p, item: i, text: item.text, problem });
       if (problem) return add(p, i, item.text, problem);
       sentences.push({ kind: "bridge", text: item.text.normalize("NFKC").trim(), citations: [] });
     });
@@ -106,7 +117,7 @@ export function validatePlan(plan: unknown, facts: Fact[]): Validation & { lette
   if (count > MAX_ITEMS) problems.push({ paragraph: -1, item: -1, text: "", problem: `plan has ${count} items (max ${MAX_ITEMS})` });
   if (!used.size) problems.push({ paragraph: -1, item: -1, text: "", problem: "plan includes no facts" });
   const ok = problems.length === 0;
-  return { ok, problems, letter: ok ? closingLast(letter) : null };
+  return { ok, problems, ...(dropBadBridges ? { dropped } : {}), letter: ok ? closingLast(letter) : null };
 }
 
 // A sign-off ("Thank you for your time…", "Kind regards") is placed by code, not by the model: it always
@@ -130,6 +141,8 @@ export function closingLast(letter: RenderedLetter): RenderedLetter {
   return { paragraphs: closing.length ? [...body, { sentences: closing }] : body };
 }
 
+const OUTSIDE_LIST = "connecting sentence uses words outside the allowed list";
+
 /** Why a connecting sentence the model wrote can't be used, or null if it can. */
 export function bridgeProblem(raw: string): string | null {
   if (HIDDEN.test(raw)) return "contains hidden characters";
@@ -146,6 +159,6 @@ export function bridgeProblem(raw: string): string | null {
   if (claim) return `connecting sentence makes a claim ("${claim[0]}"); facts come only from the fact list`;
   const words = t.toLowerCase().replace(/'s\b/g, "").match(/[a-z]+/g) ?? [];
   const other = [...new Set(words.filter((w) => !BRIDGE_WORDS.has(w)))];
-  if (other.length) return `connecting sentence uses words outside the allowed list ("${other.join('", "')}")`;
+  if (other.length) return `${OUTSIDE_LIST} ("${other.join('", "')}")`;
   return null;
 }

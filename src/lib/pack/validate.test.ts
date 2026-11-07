@@ -162,6 +162,31 @@ describe("validatePlan: forged or malformed fact references are blocked", () => 
   });
 });
 
+describe("validatePlan with dropBadBridges (used only after the retries)", () => {
+  it("leaves out a stray connecting sentence instead of failing, and never shows it", () => {
+    const p = plan([bridge("This letter explains recent activity on our account."), fact(`${SUM.id}#orders`), bridge("Additional information follows.")], [fact(TRK.id)]);
+    expect(validatePlan(p, FACTS).ok).toBe(false);
+    const v = validatePlan(p, FACTS, { dropBadBridges: true });
+    expect(v.ok).toBe(true);
+    expect(v.dropped!.map((d) => d.text)).toEqual(["Additional information follows."]);
+    const shown = v.letter!.paragraphs.flatMap((x) => x.sentences.map((s) => s.text)).join(" ");
+    expect(shown).not.toContain("Additional information follows.");
+    expect(shown).toContain("This letter explains recent activity on our account.");
+  });
+
+  it("still fails a sentence that tries to state something, a forged fact, or a plan with no facts", () => {
+    for (const text of ["PayPal will release the hold.", "Sales were three times higher.", "This happened last week.", "See EV-TXN-ABC."]) {
+      expect(validatePlan(plan([fact(TRK.id), bridge(text)]), FACTS, { dropBadBridges: true }).ok, text).toBe(false);
+    }
+    expect(validatePlan(plan([fact(TRK.id)], [fact("EV-SUM-FORGED#orders")]), FACTS, { dropBadBridges: true }).ok).toBe(false);
+    expect(validatePlan(plan([bridge("Additional information follows.")]), FACTS, { dropBadBridges: true }).ok).toBe(false);
+  });
+
+  it("without the option, nothing changes: dropped is absent", () => {
+    expect(validatePlan(plan([fact(TRK.id)]), FACTS)).not.toHaveProperty("dropped");
+  });
+});
+
 describe("bridgeProblem: the model's own words carry no claim", () => {
   it.each([
     ["Sales were three times higher.", /number or quantity word \("three"\)/],

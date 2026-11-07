@@ -275,7 +275,11 @@ export const packs = pgTable("packs", {
   letter: jsonb("letter").$type<{ paragraphs: { sentences: { kind: "fact" | "bridge"; text: string; citations: string[] }[] }[] }>(),
   evidence: jsonb("evidence").$type<{ id: string; kind: string; summary: string; simulated: boolean }[]>().notNull(),
   facts: jsonb("facts").$type<{ id: string; evidenceIds: string[]; text: string; simulated: boolean }[]>(),
-  validation: jsonb("validation").$type<{ ok: boolean; problems: { paragraph: number; item: number; text: string; problem: string }[] }>(),
+  validation: jsonb("validation").$type<{
+    ok: boolean;
+    problems: { paragraph: number; item: number; text: string; problem: string }[];
+    dropped?: { paragraph: number; item: number; text: string; problem: string }[];
+  }>(),
   attempts: integer("attempts").notNull().default(0),
   provider: text("provider"),
   model: text("model"),

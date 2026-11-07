@@ -185,6 +185,12 @@ export async function buildPack(db: Db, sellerId: string, providers: LlmProvider
     if (!used) throw new Error(`Couldn't plan the cover letter: ${errors.join("; ") || "no LLM provider configured"}`);
     result = validatePlan(plan, facts);
   }
+  // Out of retries and only connecting sentences are wrong: leave those out rather than block the pack.
+  // Every fact is still checked; the dropped text is kept in the record, never shown.
+  if (!result!.ok) {
+    const lenient = validatePlan(plan, facts, { dropBadBridges: true });
+    if (lenient.ok) result = lenient;
+  }
 
   const [pack] = await db
     .insert(packs)
@@ -199,7 +205,7 @@ export async function buildPack(db: Db, sellerId: string, providers: LlmProvider
       letter: result!.letter,
       evidence: offered.map((e) => ({ id: e.id, kind: e.kind, summary: e.summary, simulated: e.simulated })),
       facts,
-      validation: { ok: result!.ok, problems: result!.problems },
+      validation: { ok: result!.ok, problems: result!.problems, ...(result!.dropped?.length ? { dropped: result!.dropped } : {}) },
       attempts,
       provider: used!.name,
       model: used!.model,

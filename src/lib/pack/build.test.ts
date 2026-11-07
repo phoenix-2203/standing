@@ -121,6 +121,14 @@ describe("buildPack", () => {
     expect(pack).toMatchObject({ status: "blocked", letter: null, attempts: 2 });
   });
 
+  it("after the retries, leaves out a harmless linking phrase rather than block the pack, and records it", async () => {
+    const stray: PlanFn = (ids) => ({ paragraphs: [{ items: [fact(ids[0]), bridge("Additional information follows.")] }] });
+    const pack = await buildPack(db, SELLER, [planner([stray])], { now: NOW });
+    expect(pack).toMatchObject({ status: "ready", attempts: 2 });
+    expect(JSON.stringify(pack.letter)).not.toContain("Additional information follows.");
+    expect(pack.validation!.dropped!.map((d) => d.text)).toEqual(["Additional information follows."]);
+  });
+
   it("falls back to the next provider, and fails clearly when none can plan", async () => {
     const pack = await buildPack(db, SELLER, [planner([new LlmError("gemini", "HTTP 429")]), planner([goodPlan], "groq")], { now: NOW });
     expect(pack).toMatchObject({ provider: "groq", status: "ready" });
