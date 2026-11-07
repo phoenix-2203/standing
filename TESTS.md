@@ -917,3 +917,22 @@ EVAL_FILE=data/heldout_refusal.csv  GROQ_MODEL=openai/gpt-oss-120b npm run eval:
 ```
 
 File checks (no model calls): `src/lib/evals/heldout.test.ts`, 7 tests. Full suite: **391/391 pass**; typecheck clean.
+
+## Security hardening and demo orders (7 Nov 2026, written by Claude in chat)
+
+- **Cross-site writes refused** (`src/proxy.ts`, `src/lib/auth/origin.ts`): every POST/PUT/PATCH/DELETE to `/api` is
+  checked before its route. If Origin isn't this request's own host, or Sec-Fetch-Site is `cross-site`/`same-site`, it
+  returns 403. PayPal's webhook and the scheduler are exempt. 5 code tests. On a local `next start` production build:
+  - evil Origin → 403;
+  - own Origin → 401 (no session, as before);
+  - `Sec-Fetch-Site: same-site` → 403;
+  - a GET from an evil Origin → 401 (reads untouched);
+  - webhook from an evil Origin is not blocked by the check.
+  **Not yet checked on the hosted app**: after the next deploy, click through one write (Ask Standing, build a pack).
+- **Login allow-list fails closed in production**: with `STANDING_ALLOWED_PAYER_IDS` empty, `NODE_ENV=production`
+  refuses every login (`not_allowed`) instead of giving any PayPal account a session. 1 code test. The hosted app already
+  sets the list, so nothing changes there.
+- **`npm run demo:orders`**: 4 code tests (plan shape, stable request IDs, input checks, order body). Plan-only run printed
+  15 orders, USD 444.00. **Not yet run with `--go`** against the sandbox. Whether Transaction Search returns the item
+  names for card orders is still to be confirmed after that run.
+- Full suite: **401/401 pass**; typecheck, lint and `npm run build` clean.
