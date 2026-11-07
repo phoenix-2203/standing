@@ -37,7 +37,9 @@ export function loginConfigFromEnv(request: Request, env: Record<string, string 
     sessionSecret: env.SESSION_SECRET,
     sellerId: env.STANDING_SELLER_ID ?? "sandbox-seller",
     appBaseUrl: (env.APP_BASE_URL ?? new URL(request.url).origin).replace(/\/+$/, ""),
-    allowedPayerIds: allowed?.length ? allowed : undefined,
+    // Production fails closed: with no allow-list, every login is refused rather than every PayPal account
+    // getting a session on this one seller's data. Development stays open for local testing.
+    allowedPayerIds: allowed?.length ? allowed : env.NODE_ENV === "production" ? [] : undefined,
   };
 }
 

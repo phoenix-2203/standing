@@ -5,7 +5,7 @@ import { sessionSeller } from "@/lib/auth/session";
 import { SANDBOX_BASE } from "@/lib/paypal/client";
 import { testDb } from "@/test/helpers";
 import { buildChecklist } from "./checklist";
-import { classifyVerification, handleCallback, type LoginConfig, startLogin } from "./login";
+import { classifyVerification, handleCallback, type LoginConfig, loginConfigFromEnv, startLogin } from "./login";
 
 const SECRET = "test-session-secret";
 const TOKEN = "A21AA-super-secret-access-token";
@@ -161,6 +161,19 @@ describe("handleCallback: state and failures", () => {
     expect(res.headers.get("location")).toContain("connect=not_allowed");
     expect(cookieFrom(res)).toBeUndefined();
     expect(await rowOf()).toMatchObject({ verification: "verified", payerId: "OWNER" });
+  });
+
+  it("production with no allow-list refuses every login instead of letting any PayPal account in", async () => {
+    const r = new Request("https://standing.test/api/auth/paypal/callback");
+    const env = (extra: Record<string, string>) => loginConfigFromEnv(r, { SESSION_SECRET: SECRET, ...extra });
+    expect(env({ NODE_ENV: "production" }).allowedPayerIds).toEqual([]);
+    expect(env({ NODE_ENV: "production", STANDING_ALLOWED_PAYER_IDS: " A , B " }).allowedPayerIds).toEqual(["A", "B"]);
+    expect(env({ NODE_ENV: "development" }).allowedPayerIds).toBeUndefined();
+
+    const res = await handleCallback(callback(good), db, config(info({ verified_account: "true", payer_id: "ANYONE" }), { allowedPayerIds: [] }).c, NOW);
+    expect(res.headers.get("location")).toContain("connect=not_allowed");
+    expect(cookieFrom(res)).toBeUndefined();
+    expect(await db.select().from(paypalConnections)).toHaveLength(0);
   });
 });
 
