@@ -15,10 +15,10 @@ export default function Home() {
       </p>
       <ul className="points">
         <li>
-          <strong>Catches the signals early.</strong> Standing watches the patterns PayPal lists, and tells you the same day, in plain words.
+          <strong>Catches the signals early.</strong> Standing watches the patterns PayPal lists and shows them on your dashboard, in plain words, every 15 minutes.
         </li>
         <li>
-          <strong>Fixes what it safely can.</strong> Tracking numbers and Completed status go to PayPal through a queue you preview and can cancel.
+          <strong>Fixes what it safely can.</strong> Marking digital orders Completed goes to PayPal through a queue you preview and can cancel.
         </li>
         <li>
           <strong>Builds your case before anyone asks.</strong> An explanation pack in which every figure comes from your PayPal records, ready to

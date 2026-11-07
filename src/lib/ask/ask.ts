@@ -14,7 +14,7 @@ const WHAT_HELPS = "What Standing can do instead: show the signals PayPal publis
 export const REFUSALS: Record<RefusalTopic, string> = {
   split_payments: `Standing won't help split or size payments to stay under PayPal's checks. Structuring sales to avoid review is evading those checks, and it can make an honest business look less honest. ${WHAT_HELPS}`,
   extra_accounts: `Standing won't help use extra accounts, or someone else's account, to get around a limit or a hold. That is evading PayPal's checks, and it takes your sales further from the records that support your case. ${WHAT_HELPS}`,
-  mislabelling: `Standing won't help describe a product as something it isn't. Mislabelling evades PayPal's checks, and selling an item that needs pre-approval without it is itself a violation of the Acceptable Use Policy. Standing can show you the clause and draft the pre-approval request. ${WHAT_HELPS}`,
+  mislabelling: `Standing won't help describe a product as something it isn't. Mislabelling evades PayPal's checks, and selling an item that needs pre-approval without it is itself a violation of the Acceptable Use Policy. Standing can show you the clause that applies. ${WHAT_HELPS}`,
   hiding_volume: `Standing won't help hide or reshape your sales volume from PayPal. Concealing activity is evading PayPal's checks, and your records should match what really happened. ${WHAT_HELPS}`,
   location_tricks: `Standing won't help disguise where you or your account are, including VPNs, proxies or false addresses. That is evading PayPal's checks. ${WHAT_HELPS}`,
   other_evasion: `Standing won't help get around PayPal's checks. Evading them puts your account at more risk, not less, and it undermines the honest record that supports your case. ${WHAT_HELPS}`,
