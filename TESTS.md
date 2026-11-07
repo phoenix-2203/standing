@@ -1085,3 +1085,10 @@ All checked with code tests: **459/459 pass**, typecheck and lint clean. `npm ru
 - **3e Writes from the app's own pages, hosted:** every write above returned 201/200 with no 403 (evidence ×2, pack, launch plan, approval draft). **Passed.**
 - **3d Webhook resend:** in the developer dashboard (app "Standing"), pressed Resend on `WH-3G603129TB481401U-8C505629LP0411028` (PAYMENT.CAPTURE.COMPLETED, capture `4KC9537438951691U`; first delivered 11:43:27 UTC, DELIVERED). The event showed PENDING, then PayPal redelivered it at 12:31:31 UTC: attempt history "DELIVERED", event status back to **SUCCESS** (Standing answered 2xx). On the VPS, `webhook_events` still has **exactly one row** for that event ID, `received_at` 2026-11-07 11:43:27.59 UTC (the first delivery), so the resend was accepted and not stored twice. **Passed.** (`processed_at` is empty because no code sets that column yet; not a fault.)
 - **3a "Pack build failed:" line:** `docker logs standing-app-1 | grep -A3 "Pack build failed"` on the VPS returned nothing. The redeploy replaced the container that served the earlier 503, so its logs are gone. **Cause of that 503 remains unconfirmed and can't be recovered.** The hosted pack built on the first click today (3b).
+
+## Redesign, phase 1: before screenshots (7 Nov 2026, 22:50 UTC)
+
+`node scripts/screens.mjs docs/screens/before` against the local dev server (dev-only login, local Postgres holding the
+sandbox account's synced data): **36 screenshots**, 9 pages × 1440×900 and 390×844 × light and dark (home, 404,
+dashboard, orders, catalogue, evidence, packs, a ready pack's view, checklist). `/trust`, `/privacy`, `/terms`,
+`/launch` and `/ask` don't exist yet, so they were skipped. Overview: `docs/screens/before-contact-sheet.png`.
