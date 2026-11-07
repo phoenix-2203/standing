@@ -41,3 +41,4 @@
 - Redeployed: the cross-site check doesn't block the app's own writes (Ask 200, pack 201 on second click; first click 503, cause unconfirmed), forged requests get 403, and the 15-minute scheduler is confirmed repeating.
 - Tracking button on the dashboard, through the queue; works without an order ID via /v1/shipping/trackers, 5/5 carriers live. A live re-run found that this route answers a replay with a 400, which would have shown "refused" for a fix that worked; now settled by reading the tracker back.
 - Dispute note now quotes PayPal's below-1% guidance. 4 probe orders created to see whether search returns item names.
+- New look, "The Record" (pine and paper, serif headings, mono figures), and a logo: a person standing on a base line. Dashboard now opens with what needs attention, counted by code. Page arrangement is left for later.

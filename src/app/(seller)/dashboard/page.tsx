@@ -37,12 +37,15 @@ export default function DashboardPage() {
   if (status === "error") return <p className="error">Something went wrong loading your dashboard. Please refresh.</p>;
   if (!data) return <p className="muted">Loading…</p>;
 
+  // Counted by code from the open warnings; calm notes such as "New seller" don't count.
+  const needing = data.alerts.filter((a) => a.severity === "warning").length;
+  const headline = needing === 0 ? "Nothing needs you right now" : needing === 1 ? "One thing needs you" : `${needing} things need you`;
   const lastSync = data.sync.map((s) => s.lastRunAt).filter(Boolean).sort().at(-1);
   return (
     <>
       <div className="page-head">
         <div>
-          <h1>Your standing</h1>
+          <h1>{headline}</h1>
           <p className="muted small">
             {lastSync ? `Last synced with PayPal ${time(lastSync)}` : "Not synced with PayPal yet"}
             {data.sync.some((s) => !s.ok) && <span className="error"> · the last sync had a problem</span>}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 
 // Shell for the seller's screens. Every screen says it's sandbox data (CLAUDE.md rule 8).
 export default function SellerLayout({ children }: { children: React.ReactNode }) {
@@ -7,6 +8,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
       <header className="shell-header">
         <div className="shell-header-inner">
           <Link href="/dashboard" className="brand">
+            <Logo size={24} />
             Standing
           </Link>
           <nav className="nav" aria-label="Main">

@@ -1,44 +1,44 @@
 :root {
   color-scheme: light dark;
-  --bg: #f6f5f1;
-  --surface: #ffffff;
-  --ink: #1b1d21;
-  --muted: #5f646d;
-  --line: #e2e0d9;
-  --accent: #1f5f8b;
-  --accent-ink: #ffffff;
-  --ok: #1d7a4b;
-  --ok-bg: #e7f4ec;
-  --warn: #9a5b00;
-  --warn-bg: #fdf2dd;
-  --bad: #a3262e;
-  --bad-bg: #fbe8e8;
-  --info: #2c5d8a;
-  --info-bg: #e8f0f8;
+  --bg: #f7f6f1;
+  --surface: #fffefb;
+  --ink: #16201c;
+  --muted: #5c6660;
+  --line: #dfddd3;
+  --accent: #1f4d3f;
+  --accent-ink: #fffefb;
+  --ok: #1b6f47;
+  --ok-bg: #e4f2e9;
+  --warn: #8a5600;
+  --warn-bg: #f9efd9;
+  --bad: #9c2f27;
+  --bad-bg: #f9e7e3;
+  --info: #3d5560;
+  --info-bg: #e9eef0;
   --radius: 10px;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.05);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.5;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #131416;
-    --surface: #1c1e21;
-    --ink: #ebeae6;
-    --muted: #a3a6ad;
-    --line: #2e3136;
-    --accent: #6aa9da;
-    --accent-ink: #0d1116;
-    --ok: #6fcf97;
-    --ok-bg: #16281e;
-    --warn: #f0b45c;
-    --warn-bg: #2d2414;
-    --bad: #f08a8f;
-    --bad-bg: #2f1a1c;
-    --info: #8cbbe3;
-    --info-bg: #17232f;
+    --bg: #101614;
+    --surface: #18201d;
+    --ink: #e9ece6;
+    --muted: #a0aaa4;
+    --line: #2a3430;
+    --accent: #8fd1b5;
+    --accent-ink: #101614;
+    --ok: #7fd0a4;
+    --ok-bg: #15281e;
+    --warn: #e9b765;
+    --warn-bg: #2b2413;
+    --bad: #ef9389;
+    --bad-bg: #2f1b18;
+    --info: #a9c0ca;
+    --info-bg: #1a2428;
     --shadow: none;
   }
 }
@@ -383,4 +383,43 @@ label {
 .points li {
   border-left: 3px solid var(--accent);
   padding-left: 0.75rem;
+}
+
+/* The Record: a serif for what you read, a mono for figures and IDs, because they are evidence. */
+h1,
+h2,
+.brand {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: 1.95rem;
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: 1.25rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.mono,
+.figure .value:not(.text) {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  letter-spacing: -0.02em;
+}
+
+.figure .value:not(.text) {
+  font-weight: 500;
+}
+
+.card {
+  border-radius: 12px;
 }

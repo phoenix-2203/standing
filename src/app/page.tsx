@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 
 export default function Home() {
   return (
@@ -6,7 +7,10 @@ export default function Home() {
       <p className="sandbox-tag" style={{ display: "inline-block", marginLeft: 0 }}>
         Sandbox demo: test money only
       </p>
-      <h1>Standing</h1>
+      <h1 style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+        <Logo size={44} />
+        Standing
+      </h1>
       <p className="lead">Stay in good standing with PayPal.</p>
       <p>
         New and fast-growing sellers can have PayPal funds held right when business takes off. The reasons are published: a first-time seller, a
