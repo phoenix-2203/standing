@@ -180,7 +180,9 @@ export default function Home() {
           <p className="section-lead">A letter to PayPal with one invented number could do more harm than no letter. So code owns every number.</p>
           <div className="compare" role="table" aria-label="What code does and what the AI does">
             <div className="compare-row compare-head" role="row">
-              <span role="columnheader" />
+              <span role="columnheader">
+                <span className="sr-only">Area</span>
+              </span>
               <span role="columnheader">Code does this</span>
               <span role="columnheader">The AI does this</span>
             </div>

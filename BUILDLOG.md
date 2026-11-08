@@ -46,3 +46,11 @@
 - Probe orders reached Transaction Search with item names and SKUs, so the catalogue can match orders created with an item list. The tracking button's full 2-minute automatic send passed live (201).
 - Built from chat: one retry for busy LLM calls, webhook pre-checks, safe delivery-proof errors, the Evidence screen (invoices and traffic sources), and pre-approval request drafts.
 - Hosted checks passed (evidence pack, launch-plan draft, webhook resend, no 403s); 3 baseline demo orders created. Fixed: blocked launch-plan packs shown as built, and a misplaced letter sign-off. Dashboard rearranged into what needs you / where you stand / your case, and the pack PDF restyled (its footer had never printed).
+
+## 8 Nov 2026
+
+- Day 2 demo orders created (demo-1108, 3 baseline orders, real sandbox IDs in TESTS.md). Hosted launch-plan pack rebuilt: ready on the first try.
+- Redesign, presentation only: design tokens and a component library (contrast checked in tests), a public homepage with a no-login spike tool that runs the dashboard's own rules, and /trust, /privacy, /terms.
+- The app now has a sidebar with the sandbox account; the dashboard leads with what needs you; the pack reads as a document with citations that jump to their evidence; Ask Standing is a chat; the orders grid is themed.
+- Checks: 537 tests, typecheck, lint, build; axe finds no serious or critical issues on /, /dashboard, /ask, /orders, the pack view and /trust, light and dark.
+- No logic changed. Not added: a Log out link (the app has no logout route).

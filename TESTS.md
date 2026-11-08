@@ -1193,3 +1193,10 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
 - **In a browser:** `/orders` at 1440×900 and 390×844, no page errors; on a phone the grid scrolls sideways.
   Screenshots: `docs/screens/after/orders-*`.
 - Gate: typecheck clean, lint 0 errors (1 old warning), **537 tests pass**, build passes.
+
+## Redesign, final checks (8 Nov 2026)
+
+- **axe-core** (`node scripts/axe.mjs`, WCAG 2.0–2.2 A/AA + best practice, local dev server, dev login): `/`,
+  `/dashboard`, `/ask`, `/orders`, `/packs/f8eb3943…`, `/trust`, light and dark: **0 serious or critical, 0 minor**
+  (one minor "empty table header" on `/` was fixed with a screen-reader label).
+- Homepage images (`public/site/*`) and README screenshots (`docs/screenshots/*.jpg`) retaken from the new screens.
