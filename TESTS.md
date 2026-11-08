@@ -1210,3 +1210,21 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
   state doesn't rest on the marigold alone.
 - Test count is now 549 (`facts.ts` and README updated to match). Gate: typecheck clean, lint 0 errors (1 old
   warning), **549 tests pass**, build passes. Screenshots: `docs/screens/after/styleguide-*`, `dashboard-*`.
+
+## Redesign addition B: landing page (8 Nov 2026)
+
+- `/` rebuilt in the brief's §7B order. Every figure comes from `src/lib/site/facts.ts`, each linked to its source:
+  549 tests (this run), 92% = the held-out 11/12 risky products, 30 = README's 30/30 live sandbox orders, 0 = AI
+  text with a digit is rejected (`validate.ts`, "connecting sentence contains a digit"). The "Built on" chips name
+  only APIs the code calls (checked by grepping the paths: userinfo, reporting/transactions, checkout/orders,
+  shipping/trackers, customer/disputes, verify-webhook-signature). No logos; the GitHub button uses a generic code icon.
+- Hero art and bento tiles are real screens from the local app (`scripts/site-images.mjs`, now also `signal.png`
+  and `pack-ready.png`), labelled sandbox data.
+- **Motion check** (Playwright): with motion allowed, 18 sections start hidden below the fold and all 18 are visible
+  after scrolling through; the header gains its blur once scrolled. With reduced motion, nothing is hidden and the
+  floating cards don't animate. **Pass.**
+- **axe** (`scripts/axe.mjs`): `/`, `/dashboard`, `/styleguide`, `/trust`, `/ask`, light and dark: 0 serious/critical,
+  0 minor. Phone layout checked at 390 px (spike tool, results, hero).
+- Not run: Lighthouse.
+- Gate: typecheck clean, lint 0 errors (1 old warning), **549 tests pass**, build passes. Screenshots:
+  `docs/screens/after/home-*`, `trust-*`.

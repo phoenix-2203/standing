@@ -21,6 +21,9 @@ await ready();
 await p.screenshot({ path: "public/site/hero-dashboard.png", clip: { x: 0, y: 0, width: 1280, height: 800 } });
 const watch = p.locator("[data-shot=watch]").first();
 await (await watch.count() ? watch : p.locator("section").nth(1)).screenshot({ path: "public/site/watch.png" });
+// Two small "live" cards for the homepage hero: the first signal card and the Your case card.
+await p.locator(".need").first().screenshot({ path: "public/site/signal.png" });
+await p.locator("#pack-h").screenshot({ path: "public/site/pack-ready.png" });
 
 await p.goto(`${base}/orders`, { waitUntil: "networkidle" });
 await ready();
@@ -33,4 +36,4 @@ await ready();
 const prove = p.locator("[data-shot=prove]").first();
 await (await prove.count() ? prove : p.locator("section, article").first()).screenshot({ path: "public/site/prove.png" });
 await b.close();
-console.log("public/site: hero-dashboard, watch, fix, prove");
+console.log("public/site: hero-dashboard, watch, signal, pack-ready, fix, prove");

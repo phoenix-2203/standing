@@ -8,10 +8,13 @@ export const LOGIN = "/api/auth/paypal/start";
 
 export const PROOF: { figure: string; label: string; href: string }[] = [
   { figure: "549", label: "automated tests pass", href: `${REPO}/tree/main/src` },
-  { figure: "11/12", label: "risky products flagged on a held-out set we didn't tune", href: TESTS_URL },
-  { figure: "8/8", label: "requests to dodge PayPal's checks refused (held-out)", href: TESTS_URL },
-  { figure: "30/30", label: "live sandbox orders created and captured", href: README_RESULTS },
+  { figure: "92%", label: "risky products flagged on a held-out set we didn't tune (11 of 12)", href: TESTS_URL },
+  { figure: "30", label: "live sandbox orders created and captured (30 of 30)", href: README_RESULTS },
+  { figure: "0", label: "numbers written by the AI: a validator rejects any AI text with a digit", href: `${REPO}/blob/main/src/lib/pack/validate.ts` },
 ];
+
+// The PayPal APIs the code calls (each path is in src/lib). Plain text, no logos.
+export const BUILT_ON = ["Log in with PayPal", "Transaction Search", "Orders v2", "Shipment Tracking", "Disputes", "Webhooks"];
 
 // PayPal's own words (each under 15 words), read from its live pages in November 2026.
 const FUNDS = "https://www.paypal.com/us/brc/article/funds-availability";
