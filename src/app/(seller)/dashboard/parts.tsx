@@ -1,122 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { DashboardData } from "@/lib/ui/data";
-import { api, day, time, usd } from "@/lib/ui/client";
+import { api, day, usd } from "@/lib/ui/client";
 import { ApprovalDraftButton } from "./approval-draft";
 
 // Every figure shown here was computed by Standing's code on the server; these components only format it.
-
-export function VerificationBadge({ item }: { item: DashboardData["verification"] }) {
-  const tone = item.state === "done" ? "ok" : item.state === "unknown" ? "info" : "warn";
-  return (
-    <Link href="/checklist" className={`badge ${tone}`} title={item.detail}>
-      {item.title}
-    </Link>
-  );
-}
-
-const LINK_TEXT = (link: string) => (link.endsWith("/pdf") ? "Open the pack" : link === "/checklist" ? "See what to do" : "Open");
-
-/** What needs the seller, grouped by urgency like a task list: warnings first, then calm notes. One line each. */
-export function NeedsYouCard({ alerts }: { alerts: DashboardData["alerts"] }) {
-  const groups = [
-    { title: "Needs you", items: alerts.filter((a) => a.severity === "warning"), tone: "warn" },
-    { title: "Notes", items: alerts.filter((a) => a.severity !== "warning"), tone: "info" },
-  ].filter((g) => g.items.length);
-  return (
-    <section className="card" aria-labelledby="needs-h">
-      <h2 id="needs-h">What needs you</h2>
-      {groups.length === 0 ? (
-        <p className="muted" style={{ margin: 0 }}>
-          Nothing needs your attention right now. Standing checks again every 15 minutes.
-        </p>
-      ) : (
-        groups.map((g) => (
-          <div key={g.title} className="task-group">
-            <h3 className="task-group-title">
-              {g.title} <span className="mono">{g.items.length}</span>
-            </h3>
-            <ul className="tasks">
-              {g.items.map((a) => (
-                <li key={a.id} className={`task ${g.tone}`}>
-                  <div>
-                    <strong>{a.title}</strong>
-                    <p className="muted small">{a.message}</p>
-                  </div>
-                  {a.link ? (
-                    <a className="button secondary task-action" href={a.link}>
-                      {LINK_TEXT(a.link)}
-                    </a>
-                  ) : (
-                    g.tone === "warn" && (
-                      <a className="button secondary task-action" href="/orders">
-                        Review orders
-                      </a>
-                    )
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      )}
-    </section>
-  );
-}
-
-const STATE: Record<DashboardData["standing"][number]["state"], { label: string; tone: string }> = {
-  needs_you: { label: "Needs you", tone: "warn" },
-  expected: { label: "Expected, pack ready", tone: "ok" },
-  applies: { label: "Applies to you", tone: "info" },
-  clear: { label: "Clear", tone: "ok" },
-  no_history: { label: "Not enough history", tone: "" },
-  no_data: { label: "No data yet", tone: "" },
-  context: { label: "For context", tone: "" },
-};
-
-/** "Where you stand": each reason PayPal publishes, the seller's figure now, and Standing's reading. */
-export function StandingCard({ rows }: { rows: DashboardData["standing"] }) {
-  const needing = rows.filter((r) => r.state === "needs_you").length;
-  return (
-    <section className="card" aria-labelledby="standing-h" data-shot="watch">
-      <div className="card-head">
-        <h2 id="standing-h">Where you stand</h2>
-        <span className="muted small">
-          {needing === 0 ? "No reason needs you today" : `${needing} of ${rows.length} need you today`}
-        </span>
-      </div>
-      <div className="standing-table" role="table" aria-label="PayPal's reasons and your figures">
-        <div className="standing-row head" role="row">
-          <span role="columnheader">Reason</span>
-          <span role="columnheader">You now</span>
-          <span role="columnheader">Standing&apos;s reading</span>
-        </div>
-        {rows.map((r) => (
-          <div key={r.key} className="standing-row" role="row">
-            <span role="cell">
-              <strong>{r.reason}</strong>
-              <span className="muted small block">{r.source}</span>
-            </span>
-            <span role="cell">
-              <span className="figure-text">{r.figure}</span>
-              <span className="muted small block">{r.threshold}</span>
-            </span>
-            <span role="cell">
-              {STATE[r.state].tone ? <span className={`badge ${STATE[r.state].tone}`}>{STATE[r.state].label}</span> : <span className="muted small">{STATE[r.state].label}</span>}
-            </span>
-          </div>
-        ))}
-      </div>
-      <p className="muted small" style={{ margin: "0.75rem 0 0" }}>
-        Standing&apos;s reading of PayPal&apos;s published reasons, with Standing&apos;s own thresholds. It isn&apos;t PayPal&apos;s decision and can&apos;t
-        say what PayPal will do.
-      </p>
-    </section>
-  );
-}
 
 type Fix = { requestId: string; status: string; summary?: string | null; undoUntil: string | null; outcome?: string; error?: string };
 
@@ -341,36 +231,6 @@ function DigitalRow({ gap, onChange }: { gap: DashboardData["digital"][number]; 
         )}
       </div>
     </div>
-  );
-}
-
-export function PackCard({ latest }: { latest: DashboardData["latestPack"] }) {
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  async function build() {
-    setBusy(true);
-    setError(null);
-    const res = await api<{ id?: string; error?: string }>("/api/packs", { method: "POST" });
-    setBusy(false);
-    if (res.status === 201 && res.data?.id) router.push(`/packs/${res.data.id}`);
-    else setError(res.data?.error ?? "The pack couldn't be built.");
-  }
-  return (
-    <section className="card" aria-labelledby="pack-h">
-      <h2 id="pack-h">Explanation pack</h2>
-      <p className="muted">Your case, built from your PayPal records before anyone asks: a sales curve and a letter in which every figure comes from your evidence.</p>
-      {latest && (
-        <p className="small">
-          Latest: <Link href={`/packs/${latest.id}`}>{time(latest.createdAt)}</Link>{" "}
-          <span className={`badge ${latest.status === "ready" ? "ok" : "bad"}`}>{latest.status}</span>
-        </p>
-      )}
-      <button onClick={build} disabled={busy}>
-        {busy ? "Building… (up to a minute)" : "Build a new pack"}
-      </button>
-      {error && <p className="error small">{error}</p>}
-    </section>
   );
 }
 

@@ -1,10 +1,13 @@
 "use client";
 
+import { LogIn, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Button, ButtonLink, Callout, EmptyState, PageHeader, Skeleton, SkeletonText } from "@/components/ui";
+import { api } from "@/lib/ui/client";
 import type { DashboardData } from "@/lib/ui/data";
-import { api, time } from "@/lib/ui/client";
-import Link from "next/link";
-import { AskCard, DigitalCard, LaunchCard, NeedsYouCard, PackCard, StandingCard, TrackingCard, VerificationBadge } from "./parts";
+import { dateTime, relative } from "@/lib/ui/format";
+import { BuildPackButton, NeedsYou, WhereYouStand, YourCase } from "./overview";
+import { AskCard, DigitalCard, LaunchCard, TrackingCard } from "./parts";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -26,63 +29,119 @@ export default function DashboardPage() {
 
   if (status === "signed_out") {
     return (
-      <section className="card">
-        <h1>Log in to see your standing</h1>
-        <p className="muted">Standing reads your PayPal sandbox account to show the signals PayPal publishes.</p>
-        <a className="button" href="/api/auth/paypal/start">
-          Log in with PayPal
-        </a>
-      </section>
+      <div className="dash-signed-out">
+        <EmptyState
+          icon={LogIn}
+          title="Log in to see where you stand"
+          action={
+            <ButtonLink href="/api/auth/paypal/start" prefetch={false}>
+              Log in with PayPal
+            </ButtonLink>
+          }
+        >
+          Standing reads your PayPal sandbox account to show the signals PayPal publishes for holding funds. Test accounts only.
+        </EmptyState>
+      </div>
     );
   }
-  if (status === "error") return <p className="error">Something went wrong loading your dashboard. Please refresh.</p>;
-  if (!data) return <p className="muted">Loading…</p>;
+  if (status === "error") {
+    return (
+      <div className="dash-error">
+        <Callout
+          tone="bad"
+          title="Couldn't load your dashboard"
+          action={
+            <Button size="sm" variant="secondary" onClick={() => void load()} icon={<RotateCcw size={14} strokeWidth={1.75} aria-hidden="true" />}>
+              Try again
+            </Button>
+          }
+        >
+          Standing couldn&apos;t read its own records just now. Nothing was sent to PayPal.
+        </Callout>
+      </div>
+    );
+  }
+  if (!data) return <DashboardSkeleton />;
 
   // Counted by code from the open warnings; calm notes such as "New seller" don't count.
   const needing = data.alerts.filter((a) => a.severity === "warning").length;
-  const headline = needing === 0 ? "Nothing needs you right now" : needing === 1 ? "One thing needs you" : `${needing} things need you`;
-  const lastSync = data.sync.map((s) => s.lastRunAt).filter(Boolean).sort().at(-1);
+  const lastSync = data.sync
+    .map((s) => s.lastRunAt)
+    .filter((x): x is string => !!x)
+    .sort()
+    .at(-1);
+  const title = needing === 0 ? "Nothing needs you right now" : needing === 1 ? "1 thing needs you" : `${needing} things need you`;
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>{headline}</h1>
-          <p className="muted small">
-            {lastSync ? `Last synced with PayPal ${time(lastSync)}` : "Not synced with PayPal yet"}
-            {data.sync.some((s) => !s.ok) && <span className="error"> · the last sync had a problem</span>}
-          </p>
+      <PageHeader
+        title={title}
+        description={
+          <span title={lastSync ? relative(lastSync) : undefined}>
+            {lastSync ? `Last checked with PayPal ${dateTime(lastSync)}` : "Not synced with PayPal yet"}
+          </span>
+        }
+        action={<BuildPackButton />}
+      />
+      {data.sync.some((s) => !s.ok) && (
+        <div className="dash-callout">
+          <Callout tone="warn" title="The last sync with PayPal had a problem">
+            {lastSync ? `Showing data from ${dateTime(lastSync)}. ` : ""}Standing tries again every 15 minutes.
+          </Callout>
         </div>
-        <VerificationBadge item={data.verification} />
-      </div>
-      <nav className="action-bar" aria-label="Quick actions">
-        {data.latestPack?.status === "ready" && (
-          <a className="button" href={`/api/packs/${data.latestPack.id}/pdf`}>
-            Download your pack
-          </a>
-        )}
-        <Link className="button secondary" href="/evidence">
-          Add evidence
-        </Link>
-        <Link className="button secondary" href="/orders">
-          Review orders
-        </Link>
-        <a className="button secondary" href="#ask-h">
-          Ask Standing
-        </a>
-      </nav>
-      <div className="dash">
-        <div className="stack">
-          <NeedsYouCard alerts={data.alerts} />
-          <StandingCard rows={data.standing} />
+      )}
+
+      <div className="dash2">
+        <div className="dash2-main">
+          <section aria-labelledby="needs-h" className="dash-section">
+            <div className="dash-section-head">
+              <h2 id="needs-h">Needs you</h2>
+            </div>
+            <NeedsYou alerts={data.alerts} />
+          </section>
           {data.tracking.length > 0 && <TrackingCard gaps={data.tracking} onChange={load} />}
           {data.digital.length > 0 && <DigitalCard gaps={data.digital} onChange={load} />}
+          <WhereYouStand rows={data.standing} metrics={data.metrics} thresholds={data.thresholds} />
         </div>
-        <aside className="stack" aria-label="Your case">
-          <PackCard latest={data.latestPack} />
+        <aside className="dash2-side" aria-label="Your case">
+          <YourCase latest={data.latestPack} />
           <LaunchCard plans={data.launchPlans} onChange={load} />
           <AskCard />
         </aside>
       </div>
     </>
+  );
+}
+
+/** Loading: the final layout in grey, so nothing jumps when the data arrives. */
+function DashboardSkeleton() {
+  return (
+    <div aria-busy="true" aria-label="Loading your dashboard">
+      <div className="ui-page-header">
+        <div style={{ width: "min(28rem, 80%)" }}>
+          <Skeleton height={36} width="70%" />
+          <div style={{ height: 10 }} />
+          <Skeleton height={14} width="45%" />
+        </div>
+        <Skeleton height={40} width={130} radius={6} />
+      </div>
+      <div className="dash2">
+        <div className="dash2-main">
+          <Skeleton height={150} radius={10} />
+          <div className="tiles">
+            {Array.from({ length: 6 }, (_, i) => (
+              <Skeleton key={i} height={150} radius={10} />
+            ))}
+          </div>
+        </div>
+        <div className="dash2-side">
+          <div className="ui-card">
+            <SkeletonText lines={4} />
+          </div>
+          <div className="ui-card">
+            <SkeletonText lines={5} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

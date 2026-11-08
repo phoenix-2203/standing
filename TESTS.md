@@ -1146,3 +1146,13 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
   wording was corrected before commit.
 - Public numbers come from one file, `src/lib/site/facts.ts`; the test count there (537) equals this run's `npm test`.
 - Gate: typecheck clean, lint 0 errors (1 old warning), **537 tests pass**, build passes. Screenshots: `docs/screens/after/home-*`, `trust-*`, `404-*`.
+
+## Redesign, step 2: app shell and dashboard (8 Nov 2026)
+
+- Presentation only: the dashboard reads the same `/api/dashboard` and `/api/evidence` fields; the fix buttons, tracking
+  form, launch plan and Build pack call the same routes as before. No metric, threshold or route changed.
+- **In a browser** (Playwright, local dev server, dev login): `/dashboard` renders at 1440×900 and 390×844 with no page
+  errors; the sidebar shows the sandbox account (unverified, last sync) and the Sandbox tag; on a phone the menu opens
+  the nav as a sheet. Screenshots: `docs/screens/after/dashboard-*`.
+- Not added: a Log out link in the account chip. The app has no logout route, and adding one is new auth logic.
+- Gate: typecheck clean, lint 0 errors (1 old warning), **537 tests pass**, build passes.

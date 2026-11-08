@@ -239,9 +239,9 @@ p {
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1rem 1.1rem;
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+  padding: var(--s-5);
   min-width: 0;
 }
 
@@ -253,9 +253,11 @@ p {
 .badge {
   display: inline-block;
   border-radius: 999px;
-  padding: 1px 10px;
-  font-size: 0.8rem;
+  padding: 2px var(--s-2);
+  font-size: var(--t-12);
   font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
 }
 
 .badge.ok {
@@ -358,48 +360,79 @@ p {
 }
 
 /* Forms */
-button,
+:where(button),
 .button {
   font: inherit;
+  font-weight: 600;
   border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 0.45rem 0.9rem;
+  border-radius: var(--r-sm);
+  min-height: 40px;
+  padding: 0 var(--s-4);
   background: var(--accent);
   color: var(--accent-ink);
   cursor: pointer;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease;
 }
 
-button.secondary,
+:where(button:hover:not(:disabled)),
+.button:hover {
+  background: color-mix(in srgb, var(--accent) 88%, var(--ink));
+}
+
+:where(button.secondary),
 .button.secondary {
-  background: transparent;
+  background: var(--surface);
   color: var(--ink);
-  border-color: var(--line);
+  border-color: var(--line-strong);
 }
 
-button:disabled {
-  opacity: 0.55;
-  cursor: default;
+:where(button.secondary:hover:not(:disabled)),
+.button.secondary:hover {
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
-input,
-textarea,
-select {
+:where(button:disabled) {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+:where(input, textarea, select) {
   font: inherit;
   color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0.45rem 0.6rem;
+  background: var(--raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  min-height: 40px;
+  padding: var(--s-2) var(--s-3);
   width: 100%;
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+
+:where(input[type="checkbox"], input[type="radio"]) {
+  width: auto;
+  min-height: 0;
+  accent-color: var(--accent);
+}
+
+:where(input:focus-visible, textarea:focus-visible, select:focus-visible) {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent);
 }
 
 label {
   display: grid;
-  gap: 0.25rem;
-  font-size: 0.85rem;
-  color: var(--muted);
+  gap: 6px;
+  font-size: var(--t-13);
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .form {
