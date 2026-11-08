@@ -56,9 +56,9 @@ function PackDetail() {
         icon={LogIn}
         title="Log in to see this pack"
         action={
-          <ButtonLink href="/api/auth/paypal/start" prefetch={false}>
+          <ButtonAnchor href="/api/auth/paypal/start">
             Log in with PayPal
-          </ButtonLink>
+          </ButtonAnchor>
         }
       >
         Packs are built from your own PayPal sandbox records.

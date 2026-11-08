@@ -74,7 +74,7 @@ const pinned = (p: { node: IRowNode | null }) => Boolean(p.node?.rowPinned);
 
 // "Quick views" are plain filters over fields code already computed; nothing here is a judgement.
 const VIEWS = {
-  all: { label: "All orders", test: (_: OrderRow) => true },
+  all: { label: "All orders", test: () => true },
   missing: {
     label: "Missing tracking",
     test: (r: OrderRow) => r.trackingState === "missing",

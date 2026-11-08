@@ -1117,7 +1117,11 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
 | demo-1108-phy-02 | Cedar soy candle, USD 20.00 | `57B524706K657781W` | `5CK8129153445023H` | `ca575f5d4e82a` |
 | demo-1108-phy-03 | Citrus soy candle, USD 22.00 | `0BK67100NK449680M` | `0KJ09397YG859515X` | `ca575f5ea0ade` |
 
-**To do (~19:30 UTC):** sync and confirm they appear in the orders table with item names.
+**Not in Transaction Search yet (checked 8 Nov, 17:50 UTC):** read back from PayPal, all three captures are
+COMPLETED (created 16:30:03–16:30:10 UTC; debug IDs f252111a32e0b, f2091690a48ba, f764646680925), but Transaction
+Search reported `last_refreshed_datetime` 2026-11-08T15:59:59Z and returned no transactions for 8 Nov (debug
+f5497580ce232). The hosted sync is healthy (last run 17:35 UTC, synced through 15:59:59Z). PayPal's search lags,
+so they can't show yet. **To do:** check the orders table once PayPal's refresh passes 16:30 UTC.
 
 ## Redesign, phase 2: design system (8 Nov 2026)
 
@@ -1266,3 +1270,15 @@ and landing page served).
   request was no longer in the buffer, so the cause is unconfirmed.
 - **demo-1108:** captures 2R095039YH1597740, 5CK8129153445023H and 0KJ09397YG859515X are **not yet** in the orders
   table (newest payment 7 Nov 11:43 UTC). Still to do: check again after the next syncs.
+
+## Fix: login buttons as plain links (8 Nov 2026, evening)
+
+- The CORS errors from the hosted click-through: "Try the demo" (header, hero, final CTA) and the "Log in with PayPal"
+  buttons on the dashboard and pack view were client-side links, so Next fetched `/api/auth/paypal/start` as page data
+  first, PayPal's redirect failed CORS, and it fell back to a normal navigation. All five are now plain links.
+- **Browser check** (Playwright, local, PayPal's page stubbed so nothing is sent): clicking "Try the demo" makes one
+  ordinary navigation to `/api/auth/paypal/start` and lands on www.sandbox.paypal.com, with **0 console errors** (before:
+  CORS errors and "Failed to fetch RSC payload"). The earlier 405s are probably the same failed pre-flight, but that is
+  unconfirmed: a direct OPTIONS request to PayPal's page returned 200 from curl.
+- Also cleared the last lint warning (an unused parameter in the orders quick views). Lint now: **0 problems.**
+- Gate: typecheck clean, lint clean, **549 tests pass**, build passes. Needs a redeploy to reach the hosted app.

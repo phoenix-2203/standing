@@ -2,7 +2,7 @@
 
 import { LogIn, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { Button, ButtonLink, Callout, EmptyState, PageHeader, Skeleton, SkeletonText } from "@/components/ui";
+import { Button, ButtonAnchor, Callout, EmptyState, PageHeader, Skeleton, SkeletonText } from "@/components/ui";
 import { api } from "@/lib/ui/client";
 import type { DashboardData } from "@/lib/ui/data";
 import { dateTime, relative } from "@/lib/ui/format";
@@ -35,9 +35,9 @@ export default function DashboardPage() {
           icon={LogIn}
           title="Log in to see where you stand"
           action={
-            <ButtonLink href="/api/auth/paypal/start" prefetch={false}>
+            <ButtonAnchor href="/api/auth/paypal/start">
               Log in with PayPal
-            </ButtonLink>
+            </ButtonAnchor>
           }
         >
           Standing reads your PayPal sandbox account to show the signals PayPal publishes for holding funds. Test accounts only.

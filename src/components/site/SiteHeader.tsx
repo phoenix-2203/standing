@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
-import { ButtonLink, SandboxTag } from "@/components/ui";
+import { ButtonAnchor, SandboxTag } from "@/components/ui";
 import { LOGIN, REPO } from "@/lib/site/facts";
 
 /** Header for the public pages: logo, three links, the demo button and the sandbox tag. Turns translucent with a blur once the page scrolls. */
@@ -29,9 +29,9 @@ export function SiteHeader() {
         </nav>
         <div className="site-header-cta">
           <SandboxTag compact />
-          <ButtonLink href={LOGIN} size="sm" prefetch={false}>
+          <ButtonAnchor href={LOGIN} size="sm">
             Try the demo
-          </ButtonLink>
+          </ButtonAnchor>
         </div>
       </div>
     </header>

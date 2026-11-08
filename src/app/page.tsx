@@ -5,7 +5,7 @@ import { Reveal } from "@/components/site/Reveal";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SpikeTool } from "@/components/site/SpikeTool";
-import { Badge, ButtonLink, Timeline } from "@/components/ui";
+import { Badge, ButtonAnchor, ButtonLink, Timeline } from "@/components/ui";
 import { BUILT_ON, HELD_OUT, HELD_OUT_MISSES, LOGIN, PROOF, QUOTES, README_RESULTS, REPO, TESTS_URL } from "@/lib/site/facts";
 import fix from "../../public/site/fix.png";
 import hero from "../../public/site/hero-dashboard.png";
@@ -64,9 +64,9 @@ export default function Home() {
                 Standing watches what PayPal watches, fixes what it safely can, and builds your case before anyone asks. For small sellers on PayPal.
               </p>
               <div className="lp-cta">
-                <ButtonLink href={LOGIN} prefetch={false} icon={<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />}>
+                <ButtonAnchor href={LOGIN} icon={<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />}>
                   Try the demo
-                </ButtonLink>
+                </ButtonAnchor>
                 <a href="#how" className="text-link">
                   See how it works
                 </a>
@@ -328,9 +328,9 @@ export default function Home() {
               Be ready before PayPal asks.
             </h2>
             <div className="lp-cta">
-              <ButtonLink href={LOGIN} prefetch={false} icon={<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />}>
+              <ButtonAnchor href={LOGIN} icon={<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />}>
                 Try the demo
-              </ButtonLink>
+              </ButtonAnchor>
               <ButtonLink href={REPO} variant="secondary" icon={<Code2 size={16} strokeWidth={1.75} aria-hidden="true" />}>
                 Read the code
               </ButtonLink>
