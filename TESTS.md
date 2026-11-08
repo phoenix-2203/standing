@@ -1092,3 +1092,16 @@ All checked with code tests: **459/459 pass**, typecheck and lint clean. `npm ru
 sandbox account's synced data): **36 screenshots**, 9 pages × 1440×900 and 390×844 × light and dark (home, 404,
 dashboard, orders, catalogue, evidence, packs, a ready pack's view, checklist). `/trust`, `/privacy`, `/terms`,
 `/launch` and `/ask` don't exist yet, so they were skipped. Overview: `docs/screens/before-contact-sheet.png`.
+
+## Hosted launch-plan pack after the stray-phrase fix (8 Nov 2026, 16:29 UTC)
+
+https://goodstanding.duckdns.org after the owner's redeploy, logged in with the verified test account; Claude did the clicks.
+- Before: the dashboard's launch plan (10 Nov, 3×, 2 products) showed **"pack blocked: see why"**, linking the old pack
+  `ac9dc4c7-…` (the `41508a7` label fix, now live).
+- Re-saved the same plan (10 Nov 2026, 3×, "Small-batch gin" + "Lavender soy candle"), which builds the plan's pack:
+  new pack **`3187be6d-dd48-41f5-b187-8957d3510b18`, status ready, 1 attempt**, 3 paragraphs citing 6 evidence items
+  (the sales summary and 5 PayPal payments, including the 3 demo-1107 captures). The plan shows "pack ready" and
+  "Your explanation pack is pre-built for this launch." **PASSED.**
+- The PDF of that pack downloads from the hosted app: `GET /api/packs/3187be6d-…/pdf` **200**, `application/pdf`, 22,130 bytes.
+- Not shown by this run: the `f052933` fallback itself. The model's plan passed on the first attempt, so no linking
+  sentence needed dropping, and the pack API doesn't return `validation.dropped`. The fallback is covered by its code tests.
