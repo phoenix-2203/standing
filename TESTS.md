@@ -1131,3 +1131,18 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
   "Open dialog". A success toast shows its PayPal debug ID. ArrowRight on the tab list selects the next tab. No console
   errors. Screenshots: `docs/screens/after/styleguide-*.png`.
 - Full gate: typecheck clean, lint 0 errors (1 old warning), **525 tests pass**, build passes.
+
+## Redesign, step 1: public homepage, spike tool, trust pages (8 Nov 2026)
+
+- **Spike tool matches the engine:** `src/lib/ui/spike-tool.test.ts`, 12 tests. For 7 input sets the tool's ratio and
+  signals equal what `computeMetrics()` + `evaluate()` give for the same example sales; 1.0× raises nothing, exactly
+  3.0× raises "Sales spike" with the dashboard's wording, 2.99× doesn't, a large order is named without an internal ID,
+  and nonsense input returns nothing. **Pass.** (My first large-order case was wrong, not the engine: the 28-day average
+  includes today's orders, so USD 180 on a USD 36 normal day is 4.4×, under the 5× line.)
+- **Claims on `/trust` checked against the code:** the endpoints listed are the ones the code calls; the login token is
+  used for one userinfo call and not stored (`connect/login.ts`); the session cookie is 8 h and holds only the seller ID;
+  email isn't stored (`paypal_connections` has no email column); Ask and packs both pass AI text through `validatePlan`.
+  The privacy notice first said "the only cookie is your login"; there is also a 10-minute login-state cookie, so the
+  wording was corrected before commit.
+- Public numbers come from one file, `src/lib/site/facts.ts`; the test count there (537) equals this run's `npm test`.
+- Gate: typecheck clean, lint 0 errors (1 old warning), **537 tests pass**, build passes. Screenshots: `docs/screens/after/home-*`, `trust-*`, `404-*`.

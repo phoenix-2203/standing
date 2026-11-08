@@ -81,7 +81,7 @@ const STATE: Record<DashboardData["standing"][number]["state"], { label: string;
 export function StandingCard({ rows }: { rows: DashboardData["standing"] }) {
   const needing = rows.filter((r) => r.state === "needs_you").length;
   return (
-    <section className="card" aria-labelledby="standing-h">
+    <section className="card" aria-labelledby="standing-h" data-shot="watch">
       <div className="card-head">
         <h2 id="standing-h">Where you stand</h2>
         <span className="muted small">

@@ -100,7 +100,7 @@ function PackDetail() {
         )}
 
         {pack.letter && (
-          <section className="card">
+          <section className="card" data-shot="prove">
             <h2>Cover letter</h2>
             <p>To PayPal&apos;s account review team,</p>
             {pack.letter.paragraphs.map((p, i) => (
