@@ -1184,3 +1184,12 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
     answer right now" and stayed usable. Asked again after the limit cleared.
 - No page errors. Screenshots: `docs/screens/after/ask-*`, `dashboard-*` (new Ask entry).
 - Gate: typecheck clean, lint 0 errors (1 old warning), **537 tests pass**, build passes.
+
+## Redesign, step 5: AG Grid theme (8 Nov 2026)
+
+- Theme params only (`themeQuartz.withParams`): 40 px rows and header, zebra off, hover and selection in the accent
+  tint, token borders, focus ring in `--focus`. Column minimum widths raised so dates, payment IDs and amounts are
+  never cut off; the grid fills the content column (its old viewport-centred width overlapped the new sidebar).
+- **In a browser:** `/orders` at 1440×900 and 390×844, no page errors; on a phone the grid scrolls sideways.
+  Screenshots: `docs/screens/after/orders-*`.
+- Gate: typecheck clean, lint 0 errors (1 old warning), **537 tests pass**, build passes.

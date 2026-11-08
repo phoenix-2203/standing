@@ -704,3 +704,12 @@
   white-space: nowrap;
   flex: none;
 }
+
+/* The orders grid is the one wide screen: let it use the full content width. */
+@media (min-width: 769px) {
+  .app-page:has(.ag-root-wrapper) {
+    max-width: none;
+    padding-left: var(--s-6);
+    padding-right: var(--s-6);
+  }
+}

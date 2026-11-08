@@ -30,7 +30,17 @@ const params = {
   borderColor: "var(--line)",
   headerBackgroundColor: "var(--bg)",
   headerTextColor: "var(--muted)",
+  headerFontWeight: 600,
+  headerFontSize: 13,
   wrapperBorderRadius: 10,
+  rowHeight: 40,
+  headerHeight: 40,
+  oddRowBackgroundColor: "var(--surface)", // zebra off
+  rowHoverColor: "var(--accent-bg)",
+  selectedRowBackgroundColor: "var(--accent-bg)",
+  rowBorder: { color: "var(--line)" },
+  columnBorder: false,
+  focusShadow: { radius: 0, spread: 2, color: "var(--focus)" },
 };
 const lightTheme = themeQuartz.withParams(params);
 const darkTheme = themeQuartz.withPart(colorSchemeDark).withParams(params);
@@ -89,7 +99,7 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
         field: "date",
         headerName: "Date",
         sort: "desc",
-        minWidth: 105,
+        minWidth: 150,
         width: 135,
         valueFormatter: (p) =>
           pinned(p) || !p.value
@@ -104,7 +114,7 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
       {
         field: "transactionId",
         headerName: "Payment",
-        minWidth: 150,
+        minWidth: 175,
         width: 180,
         cellClass: "mono",
         cellStyle: (p) =>
@@ -113,7 +123,7 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
       {
         field: "items",
         headerName: "Items",
-        minWidth: 120,
+        minWidth: 150,
         width: 175,
         tooltipField: "items",
         cellRenderer: (p: ICellRendererParams<Row, string>) =>
@@ -129,7 +139,7 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
         field: "amount",
         headerName: "Amount",
         type: "numericColumn",
-        minWidth: 90,
+        minWidth: 120,
         width: 115,
         cellClass: "mono",
         valueFormatter: (p) => `USD ${Number(p.value ?? 0).toFixed(2)}`,
@@ -156,7 +166,7 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
       {
         field: "tracking",
         headerName: "Tracking / Completed",
-        minWidth: 130,
+        minWidth: 150,
         width: 175,
         cellRenderer: (p: ICellRendererParams<Row, string>) => {
           const r = p.data;
@@ -399,10 +409,7 @@ export default function OrdersPage() {
         style={{
           padding: 0,
           height: "min(70vh, 640px)",
-          width: "min(calc(100vw - 2rem), 84rem)",
-          position: "relative",
-          left: "50%",
-          transform: "translateX(-50%)",
+          width: "100%",
         }}
       >
         {rows ? (
