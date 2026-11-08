@@ -1105,3 +1105,16 @@ https://goodstanding.duckdns.org after the owner's redeploy, logged in with the 
 - The PDF of that pack downloads from the hosted app: `GET /api/packs/3187be6d-…/pdf` **200**, `application/pdf`, 22,130 bytes.
 - Not shown by this run: the `f052933` fallback itself. The model's plan passed on the first attempt, so no linking
   sentence needed dropping, and the pack API doesn't return `validation.dropped`. The fallback is covered by its code tests.
+
+## Demo data day 2 (8 Nov 2026, about 16:31 UTC)
+
+`npm run demo:orders -- demo-1108 3 --baseline` (plan only: 3 orders, USD 60.00), then the same with `--go`. Sandbox, real
+PayPal orders and captures from the buyer test account; all three **COMPLETED**:
+
+| Ref | Item | Order | Capture | Debug ID |
+|---|---|---|---|---|
+| demo-1108-phy-01 | Lavender soy candle, USD 18.00 | `5M078329X2895893R` | `2R095039YH1597740` | `ca575f5bdbeed` |
+| demo-1108-phy-02 | Cedar soy candle, USD 20.00 | `57B524706K657781W` | `5CK8129153445023H` | `ca575f5d4e82a` |
+| demo-1108-phy-03 | Citrus soy candle, USD 22.00 | `0BK67100NK449680M` | `0KJ09397YG859515X` | `ca575f5ea0ade` |
+
+**To do (~19:30 UTC):** sync and confirm they appear in the orders table with item names.
