@@ -9,7 +9,7 @@ mkdirSync(out, { recursive: true });
 const b = await chromium.launch();
 const errors = [];
 for (const [label, w, h] of [["desktop", 1440, 900], ["phone", 390, 844]]) {
-  const ctx = await b.newContext({ viewport: { width: w, height: h }, colorScheme: "light", reducedMotion: "reduce" });
+  const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: Number(process.env.DSF ?? 1), colorScheme: "light", reducedMotion: "reduce" });
   const p = await ctx.newPage();
   p.on("pageerror", (e) => errors.push(`${label}: ${e}`));
   await p.goto(`${base}/api/dev/session`);

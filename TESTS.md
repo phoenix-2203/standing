@@ -1228,3 +1228,15 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
 - Not run: Lighthouse.
 - Gate: typecheck clean, lint 0 errors (1 old warning), **549 tests pass**, build passes. Screenshots:
   `docs/screens/after/home-*`, `trust-*`.
+
+## Screen review fixes (8 Nov 2026)
+
+- Hero and bento images: re-captured at deviceScaleFactor 2 (hero 2560×1600) and now served unoptimized, since the
+  optimiser's quality-75 re-encode softened small UI text; the hero tilt no longer uses an off-axis rotate (which
+  rasterised the text). Watch tile: the crop fills the tile and fades into the card, so there's no empty gap.
+- Dashboard tracking card: one compact row per order (ID, amount, date) with "Add tracking" opening the same form
+  inline; 3 rows, then "Show all (n)". Same request, same fix queue. **Browser check** (Playwright, phone width, no
+  submit): 3 rows, 4 after "Show all (4)"; the form opens with focus on Tracking number and "Close" hides it.
+- Homepage test count: `npm test` today = **549 passed**; `facts.ts` shows 549 and README says 549. **Match.**
+- axe on `/` and `/dashboard`, light and dark: 0 serious/critical. Gate: typecheck clean, lint 0 errors (1 old
+  warning), 549 tests pass, build passes. Screenshots: `home-*` (2×), `dashboard-*`.

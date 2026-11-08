@@ -713,3 +713,56 @@
     padding-right: var(--s-6);
   }
 }
+
+/* Tracking: one compact row per order; the form opens inline under its row. */
+.trk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.trk-row {
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.trk-line {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+  flex-wrap: wrap;
+  min-height: 36px;
+}
+.trk-id {
+  font-size: var(--t-13);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.trk-amt {
+  font-size: var(--t-13);
+}
+.trk-date {
+  font-size: var(--t-13);
+}
+.trk-action {
+  margin-left: auto;
+}
+.trk-form {
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--bg);
+}
+.trk-more {
+  margin-top: var(--s-3);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

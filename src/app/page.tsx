@@ -81,14 +81,14 @@ export default function Home() {
                   <span />
                   <span />
                 </div>
-                <Image src={hero} alt="Standing's dashboard: what needs the seller, and where they stand on each reason PayPal publishes" priority sizes="(min-width: 1024px) 640px, 100vw" />
+                <Image unoptimized src={hero} alt="Standing's dashboard: what needs the seller, and where they stand on each reason PayPal publishes" priority sizes="(min-width: 1024px) 640px, 100vw" />
                 <figcaption className="window-label">Sandbox data</figcaption>
               </figure>
               <div className="lp-float lp-float-signal">
-                <Image src={signal} alt="A signal card from the app: Unusually large order, 5.1× the 28-day average order" sizes="340px" />
+                <Image unoptimized src={signal} alt="A signal card from the app: Unusually large order, 5.1× the 28-day average order" sizes="340px" />
               </div>
               <div className="lp-float lp-float-pack">
-                <Image src={packReady} alt="The Your case card from the app, with an explanation pack marked ready" sizes="220px" />
+                <Image unoptimized src={packReady} alt="The Your case card from the app, with an explanation pack marked ready" sizes="220px" />
               </div>
             </div>
           </div>
@@ -157,7 +157,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="lp-tile-shot">
-                <Image src={watch} alt="Standing's 'Where you stand' tiles: each reason PayPal publishes, the seller's figure now and Standing's reading" sizes="(min-width: 900px) 600px, 100vw" />
+                <Image unoptimized src={watch} alt="Standing's 'Where you stand' tiles: each reason PayPal publishes, the seller's figure now and Standing's reading" sizes="(min-width: 900px) 600px, 100vw" />
               </div>
             </article>
             <article className="lp-card lp-tile reveal">
@@ -169,7 +169,7 @@ export default function Home() {
                 <p>What can be fixed safely, such as tracking or marking a digital order Completed, goes through a queue you preview and can cancel.</p>
               </div>
               <div className="lp-tile-shot">
-                <Image src={fix} alt="Standing's orders table: each PayPal payment with its items, tracking and Seller Protection status" sizes="(min-width: 900px) 520px, 100vw" />
+                <Image unoptimized src={fix} alt="Standing's orders table: each PayPal payment with its items, tracking and Seller Protection status" sizes="(min-width: 900px) 520px, 100vw" />
               </div>
             </article>
             <article className="lp-card lp-tile reveal">
@@ -181,7 +181,7 @@ export default function Home() {
                 <p>An explanation pack: your sales curve and a letter where every figure is written by code and cites its evidence.</p>
               </div>
               <div className="lp-tile-shot">
-                <Image src={prove} alt="A cover letter in Standing's explanation pack, with numbered citations to evidence" sizes="(min-width: 900px) 520px, 100vw" />
+                <Image unoptimized src={prove} alt="A cover letter in Standing's explanation pack, with numbered citations to evidence" sizes="(min-width: 900px) 520px, 100vw" />
               </div>
             </article>
           </div>

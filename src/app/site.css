@@ -397,7 +397,7 @@
 }
 @media (min-width: 1024px) {
   .lp-window {
-    transform: perspective(1800px) rotateY(-7deg) rotateX(3deg) rotate(0.6deg);
+    transform: perspective(2000px) rotateY(-6deg) rotateX(2deg);
     transform-origin: 60% 50%;
   }
 }
@@ -596,24 +596,29 @@
   max-width: 34rem;
 }
 .lp-tile-shot {
+  position: relative;
   flex: 1;
-  min-height: 0;
+  min-height: 13rem;
   margin: 0 var(--s-6);
   border: 1px solid var(--line);
   border-bottom: 0;
   border-radius: var(--r-md) var(--r-md) 0 0;
   overflow: hidden;
   background: var(--bg);
-  padding: var(--s-3) var(--s-3) 0;
-  max-height: 15rem;
+  /* The crop runs to the card's bottom edge and fades into it, so there's never an empty gap or a hard cut. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, #000 70%, transparent);
 }
 .lp-tile-big .lp-tile-shot {
-  max-height: 34rem;
+  min-height: 22rem;
 }
 .lp-tile-shot img {
-  display: block;
-  width: 100%;
+  position: absolute;
+  top: var(--s-3);
+  left: var(--s-3);
+  width: calc(100% - 2 * var(--s-3));
   height: auto;
+  display: block;
 }
 
 /* Spike tool card */
@@ -860,7 +865,7 @@
     grid-row: auto;
   }
   .lp-tile-big .lp-tile-shot {
-    max-height: 20rem;
+    min-height: 20rem;
   }
 }
 @media (max-width: 700px) {

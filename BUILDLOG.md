@@ -54,3 +54,4 @@
 - The app now has a sidebar with the sandbox account; the dashboard leads with what needs you; the pack reads as a document with citations that jump to their evidence; Ask Standing is a chat; the orders grid is themed.
 - Checks: 537 tests, typecheck, lint, build; axe finds no serious or critical issues on /, /dashboard, /ask, /orders, the pack view and /trust, light and dark.
 - No logic changed. Not added: a Log out link (the app has no logout route).
+- Evening: livelier colours (pine, mint, a marigold accent kept off text by a test), a rebuilt landing page, sharper hero images, and a compact tracking list on the dashboard.

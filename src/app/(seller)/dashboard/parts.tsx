@@ -100,21 +100,34 @@ const CARRIERS = [
 
 /** Physical orders with no tracking: the seller types the number; nothing here ever makes one up. */
 export function TrackingCard({ gaps, onChange }: { gaps: DashboardData["tracking"]; onChange: () => void }) {
+  const [showAll, setShowAll] = useState(false);
+  const shown = showAll ? gaps : gaps.slice(0, 3);
   return (
-    <section className="card" id="tracking" aria-labelledby="tracking-h">
-      <h2 id="tracking-h">Physical orders without tracking</h2>
+    <section className="ui-card" id="tracking" aria-labelledby="tracking-h">
+      <header className="ui-card-head">
+        <div>
+          <h2 id="tracking-h" className="ui-card-title">
+            Physical orders without tracking
+          </h2>
+          <p className="ui-card-desc">Goes to PayPal with the number you type. You can cancel it for 2 minutes before it is sent. The buyer is not emailed.</p>
+        </div>
+      </header>
       {gaps.length === 0 ? (
         <p className="muted">No physical orders are waiting for tracking. Orders count once their products are in your catalogue.</p>
       ) : (
-        <div className="rows">
-          {gaps.map((g) => (
-            <TrackingRow key={g.transactionId} gap={g} onChange={onChange} />
-          ))}
-        </div>
+        <>
+          <ul className="trk-list">
+            {shown.map((g) => (
+              <TrackingRow key={g.transactionId} gap={g} onChange={onChange} />
+            ))}
+          </ul>
+          {gaps.length > 3 && (
+            <button type="button" className="trk-more" aria-expanded={showAll} onClick={() => setShowAll((v) => !v)}>
+              {showAll ? "Show fewer" : `Show all (${gaps.length})`}
+            </button>
+          )}
+        </>
       )}
-      <p className="muted small" style={{ marginTop: "0.75rem", marginBottom: 0 }}>
-        Goes to PayPal with the number you type. You can cancel it for 2 minutes before it is sent. The buyer is not emailed.
-      </p>
     </section>
   );
 }
@@ -126,6 +139,7 @@ function TrackingRow({ gap, onChange }: { gap: DashboardData["tracking"][number]
   const [carrier, setCarrier] = useState("");
   const [carrierName, setCarrierName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const open = !fix || fix.status === "cancelled" || fix.status === "failed";
 
   async function start(e: React.FormEvent) {
@@ -143,25 +157,36 @@ function TrackingRow({ gap, onChange }: { gap: DashboardData["tracking"][number]
   }
 
   return (
-    <div className="stack" style={{ paddingBlock: "0.75rem", gap: "0.5rem" }}>
-      <div className="row" style={{ border: 0, padding: 0 }}>
-        <div>
-          <div className="mono">{gap.transactionId}</div>
-          <div className="muted small">
-            {usd(gap.cents)} · {day(gap.at)}
-            {gap.overdue && " · over 48 hours old"}
-          </div>
-        </div>
-        {!open && <FixState q={q} />}
+    <li className="trk-row">
+      <div className="trk-line">
+        <span className="trk-id mono">{gap.transactionId}</span>
+        <span className="trk-amt mono">{usd(gap.cents)}</span>
+        <span className="trk-date muted">{day(gap.at)}</span>
+        {gap.overdue && <span className="badge warn">over 48 h</span>}
+        <span className="trk-action">
+          {!open ? (
+            <FixState q={q} />
+          ) : (
+            <button
+              type="button"
+              className={expanded ? "ui-btn ui-btn-ghost ui-btn-sm" : "ui-btn ui-btn-secondary ui-btn-sm"}
+              aria-expanded={expanded}
+              aria-controls={`trk-${gap.transactionId}`}
+              onClick={() => setExpanded((v) => !v)}
+            >
+              <span>{expanded ? "Close" : fix?.status === "cancelled" ? "Add tracking again" : "Add tracking"}</span>
+            </button>
+          )}
+        </span>
       </div>
       {fix?.summary && waiting && <div className="small">{fix.summary}</div>}
       {fix?.status === "failed" && <div className="small error">PayPal refused that number. Check it and try again.</div>}
-      {open && (
-        <form className="form" onSubmit={start}>
+      {open && expanded && (
+        <form className="form trk-form" id={`trk-${gap.transactionId}`} onSubmit={start}>
           <div className="form-row">
             <label>
               Tracking number
-              <input required maxLength={64} pattern="[A-Za-z0-9\\-]+" title="Letters, digits and dashes only" value={number} onChange={(e) => setNumber(e.target.value)} />
+              <input required autoFocus maxLength={64} pattern="[A-Za-z0-9\\-]+" title="Letters, digits and dashes only" value={number} onChange={(e) => setNumber(e.target.value)} />
             </label>
             <label>
               Carrier
@@ -193,7 +218,7 @@ function TrackingRow({ gap, onChange }: { gap: DashboardData["tracking"][number]
           )}
         </form>
       )}
-    </div>
+    </li>
   );
 }
 
