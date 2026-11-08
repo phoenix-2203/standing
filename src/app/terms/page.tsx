@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DocPage } from "@/components/site/DocPage";
 import { REPO } from "@/lib/site/facts";
 
-export const metadata: Metadata = { title: "Terms · Standing", description: "Standing is a hackathon demo on PayPal's sandbox, provided as is." };
+export const metadata: Metadata = { title: "Terms", description: "Standing is a hackathon demo on PayPal's sandbox, provided as is." };
 
 export default function TermsPage() {
   return (

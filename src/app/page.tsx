@@ -12,7 +12,7 @@ import prove from "../../public/site/prove.png";
 import watch from "../../public/site/watch.png";
 
 export const metadata: Metadata = {
-  title: "Standing: keep your PayPal money moving",
+  title: { absolute: "Standing: keep your PayPal money moving" },
   description:
     "For small sellers on PayPal. Standing watches the signals PayPal publishes for holding funds, fixes what it safely can, and builds your case before anyone asks. A sandbox demo.",
 };

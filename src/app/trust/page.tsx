@@ -3,7 +3,7 @@ import { DocPage } from "@/components/site/DocPage";
 import { REPO } from "@/lib/site/facts";
 
 export const metadata: Metadata = {
-  title: "Trust · Standing",
+  title: "Trust",
   description: "What Standing reads from PayPal, what it stores, what it never does, which AI it uses and what that AI can't do.",
 };
 

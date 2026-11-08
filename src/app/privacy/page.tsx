@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DocPage } from "@/components/site/DocPage";
 
-export const metadata: Metadata = { title: "Privacy · Standing", description: "Standing is a hackathon demo on PayPal's sandbox. What that means for your data." };
+export const metadata: Metadata = { title: "Privacy", description: "Standing is a hackathon demo on PayPal's sandbox. What that means for your data." };
 
 export default function PrivacyPage() {
   return (
