@@ -1,12 +1,17 @@
 :root {
   color-scheme: light dark;
+
+  /* Colour roles. Each tone has a -bg partner; text on its -bg passes WCAG 2.2 AA (see tokens.test.ts). */
   --bg: #f7f6f1;
   --surface: #fffefb;
+  --raised: #ffffff;
   --ink: #16201c;
   --muted: #5c6660;
   --line: #dfddd3;
+  --line-strong: #c9c6b9;
   --accent: #1f4d3f;
   --accent-ink: #fffefb;
+  --accent-bg: #e3eee9;
   --ok: #1b6f47;
   --ok-bg: #e4f2e9;
   --warn: #8a5600;
@@ -15,10 +20,44 @@
   --bad-bg: #f9e7e3;
   --info: #3d5560;
   --info-bg: #e9eef0;
-  --radius: 10px;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  --focus: #1f4d3f;
+
+  /* Spacing on a 4 px scale. */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+
+  /* Radii, shadows, motion. */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --radius: var(--r-md);
+  --shadow-1: 0 1px 2px rgb(22 32 28 / 0.06);
+  --shadow-2: 0 8px 24px rgb(22 32 28 / 0.1), 0 1px 3px rgb(22 32 28 / 0.06);
+  --shadow: var(--shadow-1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+
+  /* Type scale. */
+  --t-12: 12px;
+  --t-13: 13px;
+  --t-15: 15px;
+  --t-17: 17px;
+  --t-20: 20px;
+  --t-24: 24px;
+  --t-32: 32px;
+  --t-44: 44px;
+  --t-60: 60px;
+  --track-display: -0.02em;
+
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  font-size: 15px;
+  font-size: var(--t-15);
   line-height: 1.5;
 }
 
@@ -26,11 +65,14 @@
   :root {
     --bg: #101614;
     --surface: #18201d;
+    --raised: #1f2925;
     --ink: #e9ece6;
     --muted: #a0aaa4;
     --line: #2a3430;
+    --line-strong: #3a4641;
     --accent: #8fd1b5;
     --accent-ink: #101614;
+    --accent-bg: #16302a;
     --ok: #7fd0a4;
     --ok-bg: #15281e;
     --warn: #e9b765;
@@ -39,8 +81,38 @@
     --bad-bg: #2f1b18;
     --info: #a9c0ca;
     --info-bg: #1a2428;
-    --shadow: none;
+    --focus: #8fd1b5;
+    --shadow-1: none;
+    --shadow-2: 0 8px 24px rgb(0 0 0 / 0.4);
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Figures line up in columns everywhere. */
+.mono,
+.tabular,
+td,
+.figure .value {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 * {
