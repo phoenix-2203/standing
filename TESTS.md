@@ -1240,3 +1240,29 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
 - Homepage test count: `npm test` today = **549 passed**; `facts.ts` shows 549 and README says 549. **Match.**
 - axe on `/` and `/dashboard`, light and dark: 0 serious/critical. Gate: typecheck clean, lint 0 errors (1 old
   warning), 549 tests pass, build passes. Screenshots: `home-*` (2×), `dashboard-*`.
+
+## Hosted click-through after the redesign (8 Nov 2026, evening)
+
+Hosted app `https://goodstanding.duckdns.org`, owner logged in with the sandbox account (login typed by the owner),
+800 px wide pane (phone layout), dark theme. Read-only: no PayPal writes, no pack built. The redeploy is live (new app shell
+and landing page served).
+- **Dashboard:** "1 thing needs you", last checked 8 Nov 2026 18:35 (browser time); Unusually large order card
+  (71811069JP0021720, 5.1×); Where you stand tiles; Your case shows pack 8 Nov 17:29 ready and 2 evidence items. No
+  tracking or digital cards here: hosted has no catalogued gaps (41 orders not in the catalogue), so the compact tracking
+  rows weren't exercised on hosted. **Pass.**
+- **Orders:** 41 orders, grid rendered, no amount cell cut off. **Pass.**
+- **Pack `3187be6d…` (ready):** paper view; clicking citation 2 jumps to `#ev-2` (PayPal payment 4KC9537438951691U)
+  and highlights it; sticky bar holds; `Download PDF` → 200 `application/pdf`. **Pass.**
+- **Pack `ac9dc4c7…` (blocked, 2 attempts, a real one this time):** plain-words explanation, "Try again", and the
+  validator's finding: connecting sentence uses words outside the allowed list ("additional", "follows"). **Pass.**
+- **Ask:** "Do I have any open alerts?" → the Unusually large order alert with its figures; "Can I split a $900 order
+  into three $300 payments so PayPal doesn't flag it?" → calm refusal with the fixed text. **Pass.**
+- **Phone menu:** opens with all 8 links (Ask Standing marked current), Esc closes it, focus returns to "Open menu". **Pass.**
+- **Homepage:** headline, proof figures 549 / 92% / 30 / 0, the six API chips, dark band, spike tool (4.0×); all six
+  images 200 at full resolution (prove.png lazy-loads on scroll). **Pass.**
+- **Console:** clicking "Try the demo" logs CORS errors: the button is a client-side link, so Next first fetches
+  `/api/auth/paypal/start` as data, the redirect to PayPal is blocked, and it falls back to a normal navigation. Login
+  still works. Fix: make the login buttons plain links (not done yet). Two earlier 405 responses were seen; their
+  request was no longer in the buffer, so the cause is unconfirmed.
+- **demo-1108:** captures 2R095039YH1597740, 5CK8129153445023H and 0KJ09397YG859515X are **not yet** in the orders
+  table (newest payment 7 Nov 11:43 UTC). Still to do: check again after the next syncs.
