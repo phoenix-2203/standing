@@ -196,3 +196,32 @@ Loading shows skeletons with the final layout. Errors show per card. A new selle
 - Celvix, *SaaS Dashboard UX* (May 2026): job-to-be-done hierarchy, progressive disclosure, empty states. https://celvix-websites.pages.dev/blog/saas-dashboard-ux-design/
 - Goodface, *Custom SaaS dashboard design in 2026*: 5-second test, per-component error states, empty states. https://goodface.agency/insight/custom-saas-dashboard-design-guide/
 - Anthony Hobday, critiques of the Stripe and Linear websites. https://anthonyhobday.com/blog/20220810 · https://anthonyhobday.com/blog/20230119.html
+
+---
+
+## 7. Additions (8 Nov 2026)
+
+Same guardrails: no logic changes, no fabricated claims or third-party logos, honesty labels stay.
+
+### A. Livelier colours
+Light tokens: accent `#0f6b4f` (hover `#0b5a42`), accent-bg `#e2f5ec`, bg `#fbfaf6`, surface `#ffffff`; highlight
+`#f2b33d` with highlight-bg `#fff4dc` (small touches only: key-number underlines, one hero glow, the active tab marker;
+never body text); info `#2563a8`/`#e8f0fb`; ok `#0f7350`/`#e3f5ec`; warn `#a15c00`/`#fff4dc`; bad `#b3261e`/`#fdecea`.
+Dark: accent `#5fd3a5`, highlight `#f5c46b`; the rest of dark unchanged. Contrast stays WCAG AA (tokens.test.ts).
+
+### B. Landing page at a top fintech-brand standard
+Sections in order:
+1. sticky translucent header (blur on scroll): logo, How it works, Trust, GitHub, "Try the demo";
+2. hero: ~60px serif headline, the subhead, one button and a text link, the status line; a real dashboard screenshot
+   in a tilted window frame with a mint and marigold glow, plus two small floating cards cropped from real UI;
+3. a "Built on" strip of plain-text chips for the PayPal APIs used (no logos);
+4. proof numbers (large mono, labelled and linked, from one constants file);
+5. the problem in PayPal's own words: 3 quote cards with sources;
+6. How it works as a bento grid (Watch / Fix / Prove) with real UI crops;
+7. the spike tool in a highlighted card;
+8. a full-width dark pine band, "The AI never writes a number.", with the code-vs-AI comparison;
+9. safe fixes as the 4-step timeline;
+10. honest results with the held-out table, including the miss;
+11. FAQ accordion;
+12. final CTA band (mint-to-paper gradient), then the footer (Trust, Privacy, Terms, GitHub, MIT, not affiliated).
+Motion: fade-up on scroll and hover lift on cards only, respecting prefers-reduced-motion. Responsive to 390px.

@@ -2,25 +2,29 @@
   color-scheme: light dark;
 
   /* Colour roles. Each tone has a -bg partner; text on its -bg passes WCAG 2.2 AA (see tokens.test.ts). */
-  --bg: #f7f6f1;
-  --surface: #fffefb;
+  --bg: #fbfaf6;
+  --surface: #ffffff;
   --raised: #ffffff;
   --ink: #16201c;
   --muted: #5c6660;
-  --line: #dfddd3;
+  --line: #e2e0d6;
   --line-strong: #c9c6b9;
-  --accent: #1f4d3f;
-  --accent-ink: #fffefb;
-  --accent-bg: #e3eee9;
-  --ok: #1b6f47;
-  --ok-bg: #e4f2e9;
-  --warn: #8a5600;
-  --warn-bg: #f9efd9;
-  --bad: #9c2f27;
-  --bad-bg: #f9e7e3;
-  --info: #3d5560;
-  --info-bg: #e9eef0;
-  --focus: #1f4d3f;
+  --accent: #0f6b4f;
+  --accent-hover: #0b5a42;
+  --accent-ink: #ffffff;
+  --accent-bg: #e2f5ec;
+  /* Marigold, for small touches only (key-number underlines, one hero glow, the active tab marker). Never text. */
+  --highlight: #f2b33d;
+  --highlight-bg: #fff4dc;
+  --ok: #0f7350;
+  --ok-bg: #e3f5ec;
+  --warn: #a15c00;
+  --warn-bg: #fff4dc;
+  --bad: #b3261e;
+  --bad-bg: #fdecea;
+  --info: #2563a8;
+  --info-bg: #e8f0fb;
+  --focus: #0f6b4f;
 
   /* Spacing on a 4 px scale. */
   --s-1: 4px;
@@ -70,8 +74,11 @@
     --muted: #a0aaa4;
     --line: #2a3430;
     --line-strong: #3a4641;
-    --accent: #8fd1b5;
+    --accent: #5fd3a5;
+    --accent-hover: #86e0bd;
     --accent-ink: #101614;
+    --highlight: #f5c46b;
+    --highlight-bg: #2b2413;
     --accent-bg: #16302a;
     --ok: #7fd0a4;
     --ok-bg: #15281e;

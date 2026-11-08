@@ -42,6 +42,10 @@ const PAIRS: [string, string, number][] = [
   ["accent", "surface", 4.5],
   ["accent", "accent-bg", 4.5],
   ["accent-ink", "accent", 4.5],
+  ["accent-ink", "accent-hover", 4.5], // primary button on hover
+  ["accent", "raised", 4.5],
+  ["ink", "highlight-bg", 4.5],
+  ["warn", "highlight-bg", 4.5],
   ["surface", "bad", 4.5], // danger button text
   ["ok", "ok-bg", 4.5],
   ["warn", "warn-bg", 4.5],
@@ -63,5 +67,14 @@ describe.each([
     expect(t[fg], `--${fg} missing`).toBeDefined();
     expect(t[bg], `--${bg} missing`).toBeDefined();
     expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(min);
+  });
+});
+
+// Marigold is decoration only (underlines, a glow, the active tab marker): it fails text contrast by design, so no
+// stylesheet may use it as a text colour.
+describe("highlight is never text", () => {
+  it.each(["globals.css", "ui.css", "site.css", "app.css"])("%s", (file) => {
+    const sheet = readFileSync(new URL(`../../app/${file}`, import.meta.url), "utf8");
+    expect(sheet).not.toMatch(/(^|[^-])color:\s*var\(--highlight\)/m);
   });
 });

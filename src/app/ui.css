@@ -32,7 +32,7 @@
   box-shadow: var(--shadow-1);
 }
 .ui-btn-primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent) 88%, var(--ink));
+  background: var(--accent-hover);
 }
 .ui-btn-secondary {
   background: var(--surface);
@@ -483,7 +483,7 @@
 }
 .ui-tab[aria-selected="true"] {
   color: var(--ink);
-  border-bottom-color: var(--accent);
+  border-bottom-color: var(--highlight); /* marigold marker; the selected tab also turns ink and its count turns pine */
 }
 .ui-tab-count {
   font-family: var(--font-mono), ui-monospace, monospace;

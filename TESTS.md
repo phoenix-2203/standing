@@ -1200,3 +1200,13 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
   `/dashboard`, `/ask`, `/orders`, `/packs/f8eb3943…`, `/trust`, light and dark: **0 serious or critical, 0 minor**
   (one minor "empty table header" on `/` was fixed with a screen-reader label).
 - Homepage images (`public/site/*`) and README screenshots (`docs/screenshots/*.jpg`) retaken from the new screens.
+
+## Redesign addition A: livelier colours (8 Nov 2026)
+
+- New tokens per the brief (§7A). `tokens.test.ts` now checks 25 pairs per theme (adds primary-button hover, accent on
+  raised, ink and warn on highlight-bg) plus a guard that no stylesheet uses `--highlight` as a text colour (marigold
+  fails text contrast by design: 1.9:1 on bg). **All pass, light and dark.**
+- Marigold used only as the active-tab marker so far; the selected tab also turns ink and its count pine, so the
+  state doesn't rest on the marigold alone.
+- Test count is now 549 (`facts.ts` and README updated to match). Gate: typecheck clean, lint 0 errors (1 old
+  warning), **549 tests pass**, build passes. Screenshots: `docs/screens/after/styleguide-*`, `dashboard-*`.
