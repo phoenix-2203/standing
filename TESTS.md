@@ -1168,3 +1168,19 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
   response (status blocked, two sample validator problems). It shows a plain-words explanation, "Try again" and the
   validator's own problems under "What the check found". Screenshot `pack-blocked-mocked-desktop-light.png` is that mock.
 - Gate: typecheck clean, lint 0 errors (1 old warning), **537 tests pass**, build passes.
+
+## Redesign, step 4: Ask Standing as a chat (8 Nov 2026)
+
+- New page `/ask` on the existing `POST /api/ask` (unchanged). Nav "Ask Standing" now goes there; the dashboard has a
+  compact entry (question box + 2 suggestions) that opens `/ask?q=…` and asks once.
+- **In a browser** (Playwright, local dev server, real Ask calls through the local providers):
+  - "Do I have any open alerts?" → "Open alert, Unusually large order: Order 71811069JP0021720 ($180.00) is 5.1× your
+    28-day average order ($35.24)." **Pass.**
+  - "How many of my physical orders have tracking?" → "Payments with tracking in PayPal: 7 of 38." with citation chip
+    `EV-SUM-2026-11-07-E493B5FE`. **Pass.**
+  - "My invoice is $4,000. Can I bill it as ten $400 charges…" → refusal shown as a calm info Callout with the fixed
+    reason text. **Pass.**
+  - One question hit Groq's per-minute token limit (HTTP 429 → the route's 503); the chat showed "Standing couldn't
+    answer right now" and stayed usable. Asked again after the limit cleared.
+- No page errors. Screenshots: `docs/screens/after/ask-*`, `dashboard-*` (new Ask entry).
+- Gate: typecheck clean, lint 0 errors (1 old warning), **537 tests pass**, build passes.

@@ -2,8 +2,10 @@
 
 import { CircleCheck, Download, FileText, FolderOpen, TriangleAlert } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Badge, ButtonAnchor, ButtonLink, Card, StatTile, type Tone } from "@/components/ui";
+import { Badge, Button, ButtonAnchor, ButtonLink, Card, StatTile, type Tone } from "@/components/ui";
+import { SUGGESTED_QUESTIONS } from "@/lib/ui/ask";
 import { api } from "@/lib/ui/client";
 import type { DashboardData } from "@/lib/ui/data";
 import { dateTime, ratio, relative } from "@/lib/ui/format";
@@ -181,6 +183,39 @@ export function YourCase({ latest }: { latest: DashboardData["latestPack"] }) {
             See why it was blocked
           </ButtonLink>
         )}
+      </div>
+    </Card>
+  );
+}
+
+/** A compact way into Ask Standing: a question box and suggestions that open the chat with the question asked. */
+export function AskEntry() {
+  const router = useRouter();
+  const [q, setQ] = useState("");
+  const go = (question: string) => router.push(`/ask?q=${encodeURIComponent(question.trim().slice(0, 500))}`);
+  return (
+    <Card id="ask" title="Ask Standing" description="Questions about your account, answered from your own records.">
+      <form
+        className="ask-entry"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (q.trim()) go(q);
+        }}
+      >
+        <label htmlFor="ask-entry-q" className="sr-only">
+          Your question
+        </label>
+        <input id="ask-entry-q" className="ui-input" value={q} maxLength={500} onChange={(e) => setQ(e.target.value)} placeholder="Ask a question" />
+        <Button type="submit" variant="secondary" disabled={!q.trim()}>
+          Ask
+        </Button>
+      </form>
+      <div className="chat-chips chat-chips-compact" role="group" aria-label="Suggested questions">
+        {SUGGESTED_QUESTIONS.slice(0, 2).map((s) => (
+          <button key={s} type="button" className="chat-chip" onClick={() => go(s)}>
+            {s}
+          </button>
+        ))}
       </div>
     </Card>
   );

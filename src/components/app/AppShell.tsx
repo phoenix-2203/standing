@@ -16,7 +16,7 @@ export const NAV: Item[] = [
   { href: "/evidence", label: "Evidence", icon: FolderOpen },
   { href: "/packs", label: "Packs", icon: FileText },
   { href: "/dashboard#launch-h", label: "Launch plan", icon: Rocket, match: "-" },
-  { href: "/dashboard#ask-h", label: "Ask Standing", icon: MessageCircleQuestion, match: "-" },
+  { href: "/ask", label: "Ask Standing", icon: MessageCircleQuestion },
   { href: "/checklist", label: "Checklist", icon: ListChecks },
   { href: "/catalogue", label: "Catalogue", icon: BookOpenCheck },
 ];

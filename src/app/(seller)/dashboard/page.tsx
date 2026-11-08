@@ -7,8 +7,8 @@ import { api } from "@/lib/ui/client";
 import type { DashboardData } from "@/lib/ui/data";
 import { dateTime, relative } from "@/lib/ui/format";
 import { BuildPackButton } from "@/components/app/BuildPackButton";
-import { NeedsYou, WhereYouStand, YourCase } from "./overview";
-import { AskCard, DigitalCard, LaunchCard, TrackingCard } from "./parts";
+import { AskEntry, NeedsYou, WhereYouStand, YourCase } from "./overview";
+import { DigitalCard, LaunchCard, TrackingCard } from "./parts";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -106,7 +106,7 @@ export default function DashboardPage() {
         <aside className="dash2-side" aria-label="Your case">
           <YourCase latest={data.latestPack} />
           <LaunchCard plans={data.launchPlans} onChange={load} />
-          <AskCard />
+          <AskEntry />
         </aside>
       </div>
     </>

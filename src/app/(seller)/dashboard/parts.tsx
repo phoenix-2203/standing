@@ -234,64 +234,6 @@ function DigitalRow({ gap, onChange }: { gap: DashboardData["digital"][number]; 
   );
 }
 
-type AskResponse = { decision: "answer" | "refuse" | "no_data"; text: string; sentences: { kind: "fact" | "bridge"; text: string; citations: string[] }[] };
-
-export function AskCard() {
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState<AskResponse | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  async function ask(e: React.FormEvent) {
-    e.preventDefault();
-    if (!question.trim()) return;
-    setBusy(true);
-    setError(null);
-    const res = await api<AskResponse>("/api/ask", { method: "POST", body: JSON.stringify({ question }) });
-    setBusy(false);
-    if (res.status !== 200 || !res.data) return setError("Standing couldn't answer right now. Please try again.");
-    setAnswer(res.data);
-  }
-  return (
-    <section className="card" aria-labelledby="ask-h">
-      <h2 id="ask-h">Ask Standing</h2>
-      <form className="form" onSubmit={ask}>
-        <label>
-          Your question
-          <input value={question} maxLength={500} onChange={(e) => setQuestion(e.target.value)} placeholder="e.g. What is my spike ratio?" />
-        </label>
-        <div>
-          <button disabled={busy || !question.trim()}>{busy ? "Thinking…" : "Ask"}</button>
-        </div>
-      </form>
-      {error && <p className="error small">{error}</p>}
-      {answer && (
-        <div className="answer">
-          {answer.decision === "refuse" ? (
-            <div className="alert">
-              <h3>Standing won&apos;t help with that</h3>
-              <p>{answer.text}</p>
-            </div>
-          ) : answer.decision === "no_data" ? (
-            <p className="muted">{answer.text}</p>
-          ) : (
-            <p>
-              {answer.sentences.map((s, i) => (
-                <span key={i}>
-                  {s.text}
-                  {s.citations.length > 0 && <span className="cite">[{s.citations.join(", ")}]</span>}{" "}
-                </span>
-              ))}
-            </p>
-          )}
-          <p className="muted small" style={{ marginBottom: 0 }}>
-            Answers come only from your Standing data: metrics, alerts, PayPal policy clauses and evidence.
-          </p>
-        </div>
-      )}
-    </section>
-  );
-}
-
 type PlanResult = { error?: string; policy?: { name: string; verdict: string; clauseId: string | null; quote: string | null; reason: string }[]; packId?: string | null; packStatus?: "ready" | "blocked" | "none" };
 
 export function LaunchCard({ plans, onChange }: { plans: DashboardData["launchPlans"]; onChange: () => void }) {
