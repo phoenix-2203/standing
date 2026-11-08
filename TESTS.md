@@ -1156,3 +1156,15 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
   the nav as a sheet. Screenshots: `docs/screens/after/dashboard-*`.
 - Not added: a Log out link in the account chip. The app has no logout route, and adding one is new auth logic.
 - Gate: typecheck clean, lint 0 errors (1 old warning), **537 tests pass**, build passes.
+
+## Redesign, step 3: pack view as a document (8 Nov 2026)
+
+- Presentation only: same `/api/packs/:id` fields, same citation numbering as the PDF, same PDF route. "Try again" on a
+  blocked pack is the existing Build pack call (`POST /api/packs`). Moved `BuildPackButton` to `src/components/app/`.
+- **In a browser** (Playwright, local dev server, pack `f8eb3943`): the letter renders in serif on a paper card; clicking
+  citation 4 jumps to `#ev-4` and that evidence row is highlighted (`:target`), clear of the sticky Download PDF bar.
+  No page errors. Screenshots: `docs/screens/after/pack-*`.
+- **Blocked state, mocked:** no blocked pack exists locally, so the blocked view was checked with a Playwright-mocked API
+  response (status blocked, two sample validator problems). It shows a plain-words explanation, "Try again" and the
+  validator's own problems under "What the check found". Screenshot `pack-blocked-mocked-desktop-light.png` is that mock.
+- Gate: typecheck clean, lint 0 errors (1 old warning), **537 tests pass**, build passes.

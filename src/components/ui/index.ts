@@ -1,5 +1,5 @@
 export { Badge, SandboxTag, SimulatedBadge, type Tone } from "./Badge";
-export { Button, ButtonLink, type ButtonSize, type ButtonVariant } from "./Button";
+export { Button, ButtonAnchor, ButtonLink, type ButtonSize, type ButtonVariant } from "./Button";
 export { Callout } from "./Callout";
 export { Card } from "./Card";
 export { ConfirmDialog } from "./ConfirmDialog";

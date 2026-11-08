@@ -27,3 +27,13 @@ export function ButtonLink({ variant = "primary", size = "md", icon, className, 
     </Link>
   );
 }
+
+/** A plain anchor styled as a button, for files and API routes the client router shouldn't handle (a PDF download). */
+export function ButtonAnchor({ variant = "primary", size = "md", icon, className, children, ...rest }: Common & ComponentProps<"a">) {
+  return (
+    <a className={cls(variant, size, className)} {...rest}>
+      {icon}
+      <span>{children}</span>
+    </a>
+  );
+}

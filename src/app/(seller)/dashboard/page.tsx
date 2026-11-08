@@ -6,7 +6,8 @@ import { Button, ButtonLink, Callout, EmptyState, PageHeader, Skeleton, Skeleton
 import { api } from "@/lib/ui/client";
 import type { DashboardData } from "@/lib/ui/data";
 import { dateTime, relative } from "@/lib/ui/format";
-import { BuildPackButton, NeedsYou, WhereYouStand, YourCase } from "./overview";
+import { BuildPackButton } from "@/components/app/BuildPackButton";
+import { NeedsYou, WhereYouStand, YourCase } from "./overview";
 import { AskCard, DigitalCard, LaunchCard, TrackingCard } from "./parts";
 
 export default function DashboardPage() {
