@@ -42,6 +42,7 @@ const PAIRS: [string, string, number][] = [
   ["accent", "surface", 4.5],
   ["accent", "accent-bg", 4.5],
   ["accent-ink", "accent", 4.5],
+  ["surface", "bad", 4.5], // danger button text
   ["ok", "ok-bg", 4.5],
   ["warn", "warn-bg", 4.5],
   ["bad", "bad-bg", 4.5],

@@ -16,7 +16,7 @@ const schemes = ["light", "dark"];
 
 const browser = await chromium.launch();
 // Public pages first, without a session.
-const pub = [["home", "/"], ["trust", "/trust"], ["privacy", "/privacy"], ["terms", "/terms"], ["not-found", "/no-such-page"]];
+const pub = [["home", "/"], ["styleguide", "/styleguide"], ["trust", "/trust"], ["privacy", "/privacy"], ["terms", "/terms"], ["not-found", "/no-such-page"]];
 
 // Logged-in pages via the dev-only login (404 in production).
 const login = await browser.newContext();

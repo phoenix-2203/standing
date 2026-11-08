@@ -1118,3 +1118,16 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
 | demo-1108-phy-03 | Citrus soy candle, USD 22.00 | `0BK67100NK449680M` | `0KJ09397YG859515X` | `ca575f5ea0ade` |
 
 **To do (~19:30 UTC):** sync and confirm they appear in the orders table with item names.
+
+## Redesign, phase 2: design system (8 Nov 2026)
+
+- **Contrast:** `src/lib/ui/tokens.test.ts` reads the colour tokens from `globals.css` and checks 21 text/background
+  pairs in light and dark against WCAG 2.2 AA (4.5:1 for text, 3:1 for the focus ring): **42/42 pass.**
+- **Formatting helpers** (`src/lib/ui/format.ts`): 5 tests (money with currency code, "7 Nov 2026, 14:05" in a given
+  zone, relative time, ratios rounded down incl. the 0.3 floating-point case, IDs cut in the middle). **Pass.**
+- **Keyboard logic** (`src/components/ui/keys.ts`): dialog focus wrap and tab-list arrows/Home/End, 5 tests. **Pass.**
+- **In a browser** (Playwright on the local dev server, `/styleguide`): the confirm dialog opens modal with focus on
+  "Keep it" (the safe choice); Tab goes to "Cancel fix" and wraps back to "Keep it"; Esc closes it and focus returns to
+  "Open dialog". A success toast shows its PayPal debug ID. ArrowRight on the tab list selects the next tab. No console
+  errors. Screenshots: `docs/screens/after/styleguide-*.png`.
+- Full gate: typecheck clean, lint 0 errors (1 old warning), **525 tests pass**, build passes.
