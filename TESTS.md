@@ -1117,11 +1117,13 @@ PayPal orders and captures from the buyer test account; all three **COMPLETED**:
 | demo-1108-phy-02 | Cedar soy candle, USD 20.00 | `57B524706K657781W` | `5CK8129153445023H` | `ca575f5d4e82a` |
 | demo-1108-phy-03 | Citrus soy candle, USD 22.00 | `0BK67100NK449680M` | `0KJ09397YG859515X` | `ca575f5ea0ade` |
 
-**Not in Transaction Search yet (checked 8 Nov, 17:50 UTC):** read back from PayPal, all three captures are
-COMPLETED (created 16:30:03–16:30:10 UTC; debug IDs f252111a32e0b, f2091690a48ba, f764646680925), but Transaction
-Search reported `last_refreshed_datetime` 2026-11-08T15:59:59Z and returned no transactions for 8 Nov (debug
-f5497580ce232). The hosted sync is healthy (last run 17:35 UTC, synced through 15:59:59Z). PayPal's search lags,
-so they can't show yet. **To do:** check the orders table once PayPal's refresh passes 16:30 UTC.
+**Synced: confirmed on the hosted app (8 Nov, 19:25 UTC).** At 17:50 UTC they weren't searchable yet: read back from
+PayPal, all three captures were COMPLETED (created 16:30:03–16:30:10 UTC; debug IDs f252111a32e0b, f2091690a48ba,
+f764646680925) but Transaction Search had last refreshed at 15:59:59Z (debug f5497580ce232). After PayPal's refresh,
+the 19:20 UTC sync (synced through 16:59:59Z, no error) brought them in. The orders table now lists 44 orders,
+including all three with the right items and amounts: 2R095039YH1597740 Lavender soy candle USD 18.00,
+5CK8129153445023H Cedar soy candle USD 20.00, 0KJ09397YG859515X Citrus soy candle USD 22.00. **Pass.** (Kind shows
+"unclassified" because these products aren't in the hosted catalogue yet.)
 
 ## Redesign, phase 2: design system (8 Nov 2026)
 
@@ -1268,8 +1270,8 @@ and landing page served).
   `/api/auth/paypal/start` as data, the redirect to PayPal is blocked, and it falls back to a normal navigation. Login
   still works. Fix: make the login buttons plain links (not done yet). Two earlier 405 responses were seen; their
   request was no longer in the buffer, so the cause is unconfirmed.
-- **demo-1108:** captures 2R095039YH1597740, 5CK8129153445023H and 0KJ09397YG859515X are **not yet** in the orders
-  table (newest payment 7 Nov 11:43 UTC). Still to do: check again after the next syncs.
+- **demo-1108:** captures 2R095039YH1597740, 5CK8129153445023H and 0KJ09397YG859515X were not yet in the orders
+  table (newest payment 7 Nov 11:43 UTC). They showed up at 19:25 UTC; see the demo day 2 entry.
 
 ## Fix: login buttons as plain links (8 Nov 2026, evening)
 
