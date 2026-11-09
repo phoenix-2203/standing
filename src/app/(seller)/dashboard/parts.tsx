@@ -248,8 +248,8 @@ function DigitalRow({ gap, onChange }: { gap: DashboardData["digital"][number]; 
       </div>
       <div>
         {!fix || fix.status === "cancelled" || fix.status === "error" ? (
-          <button onClick={start} disabled={busy}>
-            {fix?.status === "cancelled" ? "Mark Completed again" : "Mark Completed"}
+          <button type="button" className="ui-btn ui-btn-secondary ui-btn-sm" onClick={start} disabled={busy}>
+            <span>{fix?.status === "cancelled" ? "Mark Completed again" : "Mark Completed"}</span>
           </button>
         ) : (
           <FixState q={q} />
