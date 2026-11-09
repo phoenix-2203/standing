@@ -766,3 +766,16 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+.account {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+.account-logout .ui-btn {
+  color: var(--muted);
+  padding-left: var(--s-2);
+}
+.account-logout .ui-btn:hover {
+  color: var(--ink);
+}

@@ -1284,3 +1284,19 @@ and landing page served).
   unconfirmed: a direct OPTIONS request to PayPal's page returned 200 from curl.
 - Also cleared the last lint warning (an unused parameter in the orders quick views). Lint now: **0 problems.**
 - Gate: typecheck clean, lint clean, **549 tests pass**, build passes. Needs a redeploy to reach the hosted app.
+
+## Log out (9 Nov 2026)
+
+- New `POST /api/auth/logout`: expires the `standing_session` cookie (same name, path and flags it was set with, Max-Age 0)
+  and redirects 303 to `/`. POST only, so links, prefetch and images can't sign anyone out; a cross-site POST is refused
+  by the existing proxy check. Nothing at PayPal changes: no PayPal token is ever stored, so there's nothing to revoke.
+  A "Log out" button (a plain form, works without JavaScript) sits under the account panel in the sidebar and phone menu.
+- **Unit tests** (`src/lib/auth/logout.test.ts`, 4): 303 to home with the cookie cleared (HttpOnly, Secure on https,
+  Path=/); a cleared cookie is not a session; no Secure flag on plain-http localhost; a cross-site POST is refused
+  while a same-origin one passes. **4/4 pass.**
+- **In a browser** (Playwright, local, dev login), desktop sidebar and phone menu: `/api/dashboard` 200 before;
+  after clicking Log out, landed on `/`, no `standing_session` cookie left, `/api/dashboard` 401, `/dashboard` shows
+  "Log in to see where you stand"; `GET /api/auth/logout` → 405. **Pass.** (The 401s in the console are the
+  signed-out dashboard's own requests after logging out, as expected.)
+- axe `/dashboard`, `/ask`, light and dark: 0 serious/critical. Gate: typecheck clean, lint clean, **553 tests pass**
+  (homepage figure and README updated to 553), build passes.

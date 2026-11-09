@@ -31,6 +31,11 @@ export function sessionCookie(sellerId: string, secret: string, secure: boolean,
   return cookieHeader(COOKIE, `${payload}.${sign(payload, secret)}`, TTL_SECONDS, secure);
 }
 
+/** Expires the session cookie (same name, path and flags it was set with), for Log out. */
+export function clearSessionCookie(secure: boolean): string {
+  return cookieHeader(COOKIE, "", 0, secure);
+}
+
 /** The session's seller ID, or null if there's no valid, unexpired session. Fails closed without a secret. */
 export function sessionSeller(request: Request, secret = process.env.SESSION_SECRET, now = new Date()): string | null {
   if (!secret) return null;
