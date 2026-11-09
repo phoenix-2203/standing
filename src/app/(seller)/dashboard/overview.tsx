@@ -57,6 +57,7 @@ export function NeedsYou({ alerts }: { alerts: DashboardData["alerts"] }) {
 
 const STATE: Record<DashboardData["standing"][number]["state"], { label: string; tone: Tone }> = {
   needs_you: { label: "Needs you", tone: "warn" },
+  next_check: { label: "Flags at next check", tone: "warn" },
   expected: { label: "Expected, pack ready", tone: "ok" },
   applies: { label: "Applies to you", tone: "info" },
   clear: { label: "Clear", tone: "ok" },

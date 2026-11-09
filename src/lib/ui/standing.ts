@@ -5,7 +5,9 @@ import { type Metrics, MIN_HISTORY_DAYS, THRESHOLDS } from "@/lib/metrics/comput
 // Plain code (CLAUDE.md rule 3). A row's state comes from the same open alerts the dashboard lists, so the
 // table and the "Needs you" list can't disagree. Never a single score, and never PayPal's decision.
 
-export type RowState = "needs_you" | "expected" | "applies" | "clear" | "no_history" | "no_data" | "context";
+// "next_check": the live figure is past Standing's line but the 15-minute check hasn't raised its alert yet
+// (e.g. right after the seller catalogues products). Never shown as Clear in that gap.
+export type RowState = "needs_you" | "next_check" | "expected" | "applies" | "clear" | "no_history" | "no_data" | "context";
 
 export interface StandingRow {
   key: string;
@@ -89,7 +91,7 @@ export function standingRows(m: Metrics, open: OpenAlert[]): StandingRow[] {
     source: "PayPal's advice",
     figure: c.coverage === null ? `No catalogued physical orders due · ${c.unclassifiedOrders} not in your catalogue` : `${c.withTracking} of ${c.eligible} tracked (${pct(c.coverage)})`,
     threshold: `Warns below ${pct(THRESHOLDS.trackingCoverage)}, orders over 48 h`,
-    state: warn("tracking_coverage") ? "needs_you" : c.coverage === null ? "no_data" : "clear",
+    state: warn("tracking_coverage") ? "needs_you" : c.coverage === null ? "no_data" : c.coverage < THRESHOLDS.trackingCoverage ? "next_check" : "clear",
   };
 
   const g = m.digitalCompletionGap;
@@ -99,7 +101,7 @@ export function standingRows(m: Metrics, open: OpenAlert[]): StandingRow[] {
     source: "Standing's check",
     figure: g.count === 0 ? "None waiting" : `${g.count} waiting over 24 h`,
     threshold: "Warns on any digital order over 24 h",
-    state: warn("digital_gap") ? "needs_you" : "clear",
+    state: warn("digital_gap") ? "needs_you" : g.count >= THRESHOLDS.digitalGap ? "next_check" : "clear",
   };
 
   // PayPal's guide advises complaints below 1% of sales. Standing's 90-day dispute rate isn't the same

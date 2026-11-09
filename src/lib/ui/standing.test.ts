@@ -45,6 +45,12 @@ describe("standingRows", () => {
     expect(r.price).toMatchObject({ state: "needs_you", figure: "One order is 8.5× your average order" });
   });
 
+  it("past the line but before the next check raises the alert: 'flags at next check', never 'clear'", () => {
+    const m = computeMetrics({ asOf: AS_OF, sales: steady(28, 3, 2, 20, { hasTracking: false }), disputeCreatedAt: [], firstSaleAt: daysAgo(120) });
+    const r = Object.fromEntries(standingRows(m, []).map((x) => [x.key, x]));
+    expect(r.tracking.state).toBe("next_check");
+  });
+
   it("an alert still open from an earlier check keeps the row at 'needs you' and says why", () => {
     const m = computeMetrics({ asOf: AS_OF, sales: steady(28, 1, 2, 20), disputeCreatedAt: [], firstSaleAt: daysAgo(120) });
     const row = standingRows(m, [{ kind: "large_order", severity: "warning" }]).find((x) => x.key === "price")!;
