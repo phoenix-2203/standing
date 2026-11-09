@@ -1300,3 +1300,18 @@ and landing page served).
   signed-out dashboard's own requests after logging out, as expected.)
 - axe `/dashboard`, `/ask`, light and dark: 0 serious/critical. Gate: typecheck clean, lint clean, **553 tests pass**
   (homepage figure and README updated to 553), build passes.
+
+## 9 Nov 2026 — Ask Standing: a second question within a minute no longer fails
+
+- **Seen on hosted:** the first question answered; the second stuck on "Checking your records…" then showed
+  "Standing couldn't answer right now". Server log: Groq free tier is 8,000 tokens a minute and one Ask is ~5,600,
+  so the second got HTTP 429 "try again in 17.055s"; Standing waited at most 5 s, retried too early, then fell back
+  to Gemini, which answered 503 "high demand" or hung until the 150 s timeout.
+- **Fix:** wait Retry-After + 1 s (Groq rounds it down), capped at 20 s; a 429 gets up to two waited retries (other
+  errors still one); Ask uses a 45 s provider timeout instead of 150 s. The chat says "Still checking… can take up
+  to a minute" after 8 s, and a failed answer has a **Try again** button.
+- **Unit tests** (`src/lib/llm/providers.test.ts`, 6): waits [18000, 3000] through two 429s then answers; stops at
+  three calls on repeated 429s; other failures still two calls at most. **6/6 pass.**
+- **Live repro** (local, real Groq): two questions back to back → 200 in 2.6 s and 200 in 22.8 s (before: 503).
+  Run again straight after (four questions inside ~70 s) → 200 in 35.1 s and 200 in 41.9 s. **Pass.**
+- Gate: typecheck clean, lint clean, **554 tests pass** (homepage figure and README updated to 554).

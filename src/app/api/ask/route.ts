@@ -4,6 +4,9 @@ import { loadAskFacts } from "@/lib/ask/context";
 import { sessionSeller, unauthorized } from "@/lib/auth/session";
 import { providersFromEnv } from "@/lib/llm/providers";
 
+// A chat answer shouldn't hang for minutes: Gemini's default 150 s (meant for packs) is cut to 45 s here.
+const ASK_TIMEOUT_MS = 45_000;
+
 export async function POST(request: Request) {
   const sellerId = sessionSeller(request);
   if (!sellerId) return unauthorized();
@@ -14,10 +17,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "invalid_json" }, { status: 400 });
   }
   try {
-    const r = await askStanding(typeof question === "string" ? question : "", await loadAskFacts(getDb(), sellerId), providersFromEnv());
+    const r = await askStanding(typeof question === "string" ? question : "", await loadAskFacts(getDb(), sellerId), providersFromEnv(process.env, { timeoutMs: ASK_TIMEOUT_MS }));
     return Response.json({ decision: r.decision, refusalTopic: r.refusalTopic, text: r.text, sentences: r.sentences });
   } catch (err) {
-    console.error(`Ask Standing failed: ${(err as Error).message.slice(0, 300)}`);
+    console.error(`Ask Standing failed: ${(err as Error).message.slice(0, 800)}`);
     return Response.json({ error: "Standing couldn't answer right now. Please try again in a minute." }, { status: 503 });
   }
 }

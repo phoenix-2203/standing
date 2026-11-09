@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, MessageCircleQuestion } from "lucide-react";
+import { ArrowUp, MessageCircleQuestion, RotateCcw } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Button, Callout, PageHeader } from "@/components/ui";
@@ -12,6 +12,7 @@ import { api } from "@/lib/ui/client";
 
 type AskResponse = { decision: "answer" | "refuse" | "no_data"; text: string; sentences: { kind: "fact" | "bridge"; text: string; citations: string[] }[] };
 type Turn = { q: string; a?: AskResponse; error?: string };
+const SIGNED_OUT = "Log in to ask about your account.";
 
 
 export default function AskPage() {
@@ -42,7 +43,7 @@ function AskChat() {
     setTurns((t) => {
       const next = [...t];
       next[next.length - 1] =
-        res.status === 200 && res.data ? { q, a: res.data } : { q, error: res.status === 401 ? "Log in to ask about your account." : "Standing couldn't answer right now. Please try again in a minute." };
+        res.status === 200 && res.data ? { q, a: res.data } : { q, error: res.status === 401 ? SIGNED_OUT : "Standing couldn't answer right now: the AI service it uses is busy. Your records are fine; try again in a minute." };
       return next;
     });
     inputRef.current?.focus();
@@ -82,11 +83,16 @@ function AskChat() {
             {t.a ? (
               <Answer a={t.a} />
             ) : t.error ? (
-              <Callout tone="warn">{t.error}</Callout>
+              <Callout tone="warn">
+                <p>{t.error}</p>
+                {i === turns.length - 1 && t.error !== SIGNED_OUT && (
+                  <Button variant="secondary" size="sm" disabled={busy} onClick={() => void ask(t.q)} icon={<RotateCcw size={14} strokeWidth={2} aria-hidden="true" />}>
+                    Try again
+                  </Button>
+                )}
+              </Callout>
             ) : (
-              <div className="chat-a chat-thinking" aria-busy="true">
-                <span className="ui-spinner" aria-hidden="true" /> Checking your records…
-              </div>
+              <Thinking />
             )}
           </div>
         ))}
@@ -126,6 +132,20 @@ function AskChat() {
           </Button>
         </div>
       </form>
+    </div>
+  );
+}
+
+// Free AI tiers allow only so much a minute, so a question asked right after another can wait in line.
+function Thinking() {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div className="chat-a chat-thinking" aria-busy="true">
+      <span className="ui-spinner" aria-hidden="true" /> {slow ? "Still checking. The AI service is busy, so this can take up to a minute…" : "Checking your records…"}
     </div>
   );
 }

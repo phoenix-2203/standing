@@ -39,13 +39,20 @@ const realSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 // Busy or briefly failing upstream: worth one more try. A timeout isn't (it already waited the full time),
 // and 4xx other than 429 means the request itself is wrong.
 const TRANSIENT_STATUS = new Set([429, 500, 502, 503, 504]);
-const MAX_RETRY_WAIT_MS = 5_000;
+// Groq's free tier is 8,000 tokens a minute and one Ask is ~5,600, so a second question within a minute gets a 429
+// with Retry-After around 15–20 s. Waiting that long once beats failing; longer than 20 s and we give up instead.
+const MAX_RETRY_WAIT_MS = 20_000;
 const DEFAULT_RETRY_WAIT_MS = 1_000;
 
-/** How long to wait before retrying, from Retry-After (seconds) when present, capped so a page never hangs. */
+// Retry-After comes in whole seconds and Groq rounds it down (17.05 s needed, "17" sent), so a retry at exactly
+// that time hits the same limit; one second of margin clears it.
+const RETRY_MARGIN_MS = 1_000;
+
+/** How long to wait before retrying, from Retry-After (seconds) plus a margin when present, capped so a page never hangs. */
 export function retryWaitMs(retryAfter: string | null): number {
   const secs = retryAfter === null ? NaN : Number(retryAfter);
-  return Number.isFinite(secs) && secs >= 0 ? Math.min(secs * 1000, MAX_RETRY_WAIT_MS) : DEFAULT_RETRY_WAIT_MS;
+  if (!Number.isFinite(secs) || secs < 0) return DEFAULT_RETRY_WAIT_MS;
+  return secs === 0 ? 0 : Math.min(secs * 1000 + RETRY_MARGIN_MS, MAX_RETRY_WAIT_MS);
 }
 
 // gemini-2.5-flash is closed to new API keys (404, 31 Oct 2026). 3.8 Flash can think for over 90 s on a
@@ -98,9 +105,9 @@ export function groq({ apiKey, model = "openai/gpt-oss-120b", fetch: f = globalT
  * Gemini's free tier allows 20 requests/day for gemini-3.8-flash, so it's kept for invoice images and as
  * the fallback here.
  */
-export function providersFromEnv(env: Record<string, string | undefined> = process.env): LlmProvider[] {
+export function providersFromEnv(env: Record<string, string | undefined> = process.env, opts: { timeoutMs?: number } = {}): LlmProvider[] {
   const out: LlmProvider[] = [];
-  const timeoutMs = env.LLM_TIMEOUT_MS ? Number(env.LLM_TIMEOUT_MS) : undefined;
+  const timeoutMs = env.LLM_TIMEOUT_MS ? Number(env.LLM_TIMEOUT_MS) : opts.timeoutMs;
   if (env.GROQ_API_KEY?.trim()) out.push(groq({ apiKey: env.GROQ_API_KEY.trim(), model: env.GROQ_MODEL?.trim() || undefined, timeoutMs }));
   if (env.GEMINI_API_KEY?.trim()) out.push(gemini({ apiKey: env.GEMINI_API_KEY.trim(), model: env.GEMINI_MODEL?.trim() || undefined, timeoutMs }));
   return out;
@@ -121,7 +128,7 @@ async function call(
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(timeoutMs),
     });
-  // At most one retry, for a busy upstream (429/5xx) or a dropped connection, so a single blip doesn't
+  // At most one retry (two for a 429), for a busy upstream (429/5xx) or a dropped connection, so a single blip doesn't
   // reach the seller. A timeout isn't retried: it already waited the full time.
   const attempt = async (): Promise<Response> => {
     try {
@@ -139,7 +146,10 @@ async function call(
       await sleep(DEFAULT_RETRY_WAIT_MS);
       continue;
     }
-    if (tries >= 2 || !TRANSIENT_STATUS.has(res.status)) break;
+    // A rate limit (429) gets one extra try: Groq's per-minute token budget refills continuously, so a second
+    // question asked moments after the first can need two waits. Other failures still get a single retry.
+    const maxTries = res.status === 429 ? 3 : 2;
+    if (tries >= maxTries || !TRANSIENT_STATUS.has(res.status)) break;
     await res.body?.cancel().catch(() => {});
     await sleep(retryWaitMs(res.headers.get("retry-after")));
   }
