@@ -1345,3 +1345,29 @@ Read-only on hosted (verified test login), plus every seller page locally in dar
   stays as evaluated on 7 Nov).
 - axe `/dashboard`, `/packs`, `/checklist`, `/catalogue`, `/evidence`, light and dark: 0 serious/critical.
   Typecheck, lint clean; **558 tests pass** (homepage figure and README updated); build passes.
+
+## 9 Nov 2026 — Launch-day burst for the demo (`npm run demo:orders -- demo-1109 12 --go`)
+
+Real sandbox card orders (Orders v2, created and captured), 20:3x Lagos. 15 orders, USD 444.00: 12 candles, 2 pattern
+PDFs, 1 gift set (USD 180, the "large order"). The first three runs failed before any call (`fetch failed`: DNS for
+`api-m.sandbox.paypal.com` didn't resolve); the stable request IDs meant the fourth run created each order once.
+
+| Ref | Order | Capture | Debug ID |
+|---|---|---|---|
+| phy-01 Lavender USD 18 | 24600042723772503 | 86S82492B86755117 | f12904805078c |
+| phy-02 Cedar USD 20 | 8FM06783NJ875704N | 3G5024802S097281N | f978979d900aa |
+| phy-03 Citrus USD 22 | 670761493P654972N | 52M91515G2649572K | f285899299e10 |
+| phy-04 Lavender USD 18 | 4AU49138FU557950U | 10670851B59839803 | f381415d5f7e5 |
+| phy-05 Cedar USD 20 | 36Y682982H172444J | 14N88215HV502691A | f4805308a2939 |
+| phy-06 Citrus USD 22 | 72G77639XF519643B | 4BM00638405694844 | f256038f3cd08 |
+| phy-07 Lavender USD 18 | 1GD123983E495643A | 4BY5948323319183D | f125333f26b9b |
+| phy-08 Cedar USD 20 | 2UH81973SP3122043 | 6MV06756VC902960Y | f819586cabe74 |
+| phy-09 Citrus USD 22 | 16W36337V2260194V | 3LK56733A1848182V | f6810993555d8 |
+| phy-10 Lavender USD 18 | 3WU55067CF9430008 | 5B848642TD327774S | f701419945c15 |
+| phy-11 Cedar USD 20 | 9F8962534E2522524 | 863847898B276911P | f1624020c8165 |
+| phy-12 Citrus USD 22 | 5F189800X77956156 | 55N04456L3975682M | f7780513087e8 |
+| dig-01 Pattern PDF USD 12 | 82G57756EY229532P | 0FF55416JV730393Y | f4358364c3164 |
+| dig-02 Pattern PDF USD 12 | 12Y44256HV236802T | 3A2375257R985071S | f816978ab26d9 |
+| gift-01 Gift set USD 180 | 0LF83868NP224123H | 2XF46086RR0002221 | f8390409704e4 |
+
+All 15 returned COMPLETED. Waiting for Transaction Search to list them (it can lag about 3 hours) before syncing.
