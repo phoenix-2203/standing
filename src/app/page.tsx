@@ -120,20 +120,31 @@ export default function Home() {
         <section className="lp-wrap lp-section" aria-labelledby="problem-title">
           <div className="lp-head reveal">
             <h2 id="problem-title" className="lp-title">
-              The problem, in PayPal&apos;s own words
+              The problem: growth can look like risk
             </h2>
-            <p className="lp-sub">The moment a small seller finally takes off is one of the moments PayPal looks hardest.</p>
+            <p className="lp-sub">
+              PayPal can put a <strong>hold</strong> on money you&apos;ve been paid: it shows in your balance, but you can&apos;t spend or withdraw it
+              yet. PayPal&apos;s help page lists when that can happen, and three of its reasons tend to catch small sellers just as they start to grow.
+            </p>
           </div>
-          <div className="lp-quotes">
+          <ol className="lp-quotes">
             {QUOTES.map((q) => (
-              <figure key={q.text} className="lp-card lp-quote reveal">
-                <blockquote>“{q.text}”</blockquote>
-                <figcaption>
-                  <a href={q.href}>{q.source}</a>
-                </figcaption>
-              </figure>
+              <li key={q.text} className="lp-card lp-quote reveal">
+                <figure>
+                  <blockquote>“{q.text}”</blockquote>
+                  <figcaption>
+                    <a href={q.href}>{q.source}</a>
+                  </figcaption>
+                </figure>
+                <p className="lp-quote-why">{q.why}</p>
+              </li>
             ))}
-          </div>
+          </ol>
+          <p className="lp-after reveal">
+            Most of what PayPal weighs is in your own records: your sales, your tracking, what you sell. Standing keeps an eye on those records,
+            tells you in plain words when they look like one of PayPal&apos;s reasons, and gets your side of the story ready. Whether to hold
+            money is always PayPal&apos;s decision.
+          </p>
         </section>
 
         {/* How it works */}
@@ -142,18 +153,25 @@ export default function Home() {
             <h2 id="how-title" className="lp-title">
               How it works
             </h2>
-            <p className="lp-sub">Three jobs, all on your own PayPal records. These are the app&apos;s real screens, on sandbox data.</p>
+            <p className="lp-sub">
+              You log in with your PayPal (sandbox) account. Standing then reads your payments and does three jobs with them. The pictures are the
+              app&apos;s real screens, on sandbox data.
+            </p>
           </div>
           <div className="lp-bento">
             <article className="lp-card lp-tile lp-tile-big reveal">
               <div className="lp-tile-copy">
                 <span className="lp-tile-num">01</span>
                 <h3>
-                  <Eye size={20} strokeWidth={1.75} aria-hidden="true" /> Watch
+                  <Eye size={20} strokeWidth={1.75} aria-hidden="true" /> Watch: see what PayPal sees
                 </h3>
                 <p>
-                  Every 15 minutes Standing checks your PayPal records for the patterns PayPal lists: a spike, a jump in order size, a new kind of product,
-                  missing tracking.
+                  Every 15 minutes Standing reads your new PayPal payments and checks them against the reasons PayPal lists: a sudden jump in sales,
+                  orders much bigger than usual, a kind of product you haven&apos;t sold before, parcels with no tracking.
+                </p>
+                <p>
+                  When one shows up you get a plain message with the numbers behind it, such as an order five times your usual size, and what you
+                  can do about it.
                 </p>
               </div>
               <div className="lp-tile-shot">
@@ -164,9 +182,12 @@ export default function Home() {
               <div className="lp-tile-copy">
                 <span className="lp-tile-num">02</span>
                 <h3>
-                  <Wrench size={20} strokeWidth={1.75} aria-hidden="true" /> Fix
+                  <Wrench size={20} strokeWidth={1.75} aria-hidden="true" /> Fix: close the easy gaps
                 </h3>
-                <p>What can be fixed safely, such as tracking or marking a digital order Completed, goes through a queue you preview and can cancel.</p>
+                <p>
+                  Some gaps have a simple fix: add the tracking number to a shipped order, or mark a digital order as delivered. Standing shows you
+                  exactly what it will send to PayPal and gives you 2 minutes to cancel. Then it sends it and keeps PayPal&apos;s reply on file.
+                </p>
               </div>
               <div className="lp-tile-shot">
                 <Image unoptimized src={fix} alt="Standing's orders table: each PayPal payment with its items, tracking and Seller Protection status" sizes="(min-width: 900px) 520px, 100vw" />
@@ -176,9 +197,13 @@ export default function Home() {
               <div className="lp-tile-copy">
                 <span className="lp-tile-num">03</span>
                 <h3>
-                  <FileCheck2 size={20} strokeWidth={1.75} aria-hidden="true" /> Prove
+                  <FileCheck2 size={20} strokeWidth={1.75} aria-hidden="true" /> Prove: your case, ready to send
                 </h3>
-                <p>An explanation pack: your sales curve and a letter where every figure is written by code and cites its evidence.</p>
+                <p>
+                  If PayPal asks questions, you need your side in one place. Standing builds an explanation pack: your sales curve, your evidence
+                  (payments, tracking, invoices) and a letter to PayPal. Every figure in the letter is written by code and points to its evidence,
+                  so it never says more than your records show. Download it as a PDF.
+                </p>
               </div>
               <div className="lp-tile-shot">
                 <Image unoptimized src={prove} alt="A cover letter in Standing's explanation pack, with numbered citations to evidence" sizes="(min-width: 900px) 520px, 100vw" />

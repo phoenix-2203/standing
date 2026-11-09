@@ -1315,3 +1315,8 @@ and landing page served).
 - **Live repro** (local, real Groq): two questions back to back → 200 in 2.6 s and 200 in 22.8 s (before: 503).
   Run again straight after (four questions inside ~70 s) → 200 in 35.1 s and 200 in 41.9 s. **Pass.**
 - Gate: typecheck clean, lint clean, **554 tests pass** (homepage figure and README updated to 554).
+- **Orders page and homepage copy** (presentation only, same day): orders grid gets a "What each column means" key,
+  header tooltips on every column, plain labels (Kind "Not in catalogue", Fix "No answer yet" etc.) and a callout when
+  most orders aren't in the catalogue. Homepage "The problem" explains what a hold is and why each PayPal reason
+  matters; "How it works" explains each step. Screenshots desktop + phone, no page errors; axe `/`, `/orders`, `/ask`
+  light and dark: 0 serious/critical. Typecheck, lint clean; 554 tests pass; build passes.

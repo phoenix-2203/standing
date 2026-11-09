@@ -558,6 +558,37 @@
 .lp-quote figcaption a {
   color: var(--accent);
 }
+.lp-quotes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.lp-quote figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.lp-quote-why {
+  margin: 0;
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--t-15, 15px);
+  line-height: 1.5;
+}
+.lp-after {
+  max-width: 46rem;
+  margin: var(--s-6) 0 0;
+  font-size: var(--t-17);
+  line-height: 1.55;
+}
+.lp-sub strong {
+  color: var(--ink);
+}
+.lp-tile-copy p + p {
+  margin-top: var(--s-3);
+}
 
 /* Bento */
 .lp-bento {

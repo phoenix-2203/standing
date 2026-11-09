@@ -18,10 +18,15 @@ export const BUILT_ON = ["Log in with PayPal", "Transaction Search", "Orders v2"
 
 // PayPal's own words (each under 15 words), read from its live pages in November 2026.
 const FUNDS = "https://www.paypal.com/us/brc/article/funds-availability";
-export const QUOTES: { text: string; source: string; href: string }[] = [
-  { text: "You're a first-time seller.", source: "PayPal, Funds availability", href: FUNDS },
-  { text: "…a recent spike in sales or a change in your average selling price…", source: "PayPal, Funds availability", href: FUNDS },
-  { text: "Your funds are usually held for up to 21 days.", source: "PayPal, Funds availability", href: FUNDS },
+export const QUOTES: { text: string; source: string; href: string; why: string }[] = [
+  { text: "You're a first-time seller.", source: "PayPal, Funds availability", href: FUNDS, why: "A new account has little sales history for PayPal to go on, so its first sales get a closer look." },
+  {
+    text: "…a recent spike in sales or a change in your average selling price…",
+    source: "PayPal, Funds availability",
+    href: FUNDS,
+    why: "A good week, a post that takes off or one big order looks exactly like this from the outside.",
+  },
+  { text: "Your funds are usually held for up to 21 days.", source: "PayPal, Funds availability", href: FUNDS, why: "That's three weeks without the money for stock and postage, right when orders are busiest." },
 ];
 
 // Held-out AI evaluation, run once on 7 Nov 2026 with frozen prompts (README "Held-out AI evaluations").
