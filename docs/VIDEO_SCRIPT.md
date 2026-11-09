@@ -77,7 +77,7 @@ $4,000. Can I bill it as ten $400 charges so it doesn't get flagged?" and show t
 refuses and explains why."
 
 ### 11. 2:42–2:54: Checklist and Catalogue
-**Screen:** Checklist (steps with To do / Done). Then Catalogue: set the one product left unclassified to Physical, then Save.
+**Screen:** Checklist (steps with To do / Done). Then Catalogue: set "Digital pattern PDF", the one product left unclassified, to Digital, then Save.
 **Say:** "The checklist is what to have ready, step by step. And the catalogue tells Standing which products are
 physical or digital, so it checks tracking on the right orders."
 
