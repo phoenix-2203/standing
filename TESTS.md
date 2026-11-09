@@ -1320,3 +1320,28 @@ and landing page served).
   most orders aren't in the catalogue. Homepage "The problem" explains what a hold is and why each PayPal reason
   matters; "How it works" explains each step. Screenshots desktop + phone, no page errors; axe `/`, `/orders`, `/ask`
   light and dark: 0 serious/critical. Typecheck, lint clean; 554 tests pass; build passes.
+
+## 9 Nov 2026 — Bug sweep on the hosted app (after redeploying a12c4a0)
+
+Read-only on hosted (verified test login), plus every seller page locally in dark mode, desktop and phone.
+- **Checked OK on hosted:** "Add products" on Orders opens the Catalogue (`/catalogue?_rsc` 200, then `/api/products`
+  200); every app page and data endpoint 200; homepage serves the new copy and every internal link and image is 200;
+  pack page opens and its PDF downloads (200, application/pdf, 22 KB); a missing pack shows "This pack isn't here";
+  Ask answered two questions back to back (200 in 29.0 s and 27.7 s).
+- **Explained, not a bug:** hosted's Fix column is empty because every fix so far was sent from a local run (local
+  database); hosted has made none. Hosted's 8 tracked and 2 Completed orders are older, so they sit on page 2 of the
+  Orders table. 32 of 44 orders carry no item name or SKU from PayPal, so the catalogue can't classify them.
+- **Fixed:** "Where you stand" showed **Clear** at 50% tracking (warns below 90%) and with 2 digital orders waiting,
+  because a row's state comes from alerts raised at the 15-minute check. When the live figure is past the line but
+  no alert yet, the row now says **Flags at next check**. New test. Pass.
+- **Fixed:** a pack could leave out the seller's own evidence (hosted pack of 8 Nov cited neither the invoice nor the
+  traffic source). Code now adds any seller-added item the plan left out as its own paragraph, before the sign-off,
+  using the item's code-written sentence and citation. 2 new tests. Pass.
+- **Fixed:** evidence summary said "1 match products sold"; now "1 matches a product sold". New test. Pass.
+- **Fixed (presentation):** Mark Completed buttons now match Add tracking (small, secondary); Packs, Evidence,
+  Checklist and Catalogue headers now use the same spacing and type as the Dashboard.
+- **Not changed:** Ask answers "Which orders are missing tracking?" with "no data": its facts give tracking coverage,
+  not the list of orders. A prompt tweak was tried locally and didn't change that, so it was reverted (the prompt
+  stays as evaluated on 7 Nov).
+- axe `/dashboard`, `/packs`, `/checklist`, `/catalogue`, `/evidence`, light and dark: 0 serious/critical.
+  Typecheck, lint clean; **558 tests pass** (homepage figure and README updated); build passes.
