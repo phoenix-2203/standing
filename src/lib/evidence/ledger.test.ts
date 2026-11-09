@@ -69,6 +69,12 @@ describe("syncLedger", () => {
 });
 
 describe("addInvoice", () => {
+  it("says 'matches a product' when one line matches", async () => {
+    await sale("TX9", "18.00", [{ item_name: "Cedar candle" }]);
+    const e = await addInvoice(db, SELLER, { supplier: "Wick Co", invoiceNumber: "INV-1", date: "2026-10-20", lines: [{ description: "Cedar candle", quantity: 5 }, { description: "Jars", quantity: 5 }], simulated: true });
+    expect(e.summary).toContain("lists 2 lines; 1 matches a product sold (Cedar candle) in 1 order.");
+  });
+
   it("matches invoice lines to products sold, by catalogue name/SKU or the item name on the sale", async () => {
     await db.insert(products).values({ sellerId: SELLER, sku: "CANDLE-LAV", name: "Lavender candle", category: "candles", kind: "physical" });
     await sale("TX1", "18.00", [{ item_name: "Lavender candle", item_code: "CANDLE-LAV" }]);

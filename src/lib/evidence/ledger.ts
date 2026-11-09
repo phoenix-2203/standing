@@ -128,7 +128,7 @@ export async function addInvoice(db: Db, sellerId: string, inv: InvoiceInput, no
     summary:
       `${inv.simulated ? "Simulated: " : ""}Supplier invoice ${inv.invoiceNumber.trim()} from ${inv.supplier.trim()} dated ${inv.date} ` +
       `lists ${inv.lines.length} line${inv.lines.length === 1 ? "" : "s"}; ` +
-      (matchedNames.length ? `${matchedNames.length} match products sold (${matchedNames.join(", ")}) in ${orderCount} order${orderCount === 1 ? "" : "s"}.` : "none match products sold yet."),
+      (matchedNames.length ? `${matchedNames.length} ${matchedNames.length === 1 ? "matches a product" : "match products"} sold (${matchedNames.join(", ")}) in ${orderCount} order${orderCount === 1 ? "" : "s"}.` : "none match products sold yet."),
     facts: {
       supplier: inv.supplier.trim(),
       invoiceNumber: inv.invoiceNumber.trim(),
