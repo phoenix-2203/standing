@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { factsFrom, type FactSource, render, SUMMARY_TEMPLATES } from "./facts";
-import { bridgeProblem, type PlanItem, validatePlan } from "./validate";
+import { bridgeProblem, includeFacts, type PlanItem, validatePlan } from "./validate";
 
 const SUM: FactSource = {
   id: "EV-SUM-2026-11-06-AB12CD34",
@@ -184,6 +184,29 @@ describe("validatePlan with dropBadBridges (used only after the retries)", () =>
 
   it("without the option, nothing changes: dropped is absent", () => {
     expect(validatePlan(plan([fact(TRK.id)]), FACTS)).not.toHaveProperty("dropped");
+  });
+});
+
+describe("includeFacts: the seller's own evidence is always in the letter", () => {
+  const inv = { id: "EV-INV-1", evidenceIds: ["EV-INV-1"], text: "Simulated: Supplier invoice INV-1 lists 2 lines.", simulated: true };
+  const letter = {
+    paragraphs: [
+      { sentences: [{ kind: "fact" as const, text: "PayPal payments received: 3.", citations: ["EV-SUM"] }] },
+      { sentences: [{ kind: "bridge" as const, text: "Thank you for your time and consideration.", citations: [] }] },
+    ],
+  };
+  it("adds a left-out item as its own paragraph, before the sign-off, with its own citation", () => {
+    const out = includeFacts(letter, [inv]);
+    expect(out.paragraphs.map((p) => p.sentences.map((s) => s.text))).toEqual([
+      ["PayPal payments received: 3."],
+      ["Simulated: Supplier invoice INV-1 lists 2 lines."],
+      ["Thank you for your time and consideration."],
+    ]);
+    expect(out.paragraphs[1].sentences[0].citations).toEqual(["EV-INV-1"]);
+  });
+  it("changes nothing when the plan already cites it", () => {
+    const cited = { paragraphs: [{ sentences: [{ kind: "fact" as const, text: inv.text, citations: ["EV-INV-1"] }] }] };
+    expect(includeFacts(cited, [inv])).toBe(cited);
   });
 });
 

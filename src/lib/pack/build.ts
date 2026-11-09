@@ -7,7 +7,7 @@ import { LlmError, type LlmProvider } from "@/lib/llm/providers";
 import { DAY, toCents } from "@/lib/metrics/compute";
 import { saleWhere } from "@/lib/metrics/load";
 import { type Fact, factsFrom } from "./facts";
-import { type Problem, validatePlan } from "./validate";
+import { includeFacts, type Problem, validatePlan } from "./validate";
 import { SCHEMA_SLIP } from "@/lib/ask/ask";
 
 // Explanation pack (BLUEPRINT §2.5): a sales curve and a cover letter built from evidence.
@@ -190,6 +190,12 @@ export async function buildPack(db: Db, sellerId: string, providers: LlmProvider
   if (!result!.ok) {
     const lenient = validatePlan(plan, facts, { dropBadBridges: true });
     if (lenient.ok) result = lenient;
+  }
+
+  // The seller's own evidence is the part PayPal can't see; code makes sure the letter cites all of it.
+  if (result!.ok && result!.letter) {
+    const sellerIds = new Set(ledger.filter((e) => e.source === "seller").map((e) => e.id));
+    result = { ...result!, letter: includeFacts(result!.letter, facts.filter((f) => f.evidenceIds.some((id) => sellerIds.has(id)))) };
   }
 
   const [pack] = await db

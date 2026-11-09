@@ -141,6 +141,18 @@ export function closingLast(letter: RenderedLetter): RenderedLetter {
   return { paragraphs: closing.length ? [...body, { sentences: closing }] : body };
 }
 
+/**
+ * Code, not the model, decides that evidence the seller added (a supplier invoice, a traffic source) is always in
+ * the letter: any such fact the plan left out is added as its own paragraph, before the sign-off. The sentences
+ * are the facts' code-written text, cited to their own evidence, so nothing new is claimed.
+ */
+export function includeFacts(letter: RenderedLetter, required: Fact[]): RenderedLetter {
+  const cited = new Set(letter.paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.citations)));
+  const missing = required.filter((f) => !f.evidenceIds.every((id) => cited.has(id)));
+  if (!missing.length) return letter;
+  return closingLast({ paragraphs: [...letter.paragraphs, { sentences: missing.map((f) => ({ kind: "fact" as const, text: f.text, citations: f.evidenceIds })) }] });
+}
+
 const OUTSIDE_LIST = "connecting sentence uses words outside the allowed list";
 
 /** Why a connecting sentence the model wrote can't be used, or null if it can. */
