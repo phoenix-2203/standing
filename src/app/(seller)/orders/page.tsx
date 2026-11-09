@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { BookOpen, Download } from "lucide-react";
 import {
   AllCommunityModule,
   type ColDef,
@@ -15,6 +15,7 @@ import {
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { OrderRow, Protection } from "@/lib/ui/data";
+import { Button, ButtonLink, Callout, PageHeader } from "@/components/ui";
 import { api } from "@/lib/ui/client";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -53,14 +54,18 @@ const PROTECTION: Record<Protection, { label: string; tone: string }> = {
   "not eligible": { label: "Not eligible", tone: "warn" },
   "not stated": { label: "Not stated", tone: "" },
 };
-const FIX_TONE: Record<string, string> = {
-  sent: "ok",
-  preview: "info",
-  pending: "info",
-  unknown: "warn",
-  failed: "bad",
-  cancelled: "",
+// A fix's status in plain words (CLAUDE.md rule 5: preview → cancel window → send → PayPal's answer).
+const FIX: Record<string, { label: string; tone: string }> = {
+  preview: { label: "Preview", tone: "info" },
+  scheduled: { label: "Scheduled", tone: "info" },
+  sending: { label: "Sending", tone: "info" },
+  sent: { label: "Sent", tone: "ok" },
+  unknown: { label: "No answer yet", tone: "warn" },
+  failed: { label: "Failed", tone: "bad" },
+  cancelled: { label: "Cancelled", tone: "" },
 };
+const KIND: Record<string, string> = { physical: "Physical", digital: "Digital", service: "Service", unclassified: "Not in catalogue" };
+const kindLabel = (k: string) => KIND[k] ?? k;
 
 function Chip({ tone, children }: { tone: string; children: React.ReactNode }) {
   return tone ? (
@@ -99,7 +104,7 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
         field: "date",
         headerName: "Date",
         sort: "desc",
-        minWidth: 150,
+        minWidth: 125,
         width: 135,
         valueFormatter: (p) =>
           pinned(p) || !p.value
@@ -109,13 +114,15 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
                 month: "short",
                 hour: "2-digit",
                 minute: "2-digit",
+                hourCycle: "h23",
               }),
       },
       {
         field: "transactionId",
         headerName: "Payment",
-        minWidth: 175,
-        width: 180,
+        headerTooltip: "PayPal's transaction ID for this payment.",
+        minWidth: 160,
+        width: 170,
         cellClass: "mono",
         cellStyle: (p) =>
           pinned(p) ? { fontWeight: 600, fontFamily: "inherit" } : null,
@@ -123,8 +130,9 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
       {
         field: "items",
         headerName: "Items",
-        minWidth: 150,
-        width: 175,
+        headerTooltip: "What the buyer paid for, as PayPal recorded it.",
+        minWidth: 110,
+        width: 165,
         tooltipField: "items",
         cellRenderer: (p: ICellRendererParams<Row, string>) =>
           pinned(p) ? (
@@ -140,7 +148,7 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
         headerName: "Amount",
         type: "numericColumn",
         minWidth: 120,
-        width: 115,
+        width: 120,
         cellClass: "mono",
         valueFormatter: (p) => `USD ${Number(p.value ?? 0).toFixed(2)}`,
         cellStyle: (p) => (pinned(p) ? { fontWeight: 600 } : null),
@@ -149,8 +157,8 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
         field: "protection",
         headerName: "Protection",
         headerTooltip:
-          "PayPal's own flag on this payment, read from Transaction Search. Standing doesn't decide it.",
-        minWidth: 120,
+          "PayPal's own Seller Protection flag on this payment, read from PayPal. Standing only shows it.",
+        minWidth: 115,
         width: 120,
         filterValueGetter: (p) =>
           p.data ? PROTECTION[p.data.protection].label : "",
@@ -165,9 +173,10 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
       },
       {
         field: "tracking",
-        headerName: "Tracking / Completed",
-        minWidth: 150,
-        width: 175,
+        headerName: "Tracking",
+        headerTooltip: "Proof of delivery: the tracking number sent to PayPal, or Completed for a digital order. A dash means nothing is due yet.",
+        minWidth: 130,
+        width: 160,
         cellRenderer: (p: ICellRendererParams<Row, string>) => {
           const r = p.data;
           if (!r || pinned(p))
@@ -191,9 +200,12 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
       {
         field: "kind",
         headerName: "Kind",
-        minWidth: 95,
-        width: 105,
-        valueFormatter: (p) => (pinned(p) ? "" : String(p.value ?? "")),
+        headerTooltip: "Physical, digital or service, matched from your Catalogue. Not in catalogue means Standing can't tell yet.",
+        minWidth: 150,
+        width: 150,
+        valueFormatter: (p) => (pinned(p) ? "" : kindLabel(String(p.value ?? ""))),
+        filterValueGetter: (p) => (p.data ? kindLabel(p.data.kind) : ""),
+        cellClass: (p) => (p.value === "unclassified" ? "muted" : ""),
       },
       {
         field: "categories",
@@ -205,20 +217,22 @@ const columns: (ColDef<Row> | ColGroupDef<Row>)[] = [
         field: "evidence",
         headerName: "Evidence",
         headerTooltip:
-          "Evidence items Standing has recorded for this order: the payment, tracking, invoice and so on.",
+          "How many records Standing keeps for this order (the payment, tracking, invoices, uploads) that a pack can cite.",
         type: "numericColumn",
-        minWidth: 80,
-        width: 100,
+        minWidth: 112,
+        width: 112,
         cellStyle: (p) => (pinned(p) ? { fontWeight: 600 } : null),
       },
       {
         field: "fix",
         headerName: "Fix",
-        minWidth: 95,
-        width: 95,
+        headerTooltip: "A change Standing made in PayPal for this order, such as adding tracking, and where it stands. A dash means none was made.",
+        minWidth: 105,
+        width: 115,
+        filterValueGetter: (p) => (p.data?.fix ? (FIX[p.data.fix]?.label ?? p.data.fix) : ""),
         cellRenderer: (p: ICellRendererParams<Row, string | null>) =>
           pinned(p) ? null : p.value ? (
-            <Chip tone={FIX_TONE[p.value] ?? "info"}>{p.value}</Chip>
+            <Chip tone={FIX[p.value]?.tone ?? "info"}>{FIX[p.value]?.label ?? p.value}</Chip>
           ) : (
             <span className="muted">—</span>
           ),
@@ -345,40 +359,42 @@ export default function OrdersPage() {
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1>Orders</h1>
-          <p className="muted small">
-            PayPal payments from the last 90 days
-            {rows ? ` · ${rows.length} orders` : ""}
-          </p>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "end",
-            flexWrap: "wrap",
-          }}
-        >
-          <label style={{ minWidth: "min(100%, 16rem)" }}>
-            Search
+      <PageHeader
+        title="Orders"
+        description={`Every PayPal payment from the last 90 days, with what Standing knows about each one${rows ? ` · ${rows.length} orders` : ""}.`}
+        action={
+          <div className="orders-tools">
+            <label htmlFor="orders-search" className="sr-only">
+              Search orders
+            </label>
             <input
+              id="orders-search"
+              className="ui-input"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Payment ID, item, tracking…"
+              placeholder="Search payment ID, item, tracking…"
             />
-          </label>
-          <button
-            type="button"
-            className="secondary"
-            onClick={download}
-            disabled={!rows?.length}
-          >
-            Download CSV
-          </button>
-        </div>
-      </div>
+            <Button variant="secondary" onClick={download} disabled={!rows?.length} icon={<Download size={16} strokeWidth={1.75} aria-hidden="true" />}>
+              Download CSV
+            </Button>
+          </div>
+        }
+      />
+
+      {rows && counts.unclassified > 0 && counts.unclassified * 2 >= rows.length && (
+        <Callout
+          tone="info"
+          title={`Standing doesn't know what you sold in ${counts.unclassified} of ${rows.length} orders`}
+          action={
+            <ButtonLink href="/catalogue" variant="secondary" size="sm" icon={<BookOpen size={14} strokeWidth={1.75} aria-hidden="true" />}>
+              Add products
+            </ButtonLink>
+          }
+        >
+          Their items don&apos;t match any product in your Catalogue, so Kind shows &ldquo;Not in catalogue&rdquo; and Standing can&apos;t tell
+          whether they ship. That&apos;s why their tracking shows a dash instead of &ldquo;Missing&rdquo;. Add your products and these columns fill in.
+        </Callout>
+      )}
 
       <div
         role="group"
@@ -441,13 +457,63 @@ export default function OrdersPage() {
           </p>
         )}
       </div>
-      <p className="muted small" style={{ marginTop: "0.75rem" }}>
-        <strong>Protection</strong> is PayPal&apos;s own flag on each payment,
-        read from Transaction Search; Standing doesn&apos;t decide it, and it
-        doesn&apos;t say how PayPal will rule in a dispute. &ldquo;Not in your
-        catalogue&rdquo; means Standing can&apos;t tell physical from digital
-        yet. <Link href="/catalogue">Add those products</Link>.
-      </p>
+      <ColumnKey />
     </>
+  );
+}
+
+// What each column means and why a cell can be blank, in the seller's words.
+function ColumnKey() {
+  return (
+    <details className="card orders-key" open>
+      <summary>What each column means</summary>
+      <dl>
+        <div>
+          <dt>Protection</dt>
+          <dd>
+            PayPal&apos;s own label for whether this payment qualifies for Seller Protection, which can cover you if a buyer says an
+            item never arrived. Standing reads it from PayPal and never sets it, and it doesn&apos;t say how PayPal will rule in a
+            dispute. <em>Not stated</em> means PayPal didn&apos;t include it.
+          </dd>
+        </div>
+        <div>
+          <dt>Tracking</dt>
+          <dd>
+            Proof the order was delivered. For a physical order, the tracking number PayPal has. For a digital order,{" "}
+            <em>Completed</em> means it was marked delivered in PayPal. <em>Missing</em> means a physical order is over 48 hours old
+            with no tracking; add it from the dashboard. A dash means nothing is due yet: the order is digital, under 48 hours old,
+            or not in your catalogue.
+          </dd>
+        </div>
+        <div>
+          <dt>Kind</dt>
+          <dd>
+            Physical, Digital or Service, matched from the products in your Catalogue. It decides which orders need tracking.{" "}
+            <em>Not in catalogue</em> means the item didn&apos;t match a product you&apos;ve added, so Standing can&apos;t check it yet.
+          </dd>
+        </div>
+        <div>
+          <dt>Evidence</dt>
+          <dd>
+            How many records Standing keeps for this order that an explanation pack can cite: the PayPal payment itself, plus any
+            tracking, invoices or uploads. Every order has at least one, the payment.
+          </dd>
+        </div>
+        <div>
+          <dt>Fix</dt>
+          <dd>
+            A change Standing made in PayPal for this order, such as adding tracking, and where it stands: Preview, Scheduled,
+            Sending, Sent, Failed, Cancelled or <em>No answer yet</em> (sent, but PayPal hasn&apos;t replied; never resent as new).
+            A dash means no fix was made.
+          </dd>
+        </div>
+        <div>
+          <dt>Items</dt>
+          <dd>
+            What the buyer paid for, as PayPal recorded it. <em>Not sent by PayPal</em> means PayPal&apos;s record has no item names.
+          </dd>
+        </div>
+      </dl>
+    </details>
   );
 }
