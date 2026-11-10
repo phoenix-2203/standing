@@ -5,7 +5,7 @@ import { Reveal } from "@/components/site/Reveal";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SpikeTool } from "@/components/site/SpikeTool";
-import { Badge, ButtonAnchor, ButtonLink, Timeline } from "@/components/ui";
+import { Badge, ButtonLink, Timeline } from "@/components/ui";
 import { BUILT_ON, HELD_OUT, HELD_OUT_MISSES, LOGIN, PROOF, QUOTES, README_RESULTS, REPO, TESTS_URL } from "@/lib/site/facts";
 import fix from "../../public/site/fix.png";
 import hero from "../../public/site/hero-dashboard.png";
@@ -13,6 +13,7 @@ import packReady from "../../public/site/pack-ready.png";
 import prove from "../../public/site/prove.png";
 import signal from "../../public/site/signal.png";
 import watch from "../../public/site/watch.png";
+import { DemoButton } from "@/components/site/DemoButton";
 
 export const metadata: Metadata = {
   title: { absolute: "Standing: keep your PayPal money moving" },
@@ -64,14 +65,12 @@ export default function Home() {
                 Standing watches what PayPal watches, fixes what it safely can, and builds your case before anyone asks. For small sellers on PayPal.
               </p>
               <div className="lp-cta">
-                <ButtonAnchor href={LOGIN} icon={<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />}>
-                  Try the demo
-                </ButtonAnchor>
-                <a href="#how" className="text-link">
-                  See how it works
+                <DemoButton icon={<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />}>Try the demo, no login</DemoButton>
+                <a href={LOGIN} className="text-link">
+                  Log in with PayPal
                 </a>
               </div>
-              <p className="status-line">Hackathon project · PayPal sandbox, test money · not affiliated with PayPal</p>
+              <p className="status-line">Your own copy of a sandbox shop: click anything · PayPal sends are simulated · not affiliated with PayPal</p>
             </div>
             <div className="lp-hero-art">
               <div className="lp-glow" aria-hidden="true" />
@@ -353,9 +352,7 @@ export default function Home() {
               Be ready before PayPal asks.
             </h2>
             <div className="lp-cta">
-              <ButtonAnchor href={LOGIN} icon={<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />}>
-                Try the demo
-              </ButtonAnchor>
+              <DemoButton icon={<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />}>Try the demo, no login</DemoButton>
               <ButtonLink href={REPO} variant="secondary" icon={<Code2 size={16} strokeWidth={1.75} aria-hidden="true" />}>
                 Read the code
               </ButtonLink>

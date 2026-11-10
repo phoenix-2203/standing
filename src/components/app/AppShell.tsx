@@ -62,6 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
       <MobileBar />
       <main id="app-main" className="app-main" tabIndex={-1}>
+        <DemoBanner />
         {children}
       </main>
     </div>
@@ -112,7 +113,30 @@ function NavList({
   );
 }
 
+type Demo = { expiresAt: string; asksLeft: number; packsLeft: number } | null;
+
+/** In a demo workspace: say what it is, what's simulated and what's left, on every page. */
+function DemoBanner() {
+  const [demo, setDemo] = useState<Demo>(null);
+  useEffect(() => {
+    let live = true;
+    void api<{ demo: Demo }>("/api/dashboard").then((r) => live && r.status === 200 && setDemo(r.data?.demo ?? null));
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (!demo) return null;
+  return (
+    <div className="demo-banner" role="note">
+      <strong>Demo workspace.</strong> Your own copy of a PayPal sandbox shop: click anything, nothing you do affects anyone else. Sends to PayPal are
+      simulated (marked SIMULATED). Order IDs and dates are shifted from the originals. {demo.asksLeft} questions and {demo.packsLeft} AI builds left; deleted{" "}
+      {dateTime(demo.expiresAt)}. <a href="/api/auth/paypal/start">Use your own PayPal account</a>
+    </div>
+  );
+}
+
 type Account = {
+  demo?: Demo;
   verification: { state: string; title: string };
   sync: { lastRunAt: string | null; ok: boolean }[];
 };
@@ -139,7 +163,7 @@ function AccountChip() {
   return (
     <div className="account">
       <Link href="/checklist" className="account-chip">
-        <span className="account-name">PayPal sandbox account</span>
+        <span className="account-name">{acc.demo ? "Demo shop (your copy)" : "PayPal sandbox account"}</span>
         <span
           className={`ui-badge ui-badge-${v === "done" ? "ok" : v === "unknown" ? "info" : "warn"}`}
         >

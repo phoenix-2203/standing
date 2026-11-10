@@ -43,7 +43,7 @@ function AskChat() {
     setTurns((t) => {
       const next = [...t];
       next[next.length - 1] =
-        res.status === 200 && res.data ? { q, a: res.data } : { q, error: res.status === 401 ? SIGNED_OUT : "Standing couldn't answer right now: the AI service it uses is busy. Your records are fine; try again in a minute." };
+        res.status === 200 && res.data ? { q, a: res.data } : { q, error: res.status === 401 ? SIGNED_OUT : res.status === 429 && (res.data as unknown as { error?: string } | null)?.error ? (res.data as unknown as { error: string }).error : "Standing couldn't answer right now: the AI service it uses is busy. Your records are fine; try again in a minute." };
       return next;
     });
     inputRef.current?.focus();
