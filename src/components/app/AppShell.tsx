@@ -2,6 +2,8 @@
 
 import {
   BookOpenCheck,
+  LifeBuoy,
+  Scale,
   FileText,
   FolderOpen,
   LayoutDashboard,
@@ -34,6 +36,8 @@ export const NAV: Item[] = [
     icon: Rocket,
     match: "-",
   },
+  { href: "/disputes", label: "Disputes", icon: Scale },
+  { href: "/held", label: "Money on hold", icon: LifeBuoy },
   { href: "/ask", label: "Ask Standing", icon: MessageCircleQuestion },
   { href: "/checklist", label: "Checklist", icon: ListChecks },
   { href: "/catalogue", label: "Catalogue", icon: BookOpenCheck },

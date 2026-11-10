@@ -18,6 +18,9 @@ import { POST as evidenceInvoice } from "@/app/api/evidence/invoices/route";
 import { GET as evidenceList } from "@/app/api/evidence/route";
 import { POST as evidenceTraffic } from "@/app/api/evidence/traffic-sources/route";
 import { POST as approvalDraftRoute } from "@/app/api/policy/approval-draft/route";
+import { GET as heldRoute } from "@/app/api/held/route";
+import { GET as disputesRoute } from "@/app/api/disputes/route";
+import { GET as disputeResponseRoute } from "@/app/api/disputes/[id]/response/route";
 
 const req = (method: string, cookie?: string) => new Request("https://standing.test/x", { method, headers: cookie ? { cookie } : {}, body: method === "POST" ? "{}" : undefined });
 const params = <T,>(p: T) => ({ params: Promise.resolve(p) }) as never;
@@ -43,6 +46,9 @@ describe("seller routes need a session", () => {
     ["POST /api/evidence/traffic-sources", (r) => evidenceTraffic(r), "POST"],
     ["DELETE /api/evidence/[id]", (r) => evidenceRemove(r, params({ id: "EV-SRC-1" })), "DELETE"],
     ["POST /api/policy/approval-draft", (r) => approvalDraftRoute(r), "POST"],
+    ["GET /api/held", (r) => heldRoute(r), "GET"],
+    ["GET /api/disputes", (r) => disputesRoute(r), "GET"],
+    ["GET /api/disputes/[id]/response", (r) => disputeResponseRoute(r, params({ id: "PP-D-1" })), "GET"],
   ])("%s: 401 with no cookie or a forged one", async (_n, handler, method) => {
     process.env.SESSION_SECRET = "route-test-secret";
     expect((await handler(req(method))).status).toBe(401);
