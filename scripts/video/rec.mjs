@@ -37,7 +37,7 @@ export async function launch() {
 
 // A recording page at 1600×900 CSS px rendered at 1.2× (= 1920×1080 frames, like 120% browser zoom).
 export async function newPage(browser, { login = false } = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1.2, colorScheme: "light" });
+  const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1.2, colorScheme: "light", permissions: ["clipboard-read", "clipboard-write"] });
   const page = await ctx.newPage();
   page.on("pageerror", (e) => console.error("pageerror:", e.message));
   if (login) await page.goto(`${BASE}/api/dev/session`);

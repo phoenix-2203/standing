@@ -242,6 +242,92 @@ const CLIPS = {
     await stop();
     await p.context().close();
   },
+
+  // Round 2 (10 Nov): Money on hold and Disputes.
+  async v_held(b) {
+    const p = await newPage(b, { login: true });
+    await go(p, "/dashboard");
+    const stop = await record(p, "v_held");
+    await hold(p, HANDLE);
+    await click(p, p.locator("aside a", { hasText: "Money on hold" }).first(), { s: 0.2 });
+    stop.pause();
+    await p.waitForURL(/\/held/);
+    await ready(p);
+    await p.getByText(/steps still to do|Every step is done/).first().waitFor({ timeout: 20000 });
+    await p.waitForTimeout(400);
+    await stop.resume();
+    stop.mark("title");
+    await hold(p, 1.5);
+    const todo = p.getByText(/steps still to do/).first();
+    stop.mark("todo", await frameBox(p, todo, 8));
+    await ring(p, todo, { s: 1.5 });
+    await unring(p);
+    const step1 = p.locator("ol[aria-label='Steps'] > li").first();
+    await scrollTo(p, step1, { s: 0.8 });
+    stop.mark("step1", await frameBox(p, step1, 6));
+    await ring(p, step1, { pad: 6, s: 2 });
+    await unring(p);
+    const callout = p.locator(".ui-callout", { hasText: "Only PayPal can release a hold" }).first();
+    await scrollTo(p, callout, { s: 0.8 });
+    stop.mark("callout", await frameBox(p, callout, 6));
+    await ring(p, callout, { pad: 6, s: 2 });
+    await unring(p);
+    const dont = p.locator("section", { hasText: "What not to do" }).last();
+    await scrollTo(p, dont, { s: 1.4 });
+    stop.mark("dont", await frameBox(p, dont, 6));
+    await ring(p, dont, { pad: 6, s: 2.5 });
+    await unring(p);
+    await hold(p, HANDLE);
+    await stop();
+    await p.context().close();
+  },
+
+  async v_disputes(b) {
+    const p = await newPage(b, { login: true });
+    await go(p, "/dashboard");
+    const stop = await record(p, "v_disputes");
+    await hold(p, HANDLE);
+    await click(p, p.locator("aside a", { hasText: "Disputes" }).first(), { s: 0.2 });
+    stop.pause();
+    await p.waitForURL(/\/disputes/);
+    await ready(p);
+    const row = p.locator(".row", { hasText: "Simulated" }).filter({ has: p.getByRole("button", { name: "Draft a response" }) }).first();
+    await row.waitFor({ timeout: 20000 });
+    await p.waitForTimeout(400);
+    await stop.resume();
+    stop.mark("list");
+    await hold(p, 0.8);
+    stop.mark("row", await frameBox(p, row, 6));
+    await ring(p, row, { pad: 6, s: 2 });
+    await unring(p);
+    await click(p, row.getByRole("button", { name: "Draft a response" }), { s: 0.2 });
+    await offCamera(stop, p, p.locator("#response textarea"), 60000);
+    stop.mark("draft");
+    const evidence = p.getByRole("heading", { name: /Evidence used/ }).locator("xpath=..");
+    await scrollTo(p, evidence, { s: 0.9 });
+    stop.mark("evidence", await frameBox(p, evidence, 6));
+    await ring(p, evidence, { pad: 6, s: 2 });
+    await unring(p);
+    const missing = p.locator(".ui-callout", { hasText: "Worth adding first" }).first();
+    if (await missing.count()) {
+      await scrollTo(p, missing, { s: 0.8 });
+      stop.mark("missing", await frameBox(p, missing, 6));
+      await ring(p, missing, { pad: 6, s: 2 });
+      await unring(p);
+    } else console.log("v_disputes: no 'Worth adding first' callout for this dispute");
+    const text = p.locator("#response textarea");
+    await scrollTo(p, text, { s: 1 });
+    stop.mark("text", await frameBox(p, text, 6));
+    await ring(p, text, { pad: 6, s: 2 });
+    await unring(p);
+    const copy = p.getByRole("button", { name: "Copy response" });
+    await scrollTo(p, copy, { s: 0.6 });
+    await click(p, copy, { s: 0.2 });
+    stop.mark("copy");
+    await hold(p, 1 + HANDLE);
+    await stop();
+    await p.context().close();
+  },
 };
 
 // Frames → constant 30 fps H.264 (CRF 16), no audio track.
