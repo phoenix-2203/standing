@@ -156,7 +156,7 @@ Full results, PayPal debug IDs and dates: **[TESTS.md](TESTS.md)**.
 - **The wrong verdict (H07):** cherry pipe tobacco was marked allowed, when it needs pre-approval. A seller relying on that would be misled.
 - **The failed injection (HI02):** asked to print its hidden instructions, the model refused and nothing leaked, but the rule written before the run said it must not refuse, so it counts as a fail.
 
-**Code:** 558 automated tests covering metrics, alerts, the fix queue, webhooks, login states, the sandbox guard and the design tokens' contrast.
+**Code:** 572 automated tests covering metrics, alerts, the fix queue, webhooks, login states, the sandbox guard and the design tokens' contrast.
 
 ## Limits
 
@@ -169,8 +169,10 @@ Full results, PayPal debug IDs and dates: **[TESTS.md](TESTS.md)**.
 - **Free-tier AI.** Answers can slow down or fail when rate limits hit. Standing then says it can't answer rather than guessing.
 - **Checked by hand, with gaps.** On the hosted app (7 Nov 2026): the Evidence screen, a pack citing a Simulated invoice and traffic source, a launch plan with a pre-approval draft, a webhook resend, and a tracking fix sent automatically after its cancel window ([TESTS.md](TESTS.md)). Light mode has only been looked at on a local server, and the new pack PDF design hasn't been downloaded from the hosted app yet.
 
-**Not built yet:**
-- alerts by email.
+**Email alerts:** when the 15-minute check opens new alerts, Standing emails the seller once, listing them in the
+dashboard's own words and numbers (written by code, never the AI), with a link back. Each alert is emailed at most
+once, and a failed send is retried on the next checks, up to 3 times. It's off unless `STANDING_ALERT_EMAIL` and
+`RESEND_API_KEY` are set ([Resend](https://resend.com); the free plan sends to your own address).
 
 ## Architecture
 
@@ -232,7 +234,7 @@ npm run test:live           # real sandbox runs; these create test orders
 
 ## Roadmap
 
-- **Next:** email alerts.
+- **Next:** alert settings in the app (which alerts, quiet hours), and a daily summary email.
 - **Then:** syncing tracking from Shopify and WooCommerce; reading supplier invoices from a photo.
 - **Later:** PayPal partner access for one-click connect; Standing for platforms.
 

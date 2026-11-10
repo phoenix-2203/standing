@@ -55,3 +55,7 @@
 - Checks: 537 tests, typecheck, lint, build; axe finds no serious or critical issues on /, /dashboard, /ask, /orders, the pack view and /trust, light and dark.
 - No logic changed. Not added: a Log out link (the app has no logout route).
 - Evening: livelier colours (pine, mint, a marigold accent kept off text by a test), a rebuilt landing page, sharper hero images, and a compact tracking list on the dashboard.
+
+## 10 Nov 2026
+- Demo film made from chat (Kokoro voice, frame-rendered cards, real app clips recorded on the Mac).
+- Email alerts: new alerts emailed once through Resend, in the dashboard's words; retries capped at 3; off unless configured.

@@ -1371,3 +1371,24 @@ PDFs, 1 gift set (USD 180, the "large order"). The first three runs failed befor
 | gift-01 Gift set USD 180 | 0LF83868NP224123H | 2XF46086RR0002221 | f8390409704e4 |
 
 All 15 returned COMPLETED. Waiting for Transaction Search to list them (it can lag about 3 hours) before syncing.
+
+## Email alerts (10 Nov 2026, written by Claude in chat)
+
+- **What:** `src/lib/notify/email.ts`, the `alert_emails` table (migration `0013_alert_emails.sql`), wired into the
+  15-minute cycle (`runCycle`, `/api/cron/run`, `npm run cycle`). Off unless `STANDING_ALERT_EMAIL` and `RESEND_API_KEY` are set.
+- **Code tests (14 new, all pass; full suite 572/572, typecheck and lint clean):**
+  - one email for all newly opened warnings, with each alert recorded as sent;
+  - an alert is never emailed twice;
+  - informational and resolved alerts are skipped;
+  - a failed send is retried on later cycles, at most 3 times;
+  - a retry that succeeds stops;
+  - a sender that throws is recorded as failed, not stuck as "sending";
+  - an interrupted send (over 10 minutes) is retried, and one still in progress is left alone;
+  - only the seller's own alerts are retried;
+  - the email uses the alert's own words, links only into the app, escapes HTML, and says it isn't PayPal's decision;
+  - Resend gets the key, an idempotency key and the message, and errors return only the HTTP status;
+  - a failing email never fails the cycle.
+- **Not yet run against Resend:** Claude's sandbox can't reach api.resend.com. **To do:** set the two variables, run
+  `npm run cycle` when an alert opens (or remove an open alert row so it re-fires), and confirm the email arrives.
+  Record Resend's message ID here.
+

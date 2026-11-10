@@ -115,7 +115,7 @@ PayPal writes and refusals; the AI routes and explains.
 
 ## What's next for Standing
 
-- Email alerts.
+- Alert settings in the app and a daily summary email.
 - Syncing tracking from store platforms; reading supplier invoices from a photo.
 - PayPal partner access so any seller can connect without their own API keys.
 
