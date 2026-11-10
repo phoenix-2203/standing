@@ -54,3 +54,6 @@ node_modules/
 
 # Local Claude Code settings
 .claude/
+
+# Raw film footage (large; made by scripts/video/clips.mjs)
+video/clips/

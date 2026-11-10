@@ -96,12 +96,21 @@ export async function record(page, scene) {
   // Nudge a repaint so the first frame arrives immediately.
   await page.evaluate(() => document.body.style.setProperty("--rec-nudge", String(Math.random())));
   let pausedAt = 0;
+  const marks = {};
+  // A named moment, in seconds of the finished clip (cuts removed); box is in 1920×1080 frame pixels.
+  const mark = (name, box) => {
+    marks[name] = { t: Date.now() / 1000 - cut };
+    if (box) marks[name].box = box;
+  };
   const stop = async () => {
     await page.evaluate(() => document.body.style.setProperty("--rec-nudge", String(Math.random())));
     await page.waitForTimeout(150);
     await detach();
     frames.push({ file: null, t: Date.now() / 1000 - cut });
     writeFileSync(`${dir}/frames.json`, JSON.stringify(frames));
+    const t0 = frames[0]?.t ?? 0;
+    const rel = Object.fromEntries(Object.entries(marks).map(([k, v]) => [k, { ...v, t: Math.round((v.t - t0) * 100) / 100 }]));
+    writeFileSync(`${dir}/marks.json`, JSON.stringify(rel, null, 2));
     console.log(`${scene}: ${frames.length - 1} frames, ${(frames.at(-1).t - frames[0].t).toFixed(1)} s`);
   };
   // Cut: frames between pause() and resume() are dropped and the timeline closes the gap.
@@ -116,7 +125,17 @@ export async function record(page, scene) {
     await attach();
     await page.evaluate(() => document.body?.style.setProperty("--rec-nudge", String(Math.random()))).catch(() => {});
   };
+  stop.mark = mark;
   return stop;
+}
+
+// A locator's box in frame pixels (CSS px × the 1.2 device scale), with optional padding.
+export async function frameBox(page, target, pad = 0) {
+  const loc = typeof target === "string" ? page.locator(target).first() : target;
+  const b = await loc.boundingBox();
+  if (!b) return null;
+  const k = 1.2;
+  return { x: Math.round((b.x - pad) * k), y: Math.round((b.y - pad) * k), w: Math.round((b.width + pad * 2) * k), h: Math.round((b.height + pad * 2) * k) };
 }
 
 export const wait = (page, s) => page.waitForTimeout(s * 1000);
@@ -201,6 +220,7 @@ export async function unring(page) {
 }
 
 export async function caption(page, html) {
+  if (process.env.CAPTIONS === "0") return; // raw footage: subtitles are added in the edit
   await page.evaluate((html) => {
     const c = document.getElementById("rec-cap");
     if (!c) return;
