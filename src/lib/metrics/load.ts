@@ -1,4 +1,4 @@
-import { and, eq, gt, inArray, like, lte, min } from "drizzle-orm";
+import { and, eq, gt, inArray, like, lte, min, notLike } from "drizzle-orm";
 import type { Db } from "@/db";
 import { disputes, metricsDaily, products, shipments, shopOrders, transactionItems, transactions } from "@/db/schema";
 import { computeMetrics, DAY, HISTORY_DAYS, type Kind, type Metrics, type Sale, toCents } from "./compute";
@@ -64,7 +64,8 @@ export async function loadMetricsInput(db: Db, sellerId: string, asOf: Date, cur
     db
       .select({ createdAt: disputes.createdAtPaypal })
       .from(disputes)
-      .where(and(eq(disputes.sellerId, sellerId), gt(disputes.createdAtPaypal, from), lte(disputes.createdAtPaypal, asOf))),
+      // Simulated demo disputes (npm run demo:dispute) never count toward the dispute rate.
+      .where(and(eq(disputes.sellerId, sellerId), gt(disputes.createdAtPaypal, from), lte(disputes.createdAtPaypal, asOf), notLike(disputes.disputeId, "SIM-%"))),
   ]);
 
   const match = productMatcher(catalogue);

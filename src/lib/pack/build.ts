@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, gt, inArray, lte, or } from "drizzle-orm";
+import { and, eq, gt, inArray, lte, notLike, or } from "drizzle-orm";
 import type { Db } from "@/db";
 import { disputes, evidenceItems, packs, transactions } from "@/db/schema";
 import type { Evidence } from "@/lib/evidence/ledger";
@@ -112,7 +112,7 @@ async function summaryItem(db: Db, sellerId: string, from: Date, to: Date, curve
     await db
       .select({ id: disputes.disputeId })
       .from(disputes)
-      .where(and(eq(disputes.sellerId, sellerId), gt(disputes.createdAtPaypal, from), lte(disputes.createdAtPaypal, to)))
+      .where(and(eq(disputes.sellerId, sellerId), gt(disputes.createdAtPaypal, from), lte(disputes.createdAtPaypal, to), notLike(disputes.disputeId, "SIM-%")))
   ).length;
   const facts = { from: day(from), to: day(to), orders, total: usd(cents), busiestDay: busiest.day, busiestDayTotal: usd(busiest.cents), busiestDayOrders: busiest.orders, ordersWithTracking: tracked, ordersCompleted: completed, disputesOpened: opened };
   const summary =

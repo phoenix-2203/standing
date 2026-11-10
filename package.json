@@ -16,7 +16,8 @@
     "eval:rescore": "node --import tsx src/evals/rescore-policy-eval.ts",
     "eval:refusal": "node --env-file=.env --import tsx src/evals/run-refusal-eval.ts",
     "cycle": "node --env-file=.env --import tsx src/jobs/run-cycle.ts",
-    "demo:orders": "node --env-file=.env --import tsx src/jobs/demo-orders.ts"
+    "demo:orders": "node --env-file=.env --import tsx src/jobs/demo-orders.ts",
+    "demo:dispute": "node --env-file=.env --import tsx src/jobs/demo-dispute.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.9.0",
