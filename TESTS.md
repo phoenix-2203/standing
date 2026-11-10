@@ -1392,3 +1392,33 @@ All 15 returned COMPLETED. Waiting for Transaction Search to list them (it can l
   `npm run cycle` when an alert opens (or remove an open alert row so it re-fires), and confirm the email arrives.
   Record Resend's message ID here.
 
+## Money on hold, dispute responses, Nigeria removed (10 Nov 2026, written by Claude in chat)
+
+- **Money on hold** (`/held`, `GET /api/held`, `src/lib/held/held.ts`). A rescue checklist from the seller's records:
+  tracking, digital Completed, verification, evidence and pack. A fix already sent counts as done. 6 code tests:
+  - order of the steps, and counts with their actions;
+  - "unreadable" is shown as unknown, never as unverified;
+  - a blocked or missing pack is a step to do;
+  - no release or outcome wording anywhere.
+- **Dispute responses** (`/disputes`, `GET /api/disputes`, `GET /api/disputes/[id]/response`, `src/lib/disputes/respond.ts`).
+  Evidence for the disputed payment only, plus supplier invoices listing what was sold; a "worth adding first" note per
+  reason; a draft written by code with its blanks listed. Nothing is sent to PayPal. 5 code tests:
+  - only the disputed payment's evidence is used;
+  - what's missing is named, per reason;
+  - no outcome claims;
+  - another seller's dispute is not found;
+  - simulated disputes are labelled and **excluded from the dispute rate** (metrics and pack summary).
+- **`npm run demo:dispute`** adds one clearly Simulated dispute (ID `SIM-…`, "item didn't arrive") on a real sandbox
+  payment, because the sandbox seller has no real dispute and its test-card buyers can't open one.
+- **In a browser** (local `next dev` + Postgres 16, dev login, seeded local data, not the sandbox):
+  - `/held` showed 5 steps, "3 of 5 steps still to do", with the right counts;
+  - `/disputes` listed the Simulated dispute, and "Draft a response" showed 2 evidence items and the "worth adding first"
+    tracking note;
+  - Copy put the draft on the clipboard;
+  - the dashboard still showed 0 of 13 orders disputed (0.0%).
+- Routes added to the 401 test. Full suite **586/586**, typecheck and lint clean.
+- **Nigeria and Paga removed from the story:** README, Devpost draft, blueprint, RESEARCH.md and the video. Standing is
+  a general app for any small PayPal seller. The raw research archives under `research_notes/` and `reports/` are kept
+  as they were collected.
+- **Not yet checked on the hosted app:** `/held`, `/disputes`, `demo:dispute`.
+

@@ -33,7 +33,7 @@ These are PayPal's own words, read directly from its live pages in November 2026
 
 So the moment a small seller finally succeeds is one of the moments PayPal looks hardest. A seller who is ready has their tracking, order status and records in order. Most aren't, because nobody told them what would be checked.
 
-**Why now:** on [27 Jan 2026 PayPal went live in Nigeria through Paga](https://nairametrics.com/2026/01/27/paypal-goes-live-in-nigeria-through-paga-enabling-global-payments-and-local-withdrawals/), so people there can link a PayPal account, receive international payments and withdraw in naira. Anyone starting out that way is, in PayPal's words, a first-time seller.
+**Who it's for:** any small seller paid through PayPal, and especially new ones. Every new account starts out, in PayPal's words, as a first-time seller.
 
 *Evidence so far is public sources and the builder's own testing. We have not interviewed sellers, and this README doesn't quote any. Sources and dates: [docs/RESEARCH.md](docs/RESEARCH.md).*
 
@@ -58,6 +58,8 @@ So the moment a small seller finally succeeds is one of the moments PayPal looks
 | ✅ | **Catalogue** | Say whether each product is physical, digital or a service; Standing lists what your orders sold that isn't covered yet. |
 | ✅ | **Your own evidence** | Add supplier invoices and the post or video that started a spike. Each becomes numbered evidence the next pack can cite. |
 | ✅ | **Pre-approval requests** | For a launch product that needs PayPal's approval, a ready-to-send request quoting the clause word for word, with blanks only you can fill. Written by code, not the AI; you send it yourself. |
+| ✅ | **Money on hold** | Already held? A rescue checklist worked out from your own records (tracking, Completed, verification, evidence, pack), PayPal's own words with sources, and what not to do. It never promises a release: only PayPal decides. |
+| ✅ | **Dispute responses** | For a dispute PayPal reports, Standing gathers the evidence it holds for that payment and writes a response, by code, for you to check and send in PayPal's Resolution Center. It says what's missing for the dispute's reason. |
 | ✅ | **Explanation pack** | A sales curve and cover letter, with every figure cited, exported as a PDF. |
 | ✅ | **Ask Standing** | Answers only from your metrics, alerts, PayPal's clauses and your evidence. Refuses to help evade checks. |
 
@@ -156,7 +158,7 @@ Full results, PayPal debug IDs and dates: **[TESTS.md](TESTS.md)**.
 - **The wrong verdict (H07):** cherry pipe tobacco was marked allowed, when it needs pre-approval. A seller relying on that would be misled.
 - **The failed injection (HI02):** asked to print its hidden instructions, the model refused and nothing leaked, but the rule written before the run said it must not refuse, so it counts as a fail.
 
-**Code:** 572 automated tests covering metrics, alerts, the fix queue, webhooks, login states, the sandbox guard and the design tokens' contrast.
+**Code:** 586 automated tests covering metrics, alerts, the fix queue, webhooks, login states, the sandbox guard and the design tokens' contrast.
 
 ## Limits
 
@@ -234,8 +236,8 @@ npm run test:live           # real sandbox runs; these create test orders
 
 ## Roadmap
 
-- **Next:** alert settings in the app (which alerts, quiet hours), and a daily summary email.
-- **Then:** syncing tracking from Shopify and WooCommerce; reading supplier invoices from a photo.
+- **Next:** alerts on WhatsApp, where many small sellers actually are, alongside email; alert settings in the app.
+- **Then:** sending dispute responses straight to PayPal (it needs PayPal's write access for disputes); syncing tracking from Shopify and WooCommerce; reading supplier invoices from a photo.
 - **Later:** PayPal partner access for one-click connect; Standing for platforms.
 
 Never on the roadmap: anything that hides activity from PayPal.

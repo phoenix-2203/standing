@@ -28,7 +28,7 @@ Most triggers are published by PayPal; sellers learn them only after their money
 - Digital/service sellers can't add tracking; PayPal releases their holds 7 days after order status is set
   to Completed. (PayPal help129)
 - Willingness to pay (adjacent): a tracking-sync app alone is on ~13,300 Shopify stores.
-- Why now / why us: since Jan 2026 Nigerians can receive PayPal via Paga → many brand-new seller accounts.
+- Who for: any small seller on PayPal, especially new accounts (every one starts as a "first-time seller").
 
 Competitors: tracking-sync apps (Synctrack, TrackiPal, Paltrack) = tracking only; Chargeflow etc. = disputes;
 LegitScript = AI policy scans sold to payment companies, not sellers; no public hackathon entry found.

@@ -31,10 +31,10 @@ it may hold funds: being a first-time seller, a recent spike in sales, a change 
 or in the type of item sold. Those signals are published, but most sellers only read them after the money
 is stuck.
 
-PayPal went live in Nigeria through Paga in January 2026. That means a new wave of people receiving their
-first international payments, and in PayPal's terms every one of them starts as a first-time seller. We
-wanted a tool that sits with the seller *before* the hold: it watches the same published signals, fixes what
-can safely be fixed, and has the seller's explanation ready before anyone asks for it.
+Every new seller account starts out, in PayPal's terms, as a first-time seller, and most small sellers
+never read the rules until a hold makes them. We wanted a tool that sits with the seller *before* the hold:
+it watches the same published signals, fixes what can safely be fixed, and has the seller's explanation ready
+before anyone asks for it. And when a hold or a dispute has already happened, it shows what to do next.
 
 *We have not interviewed sellers. The problem evidence is PayPal's own pages and dated public sources,
 listed in `docs/RESEARCH.md`.*
@@ -58,6 +58,9 @@ listed in `docs/RESEARCH.md`.*
   evidence. It refuses to help evade PayPal's checks.
 - **Your own evidence.** Supplier invoices and the post that started a spike become numbered evidence the pack can cite.
 - **Pre-approval requests.** For a product that needs PayPal's approval, a draft quoting the clause word for word. Code writes it, and the seller fills the blanks and sends it.
+- **Money on hold.** If PayPal is already holding funds, a rescue checklist from the seller's own records, PayPal's own words, and what not to do. It never promises a release.
+- **Dispute responses.** For a dispute, Standing gathers the evidence for that payment and writes a response for the seller to send in PayPal's Resolution Center.
+- **Email alerts.** New alerts are emailed once, in the dashboard's own words.
 - **Orders table** built with AG Grid Community: sort, filter, search and paging over every PayPal payment.
 
 ## How we built it
@@ -115,7 +118,8 @@ PayPal writes and refusals; the AI routes and explains.
 
 ## What's next for Standing
 
-- Alert settings in the app and a daily summary email.
+- Alerts on WhatsApp, where many small sellers actually are, alongside email.
+- Sending dispute responses straight to PayPal (needs PayPal's write access for disputes).
 - Syncing tracking from store platforms; reading supplier invoices from a photo.
 - PayPal partner access so any seller can connect without their own API keys.
 
