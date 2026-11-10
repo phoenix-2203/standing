@@ -329,3 +329,17 @@ export const launchPlans = pgTable("launch_plans", {
   packBuiltAt: timestamp("pack_built_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ---- Email alerts ---------------------------------------------------------------------------------
+
+// One row per alert that was emailed (or tried): the primary key makes each alert send at most once,
+// even if two cycles overlap. No email address is stored here: the recipient comes from config.
+export const alertEmails = pgTable("alert_emails", {
+  alertId: uuid("alert_id").primaryKey(),
+  sellerId: text("seller_id").notNull(),
+  status: text("status").notNull(), // "sending" | "sent" | "failed"
+  providerId: text("provider_id"), // the email service's message ID
+  error: text("error"), // short reason, e.g. "HTTP 422": never a key or a response body
+  attempts: integer("attempts").notNull().default(1),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
