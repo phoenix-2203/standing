@@ -19,7 +19,9 @@ the first image as the thumbnail. Then `2-where-the-ai-stops.png`, `3-safe-fixes
 fresh screenshots of the hosted app taken after the demo orders. The numbers on `4-tested.png` match the README
 on 7 Nov; if any result changes, update both.
 
-**Test credentials (private field, not the public write-up):** the two sandbox logins (verified and
+**No login needed:** the homepage's **Try the demo, no login** gives each judge a private, interactive copy of the demo shop.
+
+**Test credentials (private field, not the public write-up), for the real Log in with PayPal path:** the two sandbox logins (verified and
 unverified). **[TO FILL in Devpost's private field only. Never in the README, the video or this file.]**
 
 ---

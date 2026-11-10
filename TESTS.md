@@ -1422,3 +1422,32 @@ All 15 returned COMPLETED. Waiting for Transaction Search to list them (it can l
   as they were collected.
 - **Not yet checked on the hosted app:** `/held`, `/disputes`, `demo:dispute`.
 
+## Try the demo, no login (10 Nov 2026, written by Claude in chat)
+
+- **What:** `POST /api/demo/start` (homepage and header buttons, a form POST so crawlers can't create workspaces) makes
+  a private copy of the demo seller (`src/lib/demo/workspace.ts`, table `demo_workspaces`, migration `0014`). It's off
+  unless `STANDING_DEMO=1`.
+  - Each copy gets new transaction IDs (`D<8 hex><original>`) and dates moved so the newest sale is 2 hours old.
+  - The seller's own evidence and the simulated dispute are copied; PayPal evidence is rebuilt; alerts are recomputed.
+  - Sends from a copy use `simulatedPayPal()`: the real client code with a fetch that never leaves the server, answering
+    201 with debug ID `SIMULATED-DEMO`.
+  - Per copy: 25 questions, and 6 AI builds (packs and launch plans).
+  - Copies are deleted after 48 hours, checked on each new demo start; at most 300 at once.
+  - A banner on every app page says what's simulated and what's left.
+- **Code tests (7):**
+  - IDs are rewritten, and the source is untouched;
+  - the newest sale is 2 hours old;
+  - shipments, evidence, the dispute and alerts are copied or rebuilt, and the real payer ID is never copied;
+  - two testers get separate copies;
+  - a demo fix goes through the real queue and stores 201 `SIMULATED-DEMO`;
+  - allowances are capped for demo workspaces only;
+  - purge deletes only expired copies, with everything they own.
+- **In a browser** (local `next dev` + Postgres 16, `STANDING_DEMO=1`):
+  - "Try the demo, no login" opened a dashboard showing the banner, "Demo shop (your copy)" and rewritten IDs;
+  - Add tracking showed the 2-minute countdown; after the window, the send returned
+    `{"outcome":"sent","paypalHttpStatus":201,"paypalDebugId":"SIMULATED-DEMO"}`;
+  - `/disputes` showed the copied Simulated dispute;
+  - the source seller still had its 13 transactions.
+- Full suite **593/593**, typecheck and lint clean.
+- **To do on the hosted app:** set `STANDING_DEMO=1`, run migration 0014, and click through once.
+

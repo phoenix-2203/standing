@@ -60,3 +60,4 @@
 - Demo film made from chat (Kokoro voice, frame-rendered cards, real app clips recorded on the Mac).
 - Email alerts: new alerts emailed once through Resend, in the dashboard's words; retries capped at 3; off unless configured.
 - Money on hold (a rescue checklist) and dispute responses (a code-written draft from the payment's evidence) built and browser-checked; Nigeria removed from the story; WhatsApp alerts are first on the roadmap.
+- Try the demo, no login: each tester gets a private, interactive copy of the demo shop; PayPal sends in a copy are simulated and labelled.
