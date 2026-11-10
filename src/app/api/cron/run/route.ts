@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { getDb } from "@/db";
 import { runCycle } from "@/lib/jobs/cycle";
 import { providersFromEnv } from "@/lib/llm/providers";
+import { emailConfigFromEnv } from "@/lib/notify/email";
 import { paypalFromEnv } from "@/lib/paypal/client";
 
 // Called every 15 minutes by the scheduler (Render cron) with `Authorization: Bearer $CRON_SECRET`.
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
   const sellerId = process.env.STANDING_SELLER_ID ?? "sandbox-seller";
-  const report = await runCycle(getDb(), paypalFromEnv(), sellerId, new Date(), providersFromEnv());
+  const report = await runCycle(getDb(), paypalFromEnv(), sellerId, new Date(), providersFromEnv(), emailConfigFromEnv());
   return Response.json({
     sync: report.sync,
     alerts: {
@@ -20,6 +21,7 @@ export async function POST(request: Request) {
       ongoing: report.alerts.ongoing.map((a) => a.kind),
       resolved: report.alerts.resolved.map((a) => a.kind),
     },
+    email: report.email ? { sent: report.email.sent.length, failed: report.email.failed.length, error: report.email.error ?? null } : "off",
   });
 }
 

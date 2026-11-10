@@ -43,3 +43,24 @@ it("runs sync → metrics → alerts, and still computes metrics when a sync fai
   expect(report.alerts.fired.map((a) => a.kind)).toEqual(["new_seller"]);
   expect(await db.select().from(syncState)).toHaveLength(3);
 });
+
+it("emails newly opened alerts when email is configured, and a failing email never fails the cycle", async () => {
+  const now = new Date("2026-11-04T12:00:00Z");
+  const pp = fakePayPal((call) => {
+    if (call.path.startsWith("/v1/customer/disputes")) return json(200, { items: [] });
+    if (call.path.startsWith("/v1/shipping/trackers")) return json(200, { trackers: [] });
+    return json(200, { transaction_details: [], total_pages: 1 });
+  });
+  const off = await runCycle(db, pp.client, "seller-email", now);
+  expect(off.email).toBeUndefined();
+  const boom = await runCycle(db, pp.client, "seller-email", now, [], {
+    to: "s@example.com",
+    from: "a@b.c",
+    appBaseUrl: "https://standing.test",
+    send: async () => {
+      throw new Error("down");
+    },
+  });
+  expect(boom.sync.length).toBe(3);
+  expect(boom.email).toBeDefined();
+});

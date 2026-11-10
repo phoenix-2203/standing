@@ -11,18 +11,28 @@ import type { SyncReport } from "@/lib/sync/state";
 import { syncTrackers } from "@/lib/sync/trackers";
 import { syncTransactions } from "@/lib/sync/transactions";
 import { syncLedger } from "@/lib/evidence/ledger";
+import { type EmailConfig, type EmailRun, emailNewAlerts } from "@/lib/notify/email";
 
 export interface CycleReport {
   sync: SyncReport[];
   metrics: Metrics;
   alerts: AlertRun;
+  /** Present when email alerts are configured. A failed email never fails the cycle. */
+  email?: EmailRun;
 }
 
 /**
  * One cron cycle (BLUEPRINT §3 steps 2–3): sync from PayPal, recompute metrics, apply alert rules.
  * A failed sync doesn't stop the cycle — metrics run on what's stored, and the report says what failed.
  */
-export async function runCycle(db: Db, paypal: PayPalClient, sellerId: string, now = new Date(), providers: LlmProvider[] = []): Promise<CycleReport> {
+export async function runCycle(
+  db: Db,
+  paypal: PayPalClient,
+  sellerId: string,
+  now = new Date(),
+  providers: LlmProvider[] = [],
+  email: EmailConfig | null = null,
+): Promise<CycleReport> {
   // Fixes whose cancel window has run out go first, so this cycle's read-back sees them.
   await sendDueFixes(db, paypal, sellerId, now);
   const sync = [
@@ -36,5 +46,12 @@ export async function runCycle(db: Db, paypal: PayPalClient, sellerId: string, n
   if (providers.length) await refreshLaunchPack(db, sellerId, providers, now);
   const metrics = await runMetrics(db, sellerId, now);
   const alerts = await applyAlerts(db, sellerId, metrics, now);
-  return { sync, metrics, alerts };
+  if (!email) return { sync, metrics, alerts };
+  let sent: EmailRun;
+  try {
+    sent = await emailNewAlerts(db, sellerId, alerts.fired, email, now);
+  } catch (err) {
+    sent = { sent: [], failed: alerts.fired.map((a) => a.id), error: `email step failed (${(err as Error).name})` };
+  }
+  return { sync, metrics, alerts, email: sent };
 }
