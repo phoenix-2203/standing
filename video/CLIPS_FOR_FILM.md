@@ -28,3 +28,16 @@ sandbox data, **with these changes**:
 Then check that every clip opens and that its marks match, and list each clip's length. **Don't commit the MP4s.**
 Commit only the recorder change (`CAPTIONS=0`), the clip specs and `.gitignore`, then push. Report when it's done.
 Claude in chat will pick the clips up from `video/clips/`.
+
+## Round 2 (10 Nov): two more clips for the new features
+
+Same rules as above: no captions or audio, cursor and rings on, 1.5 s handles, marks with boxes, verified account.
+
+First, on the local app's database, run `npm run demo:dispute -- <a demo-1109 burst transaction ID> 18.00 --go` (one
+Simulated dispute, "item didn't arrive", on a real sandbox payment with no tracking yet). If the plan-only output
+looks right, run it with `--go`.
+
+| Clip | What to record | Marks (and boxes) |
+|---|---|---|
+| `v_held` | Sidebar → **Money on hold**. Hold on the title (1.5 s). Ring the "N of 5 steps still to do" line (1.5 s), then step 1 with its count (2 s). Ring the "Only PayPal can release a hold" callout (2 s). Smooth scroll to "What not to do" and ring it (2.5 s) | `title`, `todo` (box), `step1` (box), `callout` (box), `dont` (box) |
+| `v_disputes` | Sidebar → **Disputes**. Ring the dispute row with its **Simulated** badge (2 s). Click **Draft a response** (wait off camera) → ring "Evidence used" (2 s) → ring "Worth adding first" (2 s) → scroll to the draft text and ring it (2 s) → click **Copy response** | `list`, `row` (box), `draft`, `evidence` (box), `missing` (box), `text` (box), `copy` |
