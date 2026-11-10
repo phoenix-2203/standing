@@ -2,6 +2,7 @@ import { getDb } from "@/db";
 import { askStanding } from "@/lib/ask/ask";
 import { loadAskFacts } from "@/lib/ask/context";
 import { sessionSeller, unauthorized } from "@/lib/auth/session";
+import { spendAllowance } from "@/lib/demo/workspace";
 import { providersFromEnv } from "@/lib/llm/providers";
 
 // A chat answer shouldn't hang for minutes: Gemini's default 150 s (meant for packs) is cut to 45 s here.
@@ -15,6 +16,9 @@ export async function POST(request: Request) {
     question = ((await request.json()) as { question?: unknown }).question;
   } catch {
     return Response.json({ error: "invalid_json" }, { status: 400 });
+  }
+  if (!(await spendAllowance(getDb(), sellerId, "asks"))) {
+    return Response.json({ error: "This demo has used its questions for now. Log in with PayPal to keep asking, or start a new demo tomorrow." }, { status: 429 });
   }
   try {
     const r = await askStanding(typeof question === "string" ? question : "", await loadAskFacts(getDb(), sellerId), providersFromEnv(process.env, { timeoutMs: ASK_TIMEOUT_MS }));

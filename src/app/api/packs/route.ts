@@ -1,5 +1,6 @@
 import { getDb } from "@/db";
 import { sessionSeller, unauthorized } from "@/lib/auth/session";
+import { spendAllowance } from "@/lib/demo/workspace";
 import { providersFromEnv } from "@/lib/llm/providers";
 import { buildPack } from "@/lib/pack/build";
 import { packList } from "@/lib/ui/data";
@@ -14,6 +15,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const sellerId = sessionSeller(request);
   if (!sellerId) return unauthorized();
+  if (!(await spendAllowance(getDb(), sellerId, "packs"))) {
+    return Response.json({ error: "This demo has built its packs for now. Open one of the packs you built, or log in with PayPal." }, { status: 429 });
+  }
   try {
     const pack = await buildPack(getDb(), sellerId, providersFromEnv());
     return Response.json({ id: pack.id, status: pack.status }, { status: 201 });
