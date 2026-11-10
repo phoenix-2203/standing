@@ -343,3 +343,16 @@ export const alertEmails = pgTable("alert_emails", {
   attempts: integer("attempts").notNull().default(1),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
 });
+
+// ---- Demo workspaces ------------------------------------------------------------------------------
+
+// A tester's private copy of the demo shop (seller ID "demo-…"), made by "Try the demo". PayPal sends from a demo
+// workspace are simulated; usage counters cap the AI calls; workspaces are deleted after DEMO_TTL_HOURS.
+export const demoWorkspaces = pgTable("demo_workspaces", {
+  sellerId: text("seller_id").primaryKey(),
+  sourceSellerId: text("source_seller_id").notNull(),
+  asks: integer("asks").notNull().default(0),
+  packs: integer("packs").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
