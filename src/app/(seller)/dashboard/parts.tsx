@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DashboardData } from "@/lib/ui/data";
 import { api, day, usd } from "@/lib/ui/client";
 import { ApprovalDraftButton } from "./approval-draft";
@@ -48,22 +48,23 @@ function useQueuedFix(initial: Fix | null, onChange: () => void) {
     return () => clearInterval(id);
   }, [waiting]);
 
+  // One send per due fix. A ref, not the busy state, guards it: re-running this effect on setBusy must not discard
+  // PayPal's answer (that left the row on "Sending…").
+  const sending = useRef(false);
   useEffect(() => {
-    if (fix?.status !== "scheduled" || due === null || due > now || busy) return;
-    let live = true;
+    if (fix?.status !== "scheduled" || due === null || due > now || sending.current) return;
+    sending.current = true;
+    const requestId = fix.requestId;
     void (async () => {
       setBusy(true);
-      const res = await api<{ outcome: string; status: string; paypalDebugId?: string | null }>(`/api/actions/${fix.requestId}/send`, { method: "POST" });
-      if (!live) return;
+      const res = await api<{ outcome: string; status: string; paypalDebugId?: string | null }>(`/api/actions/${requestId}/send`, { method: "POST" });
+      sending.current = false;
       setBusy(false);
-      setFix((f) => (f ? { ...f, status: res.data?.status ?? f.status, outcome: res.data?.outcome, paypalDebugId: res.data?.paypalDebugId ?? null } : f));
+      setFix((f) => (f && f.requestId === requestId ? { ...f, status: res.data?.status ?? f.status, outcome: res.data?.outcome, paypalDebugId: res.data?.paypalDebugId ?? null } : f));
       // Leave the answer on screen for a moment before the list refreshes and the order leaves it.
       if (res.data?.outcome === "sent") setTimeout(onChange, 4000);
     })();
-    return () => {
-      live = false;
-    };
-  }, [fix, due, now, busy, onChange]);
+  }, [fix, due, now, onChange]);
 
   async function cancel() {
     if (!fix) return;
