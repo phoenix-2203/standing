@@ -7,7 +7,7 @@ export const README_RESULTS = `${REPO}#what-has-been-tested`;
 export const LOGIN = "/api/auth/paypal/start";
 
 export const PROOF: { figure: string; label: string; href: string }[] = [
-  { figure: "586", label: "automated tests pass", href: `${REPO}/tree/main/src` },
+  { figure: "593", label: "automated tests pass", href: `${REPO}/tree/main/src` },
   { figure: "92%", label: "risky products flagged on a held-out set we didn't tune (11 of 12)", href: TESTS_URL },
   { figure: "30", label: "live sandbox orders created and captured (30 of 30)", href: README_RESULTS },
   { figure: "0", label: "numbers written by the AI: a validator rejects any AI text with a digit", href: `${REPO}/blob/main/src/lib/pack/validate.ts` },
