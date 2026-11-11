@@ -65,8 +65,38 @@
   line-height: 1.5;
 }
 
+/* Dark tokens. Two copies with the same values (tokens.test.ts checks they match): one for an explicit choice from
+   the theme switch (data-theme on <html>), one for the OS setting when the seller chose "system" (no data-theme). */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #101614;
+  --surface: #18201d;
+  --raised: #1f2925;
+  --ink: #e9ece6;
+  --muted: #a0aaa4;
+  --line: #2a3430;
+  --line-strong: #3a4641;
+  --accent: #5fd3a5;
+  --accent-hover: #86e0bd;
+  --accent-ink: #101614;
+  --highlight: #f5c46b;
+  --highlight-bg: #2b2413;
+  --accent-bg: #16302a;
+  --ok: #7fd0a4;
+  --ok-bg: #15281e;
+  --warn: #e9b765;
+  --warn-bg: #2b2413;
+  --bad: #ef9389;
+  --bad-bg: #2f1b18;
+  --info: #a9c0ca;
+  --info-bg: #1a2428;
+  --focus: #8fd1b5;
+  --shadow-1: none;
+  --shadow-2: 0 8px 24px rgb(0 0 0 / 0.4);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --bg: #101614;
     --surface: #18201d;
     --raised: #1f2925;
@@ -92,6 +122,11 @@
     --shadow-1: none;
     --shadow-2: 0 8px 24px rgb(0 0 0 / 0.4);
   }
+}
+
+/* An explicit light choice wins over a dark OS. */
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 @media (prefers-reduced-motion: reduce) {

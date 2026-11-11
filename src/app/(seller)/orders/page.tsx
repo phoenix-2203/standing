@@ -16,6 +16,7 @@ import { AgGridReact } from "ag-grid-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { OrderRow, Protection } from "@/lib/ui/data";
 import { Button, ButtonLink, Callout, PageHeader } from "@/components/ui";
+import { useDarkTheme } from "@/lib/ui/theme";
 import { api } from "@/lib/ui/client";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -250,17 +251,9 @@ export default function OrdersPage() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<View>("all");
   const [shown, setShown] = useState<OrderRow[]>([]);
-  const [dark, setDark] = useState(false);
+  const dark = useDarkTheme(); // follows the theme switch and the OS, live
   const gridApi = useRef<GridApi<Row> | null>(null);
   const viewRef = useRef<View>("all");
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const update = () => setDark(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
 
   useEffect(() => {
     let live = true;

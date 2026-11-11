@@ -20,7 +20,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { Logo } from "@/components/Logo";
-import { SandboxTag } from "@/components/ui";
+import { SandboxTag, ThemeSwitch } from "@/components/ui";
 import { api } from "@/lib/ui/client";
 import { dateTime, relative } from "@/lib/ui/format";
 
@@ -56,6 +56,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <CurrentNav />
         </Suspense>
         <div className="app-side-foot">
+          <ThemeSwitch />
           <AccountChip />
           <SandboxTag />
         </div>
@@ -237,6 +238,7 @@ function MobileBar() {
           <CurrentNav onNavigate={() => setOpen(false)} />
         </Suspense>
         <div className="app-side-foot">
+          <ThemeSwitch />
           <AccountChip />
           <SandboxTag />
         </div>

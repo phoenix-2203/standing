@@ -964,3 +964,23 @@
     bottom: auto;
   }
 }
+
+/* Theme switch in the header on wide screens; on phones it lives in the footer. */
+.site-header-theme {
+  display: none;
+}
+@media (min-width: 900px) {
+  .site-header-theme {
+    display: inline-flex;
+  }
+}
+.site-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+}
+.site-footer-row .site-built {
+  margin: 0;
+}

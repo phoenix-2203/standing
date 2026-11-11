@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Newsreader } from "next/font/google";
+import { THEME_SCRIPT } from "@/lib/ui/theme-script";
 import "./globals.css";
 import "./ui.css";
 import "./site.css";
@@ -27,7 +28,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
+    // suppressHydrationWarning: THEME_SCRIPT sets data-theme on <html> before React hydrates.
+    <html lang="en" className={`${sans.variable} ${serif.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Applies the saved theme before first paint, so a dark choice never flashes light. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body>{children}</body>
     </html>
   );

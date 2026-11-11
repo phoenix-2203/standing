@@ -763,3 +763,33 @@
   gap: var(--s-3);
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 }
+
+/* Theme switch: light / system / dark, a small segmented control. */
+.theme-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+}
+.theme-switch-opt {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.theme-switch-opt:hover {
+  color: var(--ink);
+}
+.theme-switch-opt[aria-checked="true"] {
+  background: var(--accent-bg);
+  color: var(--accent);
+}

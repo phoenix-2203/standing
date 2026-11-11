@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
-import { SandboxTag } from "@/components/ui";
+import { SandboxTag, ThemeSwitch } from "@/components/ui";
 import { REPO } from "@/lib/site/facts";
 import { DemoButton } from "./DemoButton";
 
@@ -29,6 +29,7 @@ export function SiteHeader() {
           <a href={REPO}>GitHub</a>
         </nav>
         <div className="site-header-cta">
+          <ThemeSwitch className="site-header-theme" />
           <SandboxTag compact />
           <DemoButton size="sm" />
         </div>

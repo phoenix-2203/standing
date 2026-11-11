@@ -13,3 +13,4 @@ export { StatTile } from "./StatTile";
 export { Tabs } from "./Tabs";
 export { Timeline, type StepState } from "./Timeline";
 export { ToastProvider, useToast } from "./Toast";
+export { ThemeSwitch } from "./ThemeSwitch";

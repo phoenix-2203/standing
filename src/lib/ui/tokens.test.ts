@@ -18,8 +18,10 @@ function block(selectorStart: number): Record<string, string> {
 }
 
 const light = block(css.indexOf(":root {"));
-const darkAt = css.indexOf("@media (prefers-color-scheme: dark)");
-const dark = { ...light, ...block(css.indexOf(":root", darkAt)) };
+// Dark tokens: the switch's explicit choice, and the OS setting when the seller picked "system". Both must match.
+const darkChosen = block(css.indexOf(':root[data-theme="dark"]'));
+const darkSystem = block(css.indexOf(":root:not([data-theme])", css.indexOf("@media (prefers-color-scheme: dark)")));
+const dark = { ...light, ...darkChosen };
 
 const lum = (hex: string) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
@@ -67,6 +69,18 @@ describe.each([
     expect(t[fg], `--${fg} missing`).toBeDefined();
     expect(t[bg], `--${bg} missing`).toBeDefined();
     expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(min);
+  });
+});
+
+describe("theme switch", () => {
+  it("the OS dark tokens equal the chosen dark tokens, so both routes to dark look the same", () => {
+    expect(Object.keys(darkChosen).length).toBeGreaterThan(15);
+    expect(darkSystem).toEqual(darkChosen);
+  });
+  it("the OS dark tokens apply only when no theme was chosen, and an explicit light choice sets color-scheme", () => {
+    expect(css).toMatch(/@media \(prefers-color-scheme: dark\) \{\s*:root:not\(\[data-theme\]\)/);
+    expect(css).toMatch(/:root\[data-theme="light"\] \{\s*color-scheme: light;/);
+    expect(css).toMatch(/:root\[data-theme="dark"\] \{\s*color-scheme: dark;/);
   });
 });
 
