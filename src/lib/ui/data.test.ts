@@ -49,6 +49,15 @@ describe("orderRows", () => {
     expect(rows.map((r) => r.trackingState)).toEqual(["none", "completed", "missing", "tracked"]);
   });
 
+  it("labels a demo workspace's send Simulated, never Sent, from its stored SIMULATED debug ID", async () => {
+    await order("REAL", "PHYSICAL_GOODS", hoursAgo(72));
+    await order("DEMO", "PHYSICAL_GOODS", hoursAgo(72));
+    const sent = (id: string, debug: string) => ({ sellerId: SELLER, type: "tracking_push", method: "POST", path: "/v1/shipping/trackers-batch", requestId: `track-${id}-9400111`, status: "sent" as const, paypalHttpStatus: 201, paypalDebugId: debug });
+    await db.insert(actions).values([sent("REAL", "f0123456789ab"), sent("DEMO", "SIMULATED-DEMO")]);
+    const rows = Object.fromEntries((await orderRows(db, SELLER, NOW)).map((r) => [r.transactionId, r.fix]));
+    expect(rows).toEqual({ REAL: "sent", DEMO: "simulated" });
+  });
+
   it("shows PayPal's own Seller Protection flag and item names exactly as PayPal sent them", async () => {
     const tx = (id: string, protection: string | undefined, items: string[]) =>
       upsertTransaction(db, SELLER, {

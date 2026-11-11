@@ -60,6 +60,7 @@ const FIX: Record<string, { label: string; tone: string }> = {
   scheduled: { label: "Scheduled", tone: "info" },
   sending: { label: "Sending", tone: "info" },
   sent: { label: "Sent", tone: "ok" },
+  simulated: { label: "Simulated (SIMULATED-DEMO)", tone: "warn" },
   unknown: { label: "No answer yet", tone: "warn" },
   failed: { label: "Failed", tone: "bad" },
   cancelled: { label: "Cancelled", tone: "" },
@@ -503,7 +504,7 @@ function ColumnKey() {
           <dt>Fix</dt>
           <dd>
             A change Standing made in PayPal for this order, such as adding tracking, and where it stands: Preview, Scheduled,
-            Sending, Sent, Failed, Cancelled or <em>No answer yet</em> (sent, but PayPal hasn&apos;t replied; never resent as new).
+            Sending, Sent, <em>Simulated</em> (a demo workspace: nothing went to PayPal), Failed, Cancelled or <em>No answer yet</em> (sent, but PayPal hasn&apos;t replied; never resent as new).
             A dash means no fix was made.
           </dd>
         </div>

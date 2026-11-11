@@ -1,4 +1,5 @@
 import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { SIMULATED_DEBUG_ID } from "@/lib/demo/workspace";
 import type { Db } from "@/db";
 import { actions, alerts, evidenceItems, launchPlans, packs, shipments, syncState, transactionItems, transactions } from "@/db/schema";
 import { verificationItem } from "@/lib/connect/checklist";
@@ -58,7 +59,7 @@ export interface OrderRow {
   tracking: string; // e.g. "USPS STANDINGD1PHY01 (SHIPPED)", "Completed", "missing", "—"
   trackingState: "tracked" | "completed" | "missing" | "none";
   evidence: number;
-  fix: string | null; // status of a Standing fix for this order, if any
+  fix: string | null; // status of a Standing fix for this order, if any ("simulated": sent in a demo workspace, not to PayPal)
   items: string; // item names as PayPal returned them, "" when PayPal sent none
   protection: Protection;
 }
@@ -82,7 +83,7 @@ export async function orderRows(db: Db, sellerId: string, now = new Date()): Pro
   const [ship, ev, fixes, flags, items] = await Promise.all([
     db.select().from(shipments).where(inArray(shipments.transactionId, ids)),
     db.select({ transactionId: evidenceItems.transactionId }).from(evidenceItems).where(and(eq(evidenceItems.sellerId, sellerId), inArray(evidenceItems.transactionId, ids))),
-    db.select({ requestId: actions.requestId, status: actions.status, payload: actions.payload }).from(actions).where(eq(actions.sellerId, sellerId)),
+    db.select({ requestId: actions.requestId, status: actions.status, payload: actions.payload, debugId: actions.paypalDebugId }).from(actions).where(eq(actions.sellerId, sellerId)),
     db
       .select({ id: transactions.transactionId, code: sql<string | null>`${transactions.raw}->'transaction_info'->>'protection_eligibility'` })
       .from(transactions)
@@ -107,7 +108,8 @@ export async function orderRows(db: Db, sellerId: string, now = new Date()): Pro
         tracking: tracked ? `${tracked.carrier ?? ""} ${tracked.trackingNumber} (${tracked.status})`.trim() : completed ? "Completed" : physicalDue ? "missing" : "—",
         trackingState: tracked ? "tracked" : completed ? "completed" : physicalDue ? "missing" : "none",
         evidence: ev.filter((e) => e.transactionId === s.id).length,
-        fix: fix?.status ?? null,
+        // A demo workspace's send never reaches PayPal; its stored answer carries the SIMULATED debug ID.
+        fix: fix ? (fix.status === "sent" && fix.debugId === SIMULATED_DEBUG_ID ? "simulated" : fix.status) : null,
         items: items
           .filter((i) => i.id === s.id && i.name)
           .sort((a, b) => a.position - b.position)

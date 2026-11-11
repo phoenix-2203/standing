@@ -8,7 +8,10 @@ import { ApprovalDraftButton } from "./approval-draft";
 
 // Every figure shown here was computed by Standing's code on the server; these components only format it.
 
-type Fix = { requestId: string; status: string; summary?: string | null; undoUntil: string | null; outcome?: string; error?: string };
+type Fix = { requestId: string; status: string; summary?: string | null; undoUntil: string | null; outcome?: string; error?: string; paypalDebugId?: string | null };
+
+// A demo workspace's sends never reach PayPal; the stored answer carries this debug ID (src/lib/demo/workspace.ts).
+const SIMULATED_DEBUG_ID = "SIMULATED-DEMO";
 
 /** Digital orders: one click starts the queued fix; the seller can cancel until the window ends. */
 export function DigitalCard({ gaps, onChange }: { gaps: DashboardData["digital"]; onChange: () => void }) {
@@ -50,11 +53,12 @@ function useQueuedFix(initial: Fix | null, onChange: () => void) {
     let live = true;
     void (async () => {
       setBusy(true);
-      const res = await api<{ outcome: string; status: string }>(`/api/actions/${fix.requestId}/send`, { method: "POST" });
+      const res = await api<{ outcome: string; status: string; paypalDebugId?: string | null }>(`/api/actions/${fix.requestId}/send`, { method: "POST" });
       if (!live) return;
       setBusy(false);
-      setFix((f) => (f ? { ...f, status: res.data?.status ?? f.status, outcome: res.data?.outcome } : f));
-      if (res.data?.outcome === "sent") onChange();
+      setFix((f) => (f ? { ...f, status: res.data?.status ?? f.status, outcome: res.data?.outcome, paypalDebugId: res.data?.paypalDebugId ?? null } : f));
+      // Leave the answer on screen for a moment before the list refreshes and the order leaves it.
+      if (res.data?.outcome === "sent") setTimeout(onChange, 4000);
     })();
     return () => {
       live = false;
@@ -83,6 +87,9 @@ function FixState({ q }: { q: ReturnType<typeof useQueuedFix> }) {
         Cancel ({Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")})
       </button>
     );
+  }
+  if ((fix.status === "sent" || fix.outcome === "sent") && fix.paypalDebugId === SIMULATED_DEBUG_ID) {
+    return <span className="badge warn">Simulated: not sent to PayPal · {SIMULATED_DEBUG_ID}</span>;
   }
   if (fix.status === "sent" || fix.outcome === "sent") return <span className="badge ok">Sent to PayPal</span>;
   if (fix.status === "failed") return <span className="badge bad">PayPal refused it</span>;
