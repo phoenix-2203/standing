@@ -1486,3 +1486,20 @@ All 15 returned COMPLETED. Waiting for Transaction Search to list them (it can l
   → dashboard badge "Simulated: not sent to PayPal · SIMULATED-DEMO" → order leaves the list after the refresh →
   Orders shows "Simulated (SIMULATED-DEMO)". No page errors. Real sandbox seller unchanged (same counts as before). Pass.
 - Not re-run live: a real sandbox send from the hosted dashboard (it would be a PayPal write); covered by the same code path.
+
+## 11 Nov 2026 — Theme switch, slim demo banner, /guide
+
+- **Theme switch (System / Light / Dark)**, local dev, light-OS and dark-OS × 1440 px and 390 px: the choice survives a
+  reload, `data-theme` is set before first paint (present at DOMContentLoaded), the Orders grid follows the theme live,
+  the switch shows in the app sidebar, site header (≥900 px) and footer. New token tests: the chosen-dark and
+  system-dark blocks are identical. No page errors. Pass.
+- **Slim demo banner**, local demo workspace, light and dark × desktop and mobile: one line on desktop, wraps on
+  mobile; "sends are simulated" and "resets 13 Nov, 08:39" visible; × collapses to a "Demo" chip that survives a
+  reload (sessionStorage) and re-expands on click. No page errors. Pass.
+- **/guide**, light and dark × 1440 px and 390 px: anchors #start #tour #pages #demo #faq exist, the table of contents
+  jumps to them (heading lands below the sticky header), 8 FAQ entries, Guide link in header, footer and app sidebar,
+  no horizontal scroll, no page errors. Pass.
+- Wording checked against the app: the Catalogue sets products physical or digital (it does not check the Acceptable
+  Use Policy; that runs on Launch plan products), so those two lines were corrected. "Deleted after 48 hours" was only
+  true when the next visitor started a demo, so the 15-minute cron now also deletes expired demo copies.
+- **596/596** tests, typecheck, lint, build pass. Screenshots: `docs/devpost/guide-light.png`, `guide-dark.png`, `banner.png`.

@@ -68,3 +68,5 @@
 - Hosted with the verified login: /held and /disputes load.
 - Found and fixed: a demo send read "Sent" with no "Simulated" label, and fix rows on the dashboard stuck on "Sending…" (also for real sends). Now labelled Simulated (SIMULATED-DEMO) on the dashboard and in Orders; 594 tests; redeployed and checked on hosted.
 - Raw film clips v_held and v_disputes recorded (10 Nov).
+- UI: theme switch (System / Light / Dark, no flash), a one-line demo banner that collapses to a chip, and a public /guide page with a FAQ, linked from everywhere it helps.
+- The 15-minute cron now also deletes demo copies older than 48 hours (before, only the next demo start did).
