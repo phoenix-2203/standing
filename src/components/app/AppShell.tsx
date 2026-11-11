@@ -116,9 +116,26 @@ function NavList({
 
 type Demo = { expiresAt: string; asksLeft: number; packsLeft: number } | null;
 
-/** In a demo workspace: say what it is, what's simulated and what's left, on every page. */
+const BANNER_KEY = "standing-demo-banner";
+const readCollapsed = () => {
+  try {
+    return typeof window !== "undefined" && sessionStorage.getItem(BANNER_KEY) === "collapsed";
+  } catch {
+    return false;
+  }
+};
+/** "13 Nov, 07:21": when the demo copy is deleted. */
+const shortDate = (iso: string) => {
+  const parts = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(iso));
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${get("day")} ${get("month")}, ${get("hour")}:${get("minute")}`;
+};
+
+/** In a demo workspace: one slim line on every page saying what it is, that sends are simulated, what's left and
+ * when it resets. It collapses to a "Demo" chip for this browser session; the chip expands it again. */
 function DemoBanner() {
   const [demo, setDemo] = useState<Demo>(null);
+  const [collapsed, setCollapsed] = useState(readCollapsed);
   useEffect(() => {
     let live = true;
     void api<{ demo: Demo }>("/api/dashboard").then((r) => live && r.status === 200 && setDemo(r.data?.demo ?? null));
@@ -126,12 +143,38 @@ function DemoBanner() {
       live = false;
     };
   }, []);
+  const toggle = (next: boolean) => {
+    setCollapsed(next);
+    try {
+      if (next) sessionStorage.setItem(BANNER_KEY, "collapsed");
+      else sessionStorage.removeItem(BANNER_KEY);
+    } catch {
+      // Storage blocked: it still collapses for this page.
+    }
+  };
   if (!demo) return null;
+  if (collapsed) {
+    return (
+      <button type="button" className="demo-chip" onClick={() => toggle(false)} aria-expanded="false" title="Demo workspace: sends are simulated. Show details">
+        <span className="demo-dot" aria-hidden="true" />
+        Demo
+      </button>
+    );
+  }
   return (
-    <div className="demo-banner" role="note">
-      <strong>Demo workspace.</strong> Your own copy of a PayPal sandbox shop: click anything, nothing you do affects anyone else. Sends to PayPal are
-      simulated (marked SIMULATED). Order IDs and dates are shifted from the originals. {demo.asksLeft} questions and {demo.packsLeft} AI builds left; deleted{" "}
-      {dateTime(demo.expiresAt)}. <a href="/api/auth/paypal/start">Use your own PayPal account</a>
+    <div className="demo-banner" role="note" aria-label="Demo workspace">
+      <span className="demo-dot" aria-hidden="true" />
+      <p className="demo-text">
+        <strong>Demo:</strong> your own copy · sends are simulated · {demo.asksLeft} questions, {demo.packsLeft} AI builds left · resets{" "}
+        {shortDate(demo.expiresAt)}
+      </p>
+      <span className="demo-links">
+        <Link href="/guide#demo">What&apos;s this?</Link>
+        <a href="/api/auth/paypal/start">Use your own PayPal</a>
+      </span>
+      <button type="button" className="demo-close" onClick={() => toggle(true)} aria-label="Collapse the demo banner" aria-expanded="true">
+        <X size={14} strokeWidth={2} aria-hidden="true" />
+      </button>
     </div>
   );
 }
