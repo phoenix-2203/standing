@@ -61,3 +61,10 @@
 - Email alerts: new alerts emailed once through Resend, in the dashboard's words; retries capped at 3; off unless configured.
 - Money on hold (a rescue checklist) and dispute responses (a code-written draft from the payment's evidence) built and browser-checked; Nigeria removed from the story; WhatsApp alerts are first on the roadmap.
 - Try the demo, no login: each tester gets a private, interactive copy of the demo shop; PayPal sends in a copy are simulated and labelled.
+
+## 11 Nov 2026
+- No-login demo applied (4 commits), migrations 0013–0014 run locally and on the VPS; 593 tests, typecheck, lint, build pass.
+- Hosted: `STANDING_DEMO=1` set and redeployed; "Try the demo, no login" gives each visitor their own copy, sends are simulated (SIMULATED-DEMO stored), the real seller is untouched.
+- Hosted with the verified login: /held and /disputes load.
+- Found: a demo send reads "Sent" on screen with no "Simulated" label; only the banner says so. To fix.
+- Raw film clips v_held and v_disputes recorded (10 Nov).

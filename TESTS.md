@@ -1451,3 +1451,24 @@ All 15 returned COMPLETED. Waiting for Transaction Search to list them (it can l
 - Full suite **593/593**, typecheck and lint clean.
 - **To do on the hosted app:** set `STANDING_DEMO=1`, run migration 0014, and click through once.
 
+
+## 11 Nov 2026 — Deploy of the no-login demo, and hosted checks
+
+- **Local:** `git am` of the 4 demo-login commits on `eb70e27`; `npm run db:migrate` applied 0013 and 0014. `npm test`
+  **593/593**, typecheck, lint and build pass. Homepage and README count updated to 593 (`d522751`).
+- **Deploy:** `STANDING_DEMO=1` added to the server env; redeploy of `d522751` ran the migrate service (exit 0);
+  `demo_workspaces` and `alert_emails` exist on the hosted database; the app container sees the setting.
+- **Verified login (10–11 Nov), hosted:** `/held` loads ("2 of 5 steps still to do"), `/disputes` loads ("No disputes":
+  the hosted seller has none). Checklist reports the account verified. Pass.
+- **No-login demo, hosted, two fresh browser contexts (like private windows):**
+  - "Try the demo, no login" → `/dashboard?demo=new` with the demo banner. Pass.
+  - Add tracking on the copied $180 gift set (USPS 9400111899562118430977) → preview and "Cancel (2:00)" countdown →
+    sent after 2 minutes. Stored answer: HTTP 201, debug ID **SIMULATED-DEMO**, `{"simulated": true, "note": "Demo
+    workspace: nothing was sent to PayPal."}`. Orders then shows the tracking and Fix **Sent**. Pass for the
+    simulation; **fail for labelling**: the screen says "Sending…" then "Sent", and neither the dashboard nor Orders
+    shows "Simulated" or the SIMULATED-DEMO ID (only the banner says sends are simulated).
+  - `/held` ("3 of 5 steps still to do") and `/disputes` ("No disputes") load in the demo. Pass.
+  - Ask Standing "Do I have any open alerts?" answered from the copy's records; banner went from 25 to 24 questions left. Pass.
+  - Second context got its own workspace (different session cookie; its gift set still untracked). Pass.
+  - Real sandbox seller unchanged: transactions 59, shipments 12, packs 6, evidence 77, fixes 0, disputes 0, before
+    and after. No page errors. Pass.
