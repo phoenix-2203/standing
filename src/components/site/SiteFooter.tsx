@@ -9,6 +9,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer-inner">
         <nav aria-label="Footer" className="site-footer-links">
+          <Link href="/guide">Guide</Link>
           <Link href="/trust">Trust</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>

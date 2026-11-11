@@ -261,6 +261,56 @@
   overflow-wrap: anywhere;
 }
 
+/* Guide */
+.guide-toc {
+  margin: var(--s-5) 0 var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.guide-toc-title {
+  margin: 0 0 var(--s-1);
+  font-size: var(--t-12);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.guide-toc ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+.guide-toc a {
+  color: var(--accent);
+  font-weight: 600;
+}
+.guide-sec h2 {
+  scroll-margin-top: 88px;
+}
+.guide-steps {
+  padding-left: var(--s-5);
+  display: grid;
+  gap: var(--s-2);
+}
+.guide-faq {
+  margin: 0;
+  display: grid;
+  gap: var(--s-4);
+}
+.guide-faq dt {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.guide-faq dd {
+  margin: 0;
+  color: var(--ink);
+}
+
 /* 404 and errors */
 .status-page {
   max-width: 32rem;

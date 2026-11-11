@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { getDb } from "@/db";
+import { purgeDemoWorkspaces } from "@/lib/demo/workspace";
 import { runCycle } from "@/lib/jobs/cycle";
 import { providersFromEnv } from "@/lib/llm/providers";
 import { emailConfigFromEnv } from "@/lib/notify/email";
@@ -14,6 +15,8 @@ export async function POST(request: Request) {
   }
   const sellerId = process.env.STANDING_SELLER_ID ?? "sandbox-seller";
   const report = await runCycle(getDb(), paypalFromEnv(), sellerId, new Date(), providersFromEnv(), emailConfigFromEnv());
+  // Demo copies older than 48 hours go on this schedule too, not only when the next visitor starts one.
+  const demosDeleted = await purgeDemoWorkspaces(getDb());
   return Response.json({
     sync: report.sync,
     alerts: {
@@ -21,6 +24,7 @@ export async function POST(request: Request) {
       ongoing: report.alerts.ongoing.map((a) => a.kind),
       resolved: report.alerts.resolved.map((a) => a.kind),
     },
+    demosDeleted,
     email: report.email ? { sent: report.email.sent.length, failed: report.email.failed.length, error: report.email.error ?? null } : "off",
   });
 }

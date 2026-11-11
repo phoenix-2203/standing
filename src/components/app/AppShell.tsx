@@ -2,6 +2,7 @@
 
 import {
   BookOpenCheck,
+  CircleHelp,
   LifeBuoy,
   Scale,
   FileText,
@@ -41,6 +42,7 @@ export const NAV: Item[] = [
   { href: "/ask", label: "Ask Standing", icon: MessageCircleQuestion },
   { href: "/checklist", label: "Checklist", icon: ListChecks },
   { href: "/catalogue", label: "Catalogue", icon: BookOpenCheck },
+  { href: "/guide", label: "Guide", icon: CircleHelp },
 ];
 
 /** The seller app's frame: a sidebar on desktop, a top bar with a menu sheet on phones. Sandbox is always shown. */

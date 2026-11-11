@@ -12,6 +12,7 @@ import {
 } from "@/components/ui";
 import type { DisputeResponse, DisputeRow } from "@/lib/disputes/respond";
 import { api, day } from "@/lib/ui/client";
+import Link from "next/link";
 
 // Disputes PayPal reports, and a response built from the evidence Standing already holds for the disputed payment.
 // Written by code from the records; Standing doesn't send it, because the seller should read it first.
@@ -86,7 +87,7 @@ export default function DisputesPage() {
         {rows && rows.length === 0 && (
           <EmptyState title="No disputes">
             PayPal hasn&apos;t reported a dispute on your account. If one opens,
-            it appears here within 15 minutes.
+            it appears here within 15 minutes. <Link href="/guide#pages">What this page does</Link>
           </EmptyState>
         )}
         {rows && rows.length > 0 && (

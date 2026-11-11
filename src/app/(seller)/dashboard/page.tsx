@@ -9,6 +9,7 @@ import { dateTime, relative } from "@/lib/ui/format";
 import { BuildPackButton } from "@/components/app/BuildPackButton";
 import { AskEntry, NeedsYou, WhereYouStand, YourCase } from "./overview";
 import { DigitalCard, LaunchCard, TrackingCard } from "./parts";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -40,7 +41,8 @@ export default function DashboardPage() {
             </ButtonAnchor>
           }
         >
-          Standing reads your PayPal sandbox account to show the signals PayPal publishes for holding funds. Test accounts only.
+          Standing reads your PayPal sandbox account to show the signals PayPal publishes for holding funds. Test accounts only.{" "}
+          <Link href="/guide">How Standing works</Link>
         </EmptyState>
       </div>
     );

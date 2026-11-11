@@ -65,7 +65,7 @@ export default function PacksPage() {
         {!packs ? (
           <p className="muted">Loading…</p>
         ) : packs.length === 0 ? (
-          <p className="muted">No packs yet. Build one to see how your case reads.</p>
+          <p className="muted">No packs yet. Build one to see how your case reads. <Link href="/guide#tour">How packs work</Link></p>
         ) : (
           <div className="rows">
             {packs.map((p) => (

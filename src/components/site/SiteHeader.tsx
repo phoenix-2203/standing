@@ -25,6 +25,7 @@ export function SiteHeader() {
         </Link>
         <nav className="site-nav" aria-label="Site">
           <Link href="/#how">How it works</Link>
+          <Link href="/guide">Guide</Link>
           <Link href="/trust">Trust</Link>
           <a href={REPO}>GitHub</a>
         </nav>
