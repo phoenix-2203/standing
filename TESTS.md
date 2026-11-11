@@ -1472,3 +1472,17 @@ All 15 returned COMPLETED. Waiting for Transaction Search to list them (it can l
   - Second context got its own workspace (different session cookie; its gift set still untracked). Pass.
   - Real sandbox seller unchanged: transactions 59, shipments 12, packs 6, evidence 77, fixes 0, disputes 0, before
     and after. No page errors. Pass.
+
+## 11 Nov 2026 — Fix: demo sends labelled Simulated; dashboard rows stuck on "Sending…"
+
+- **Bug found in the hosted demo check above:** after the countdown the dashboard row stayed on "Sending…" for good,
+  although the send call returned `{"outcome":"sent","paypalDebugId":"SIMULATED-DEMO"}`. Cause: the send effect's
+  cleanup ran when it set its own busy flag and discarded PayPal's answer. This also affected real (non-demo) sends on
+  the dashboard; the fix itself was always sent and stored, only the screen was wrong. Fixed with a ref guard.
+- **Labelling fixed:** a demo send now reads **"Simulated: not sent to PayPal · SIMULATED-DEMO"** on the dashboard and
+  **"Simulated (SIMULATED-DEMO)"** in the Orders Fix column (never "Sent"); the column key explains it. New test
+  (a stored SIMULATED-DEMO answer maps to "simulated", a real one to "sent"). **594/594** tests, typecheck, lint, build pass.
+- **Hosted after redeploying `1a4e231`, fresh demo workspace:** Add tracking (USPS 9400111899562118430984) → countdown
+  → dashboard badge "Simulated: not sent to PayPal · SIMULATED-DEMO" → order leaves the list after the refresh →
+  Orders shows "Simulated (SIMULATED-DEMO)". No page errors. Real sandbox seller unchanged (same counts as before). Pass.
+- Not re-run live: a real sandbox send from the hosted dashboard (it would be a PayPal write); covered by the same code path.

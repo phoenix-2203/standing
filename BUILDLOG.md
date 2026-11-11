@@ -66,5 +66,5 @@
 - No-login demo applied (4 commits), migrations 0013–0014 run locally and on the VPS; 593 tests, typecheck, lint, build pass.
 - Hosted: `STANDING_DEMO=1` set and redeployed; "Try the demo, no login" gives each visitor their own copy, sends are simulated (SIMULATED-DEMO stored), the real seller is untouched.
 - Hosted with the verified login: /held and /disputes load.
-- Found: a demo send reads "Sent" on screen with no "Simulated" label; only the banner says so. To fix.
+- Found and fixed: a demo send read "Sent" with no "Simulated" label, and fix rows on the dashboard stuck on "Sending…" (also for real sends). Now labelled Simulated (SIMULATED-DEMO) on the dashboard and in Orders; 594 tests; redeployed and checked on hosted.
 - Raw film clips v_held and v_disputes recorded (10 Nov).
